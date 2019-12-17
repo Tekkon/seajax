@@ -19,11 +19,19 @@
   ],
   "devDependencies": {
     "jshint": "^2.5.2",
-    "uglify-js": "^2.4.15"
+    "uglify-js": "^2.4.15",
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-rename": "^1.4.0",
+    "gulp-uglify": "^1.2.0",
+    "pump": "^3.0.0"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:seajax/seajax.git"
+  },
+  "scripts": {
+    "gulp": "gulp"
   },
   "keywords": [
     "seadragon",
