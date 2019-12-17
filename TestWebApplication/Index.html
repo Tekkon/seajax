@@ -1,0 +1,306 @@
+﻿<!DOCTYPE html>
+<html style="height:100%;width:100%;">
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body style="height:100%;width:100%;">
+    <div id="pivotviewer" style="height:100%;width:100%;"></div>
+
+    <link href="./Content/PivotView.css" rel="stylesheet" type="text/css">
+
+    <script src="./Scripts/jquery-1.10.2.min.js" type="text/javascript"></script>
+    <script src="./Scripts/pivot.min.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var pivotViewer = Pivot.init(document.getElementById("pivotviewer"));
+            pivotViewer.setTitle("Резервуары");
+
+            $.ajax({
+                type: 'GET',
+                url: location.protocol + '//' + location.host + '/Data/data.json',
+                error: function (error) {
+                    console.log(error);
+                },
+                success: function (json) {
+                    var data = AddHeight(json);
+                    LoadCollection(pivotViewer, data);
+                }
+            });
+        });
+
+        function AddHeight(data) {
+            data.forEach(function(element) {
+                element['Последнее обновление'] = new Date(element['LAST_UPDATE']).toLocaleString("ru-RU");
+                element['Название'] = element['NAME'];
+                element['АЗС'] = element['ORG_NAME'];
+                element['Товар'] = element['GDS_ABBR'];
+                element['Базовая высота'] = element['BASE_HEIGHT'];
+                element['Максимальный объем'] = element['MAX_VOLUME'];
+                element['Текущий объем'] = element['CURR_VOLUME'];
+                element['Мертвый остаток'] = element['DEAD_REST'];
+                element['Плотность'] = element['DENCITY'];
+                element['Температура'] = element['TEMP'];
+                element['Текущий уровень'] = element['FILL_UP_LEVEL'];
+                element['Уровень воды'] = element['WATER_LEVEL'];
+
+                element['HEIGHT'] = 100-element['CURR_VOLUME']/element['MAX_VOLUME']*100;
+                element['SMALL_HEIGHT'] = 100-element['CURR_VOLUME']/element['MAX_VOLUME']*100;
+
+                var state = storageState(element['MAX_VOLUME'], element['CURR_VOLUME']);
+                element['COLOR'] = state.color;
+                element['Статус'] = state.status;
+            });
+            return data;
+        }
+
+        function LoadCollection(pivotViewer, data) {
+            var facets = {};
+
+            facets["ID"] = {
+                type:"String",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Последнее обновление"] = {
+                type:"String",
+                isFilterVisible: false,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Название"] = {
+                type:"String",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["АЗС"] = {
+                type:"String",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Товар"] = {
+                type:"String",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Статус"] = {
+                type:"String",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Базовая высота"] = {
+                type: "Number",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Максимальный объем"] = {
+                type:"Number",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Текущий объем"] = {
+                type:"Number",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Мертвый остаток"] = {
+                type:"Number",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Плотность"] = {
+                type:"Number",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Температура"] = {
+                type:"Number",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Текущий уровень"] = {
+                type:"Number",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["Уровень воды"] = {
+                type:"Number",
+                isFilterVisible: true,
+                isWordWheelVisible: true,
+                isMetaDataVisible: true
+            };
+
+            facets["HEIGHT"] = {
+                type:"Number",
+                isFilterVisible: false,
+                isWordWheelVisible: false,
+                isMetaDataVisible: false
+            };
+
+            facets["COLOR"] = {
+                type:"String",
+                isFilterVisible: false,
+                isWordWheelVisible: false,
+                isMetaDataVisible: false
+            };
+
+            pivotViewer.setFacets(facets);
+
+            pivotViewer.setTemplates([
+                /*{
+                    type: "color",
+                    width: 100,
+                    height: 100,
+                    template: '<?facets[\"COLOR\"]?>'
+                },*/
+                {
+                    type: "html",
+                    width: 100,
+                    height: 100,
+                    template: '<div style="width:100px;height:100px;-webkit-border-radius:50px;-moz-border-radius:50px;border-radius:50px;background:<?facets[\"COLOR\"]?>;">\
+                    </div>'
+                },
+                {
+                    type: "html",
+                    width: 150,
+                    height: 150,
+                    template:
+                     '<svg viewBox="-10 -10 120 120">\
+                        <defs>\
+                            <clipPath id="g-clip-<?facets[\"ID\"]?>">\
+                                <rect width="100" x="-50" y="-50" height="<?facets[\"HEIGHT\"]?>">\
+                                </rect>\
+                            </clipPath>\
+                        </defs>\
+                        <a transform="translate(50,50)">\
+                            <g>\
+                                <circle fill="<?facets[\"COLOR\"]?>" r="50" x="50" y="50"></circle>\
+                            </g>\
+                            <g>\
+                                <circle fill="#FFFFFF" r="47" x="50" y="50" clip-path="url(#g-clip-<?facets[\"ID\"]?>)"></circle>\
+                            </g>\
+                            <text text-anchor="middle" y="-20" font-size="10"><?facets["ORG_NAME"]?></text>\
+                            <text text-anchor="middle" y="5" font-size="10"><?facets["NAME"]?></text>\
+                            <text text-anchor="middle" y="30" font-size="10"><?facets["GDS_ABBR"]?></text>\
+                        </a>\
+                    </svg>'
+                }
+            ]);
+
+            AddItems(pivotViewer, data);
+        }
+
+        function AddItems(pivotViewer, elems) {
+            pivotViewer.clearItems();
+
+            $.each(elems, function (i, elem) {
+                if (elem["ID"] != null) {
+                    AddItem(pivotViewer, elem);
+                }
+            });
+        }
+
+        function UpdateItems(pivotViewer, elems) {
+            $.each(elems, function (i, elem) {
+                var item = pivotViewer.getItemById(elem["ID"]);
+
+                if (item != null) {
+                    if (elem['LAST_UPDATE'] > item.facets['LAST_UPDATE']) {
+                        CopyProperties(item, elem);
+                    }
+                } else {
+                    AddItem(pivotViewer, elem);
+                }
+            });
+        }
+
+        function CopyProperties(item, elem) {
+            $.each(Object.keys(elem), function (i, key) {
+                item.facets[key] = [elem[key]];
+            });
+        }
+
+        function AddItem(pivotViewer, elem) {
+            var item = {
+                id: elem["ID"],
+                name: elem["NAME"],
+                description: "",
+                href: "#",
+                facets: {}
+            };
+
+            CopyProperties(item, elem);
+
+            pivotViewer.addItems([item]);
+        }
+
+        function storageColor(max_volume,volume) {
+            var proc = volume/max_volume*100;
+            var color = 'grey';
+
+            if (proc < 10)
+            {
+                color = 'red';
+            }
+            else if (proc < 30)
+            {
+                color = 'yellow';
+            }
+            else
+            {
+                color = 'green';
+            }
+            return color;
+        }
+
+        function storageState(max_volume,volume) {
+            var proc = volume/max_volume*100;
+            var state = { color: '', status: '' };
+
+            if (proc < 10)
+            {
+                state.color = 'red';
+                state.status = 'Тревога';
+            }
+            else if (proc < 30)
+            {
+                state.color = 'yellow';
+                state.status = 'Нормально';
+            }
+            else
+            {
+                state.color = 'green';
+                state.status = 'Хорошо';
+            }
+
+            return state;
+        }
+    </script>
+</body>
+</html>

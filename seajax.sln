@@ -3,8 +3,296 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication", "WebApplication\WebApplication.csproj", "{60C00EDD-77D0-45E7-BF86-31570D99DD38}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C21F89D5-75A5-4ACA-A277-974A17939A9A}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		.jshintrc = .jshintrc
+		CHANGELOG.md = CHANGELOG.md
+		gulpfile.js = gulpfile.js
+		LICENSE.md = LICENSE.md
+		Makefile = Makefile
+		package.json = package.json
+		Pivot Collection Docs.docx = Pivot Collection Docs.docx
+		README.md = README.md
+		seadragon.sublime-project = seadragon.sublime-project
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{997A1789-8C6C-4269-B2D9-1C8E71380B01}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{320CD664-A5BF-41D7-B9D0-8DB0CC23E803}"
+	ProjectSection(SolutionItems) = preProject
+		Build\Scripts\file_helpers.py = Build\Scripts\file_helpers.py
+		Build\Scripts\jsheader.py = Build\Scripts\jsheader.py
+		Build\Scripts\seajax_v2.py = Build\Scripts\seajax_v2.py
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{E22C06D4-40B3-4CAA-924C-7572028DBFAF}"
+	ProjectSection(SolutionItems) = preProject
+		examples\zoomable-image.html = examples\zoomable-image.html
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "v2", "v2", "{124DCC4E-7BCB-409F-86EE-122992A5BF1A}"
+	ProjectSection(SolutionItems) = preProject
+		v2\build.cmd = v2\build.cmd
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app", "app", "{9175816F-3F23-42D6-9BB2-4DAD1062FB5C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pivot", "pivot", "{0B3D2BCE-AE2C-4B50-A9E4-429AFCDEFCE8}"
+	ProjectSection(SolutionItems) = preProject
+		v2\app\pivot\CxmlLoader.js = v2\app\pivot\CxmlLoader.js
+		v2\app\pivot\Date.js = v2\app\pivot\Date.js
+		v2\app\pivot\DatePicker.js = v2\app\pivot\DatePicker.js
+		v2\app\pivot\Lzw.js = v2\app\pivot\Lzw.js
+		v2\app\pivot\Number.js = v2\app\pivot\Number.js
+		v2\app\pivot\NumberPicker.js = v2\app\pivot\NumberPicker.js
+		v2\app\pivot\Pivot.js = v2\app\pivot\Pivot.js
+		v2\app\pivot\PivotView.css = v2\app\pivot\PivotView.css
+		v2\app\pivot\PivotView.js = v2\app\pivot\PivotView.js
+		v2\app\pivot\PivotViewer.js = v2\app\pivot\PivotViewer.js
+		v2\app\pivot\quickstart.html = v2\app\pivot\quickstart.html
+		v2\app\pivot\search.gif = v2\app\pivot\search.gif
+		v2\app\pivot\Slider.js = v2\app\pivot\Slider.js
+		v2\app\pivot\Template.js = v2\app\pivot\Template.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{2E308CF1-59C0-41E7-859A-E28D5A02F72F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ajax", "ajax", "{3F9F33FB-1ABD-448B-BA77-662CA35020C2}"
+	ProjectSection(SolutionItems) = preProject
+		v2\build\ajax\standalone.txt = v2\build\ajax\standalone.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "image", "image", "{9E2DC2AF-B9F0-494F-9941-4475CF82537C}"
+	ProjectSection(SolutionItems) = preProject
+		v2\build\image\standalone.txt = v2\build\image\standalone.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pivot", "pivot", "{B2977132-C6F7-45CE-8F51-F760356E39AB}"
+	ProjectSection(SolutionItems) = preProject
+		v2\build\pivot\standalone.txt = v2\build\pivot\standalone.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{9E84616D-C06C-44EF-BF8D-10BC5A90B056}"
+	ProjectSection(SolutionItems) = preProject
+		v2\build\test\standalone.txt = v2\build\test\standalone.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{981D09D6-B20E-4D3F-BA7C-EA3F0CDB677E}"
+	ProjectSection(SolutionItems) = preProject
+		v2\build\utils\standalone.txt = v2\build\utils\standalone.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "zoom", "zoom", "{030D7F9C-0CD2-4B78-942B-440C1010357D}"
+	ProjectSection(SolutionItems) = preProject
+		v2\build\zoom\standalone.txt = v2\build\zoom\standalone.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "zoomimage", "zoomimage", "{39C62DC9-4DFD-4B01-BCF5-2DC47736CC33}"
+	ProjectSection(SolutionItems) = preProject
+		v2\build\zoomimage\standalone.txt = v2\build\zoomimage\standalone.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{95C4DBCF-3DA6-4D8C-9FFA-B0CD5D8113A8}"
+	ProjectSection(SolutionItems) = preProject
+		v2\src\load.js = v2\src\load.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_post", "_post", "{ECD233C9-2100-49B5-BA81-B3AA067839C2}"
+	ProjectSection(SolutionItems) = preProject
+		v2\src\_post\standalone.txt = v2\src\_post\standalone.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_pre", "_pre", "{74616374-A1FD-4840-B4D7-C2C8761083D5}"
+	ProjectSection(SolutionItems) = preProject
+		v2\src\_pre\standalone.txt = v2\src\_pre\standalone.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{CE9EEC72-C2CD-4076-8AE2-F840807A6D94}"
+	ProjectSection(SolutionItems) = preProject
+		v2\src\core\Point.js = v2\src\core\Point.js
+		v2\src\core\Rect.js = v2\src\core\Rect.js
+		v2\src\core\Seadragon.js = v2\src\core\Seadragon.js
+		v2\src\core\Size.js = v2\src\core\Size.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "image", "image", "{FE005B8C-B3F8-46E9-B9E9-E77D865FFCCA}"
+	ProjectSection(SolutionItems) = preProject
+		v2\src\image\Canvas.js = v2\src\image\Canvas.js
+		v2\src\image\CanvasDrawer.js = v2\src\image\CanvasDrawer.js
+		v2\src\image\DeepZoom.js = v2\src\image\DeepZoom.js
+		v2\src\image\DisplayRect.js = v2\src\image\DisplayRect.js
+		v2\src\image\Drawer.js = v2\src\image\Drawer.js
+		v2\src\image\DzcTileSource.js = v2\src\image\DzcTileSource.js
+		v2\src\image\DziTileSource.js = v2\src\image\DziTileSource.js
+		v2\src\image\Image.js = v2\src\image\Image.js
+		v2\src\image\ImageManager.js = v2\src\image\ImageManager.js
+		v2\src\image\ImageState.js = v2\src\image\ImageState.js
+		v2\src\image\ImgDrawer.js = v2\src\image\ImgDrawer.js
+		v2\src\image\Level.js = v2\src\image\Level.js
+		v2\src\image\Network.js = v2\src\image\Network.js
+		v2\src\image\Tile.js = v2\src\image\Tile.js
+		v2\src\image\TileCache.js = v2\src\image\TileCache.js
+		v2\src\image\TileInfo.js = v2\src\image\TileInfo.js
+		v2\src\image\TileLoader.js = v2\src\image\TileLoader.js
+		v2\src\image\TileSource.js = v2\src\image\TileSource.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{5FDA5485-D902-4EDD-B850-C6F98156621F}"
+	ProjectSection(SolutionItems) = preProject
+		v2\src\utils\Browser.js = v2\src\utils\Browser.js
+		v2\src\utils\Debug.js = v2\src\utils\Debug.js
+		v2\src\utils\Element.js = v2\src\utils\Element.js
+		v2\src\utils\Event.js = v2\src\utils\Event.js
+		v2\src\utils\Event_addRemove.js = v2\src\utils\Event_addRemove.js
+		v2\src\utils\Event_cancelStop.js = v2\src\utils\Event_cancelStop.js
+		v2\src\utils\Event_createRaise.js = v2\src\utils\Event_createRaise.js
+		v2\src\utils\EventManager.js = v2\src\utils\EventManager.js
+		v2\src\utils\Function.js = v2\src\utils\Function.js
+		v2\src\utils\Math.js = v2\src\utils\Math.js
+		v2\src\utils\Math_clamp.js = v2\src\utils\Math_clamp.js
+		v2\src\utils\Math_log.js = v2\src\utils\Math_log.js
+		v2\src\utils\Math_mod.js = v2\src\utils\Math_mod.js
+		v2\src\utils\Math_morton.js = v2\src\utils\Math_morton.js
+		v2\src\utils\Math_random.js = v2\src\utils\Math_random.js
+		v2\src\utils\Math_round.js = v2\src\utils\Math_round.js
+		v2\src\utils\Mouse.js = v2\src\utils\Mouse.js
+		v2\src\utils\Object.js = v2\src\utils\Object.js
+		v2\src\utils\Page.js = v2\src\utils\Page.js
+		v2\src\utils\String.js = v2\src\utils\String.js
+		v2\src\utils\Timer.js = v2\src\utils\Timer.js
+		v2\src\utils\Uri.js = v2\src\utils\Uri.js
+		v2\src\utils\Xml.js = v2\src\utils\Xml.js
+		v2\src\utils\Xml_fetch.js = v2\src\utils\Xml_fetch.js
+		v2\src\utils\Xml_parse.js = v2\src\utils\Xml_parse.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "zoomcontainer", "zoomcontainer", "{1DA160FE-8047-4690-95EF-BA2B49F0EC90}"
+	ProjectSection(SolutionItems) = preProject
+		v2\src\zoomcontainer\CanvasZoomContainer.js = v2\src\zoomcontainer\CanvasZoomContainer.js
+		v2\src\zoomcontainer\HTMLZoomContainer.js = v2\src\zoomcontainer\HTMLZoomContainer.js
+		v2\src\zoomcontainer\MouseTracker.js = v2\src\zoomcontainer\MouseTracker.js
+		v2\src\zoomcontainer\Spring.js = v2\src\zoomcontainer\Spring.js
+		v2\src\zoomcontainer\SVGZoomContainer.js = v2\src\zoomcontainer\SVGZoomContainer.js
+		v2\src\zoomcontainer\Viewer.js = v2\src\zoomcontainer\Viewer.js
+		v2\src\zoomcontainer\Viewport.js = v2\src\zoomcontainer\Viewport.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{080F63A4-71C0-4855-BC97-6B3317864796}"
+	ProjectSection(SolutionItems) = preProject
+		v2\test\expect.js = v2\test\expect.js
+		v2\test\help.html = v2\test\help.html
+		v2\test\unit.css = v2\test\unit.css
+		v2\test\unit.html = v2\test\unit.html
+		v2\test\unit.js = v2\test\unit.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{9AC6ED92-A748-4F00-B319-C2A94071E94D}"
+	ProjectSection(SolutionItems) = preProject
+		v2\test\core\Point.js = v2\test\core\Point.js
+		v2\test\core\Rect.js = v2\test\core\Rect.js
+		v2\test\core\Size.js = v2\test\core\Size.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "image", "image", "{802BB4B0-DE8A-48C6-BAD6-7D9AC0C42FBB}"
+	ProjectSection(SolutionItems) = preProject
+		v2\test\image\Canvas.js = v2\test\image\Canvas.js
+		v2\test\image\DeepZoom.js = v2\test\image\DeepZoom.js
+		v2\test\image\DisplayRect.js = v2\test\image\DisplayRect.js
+		v2\test\image\DzcTileSource.js = v2\test\image\DzcTileSource.js
+		v2\test\image\DziTileSource.js = v2\test\image\DziTileSource.js
+		v2\test\image\Image.js = v2\test\image\Image.js
+		v2\test\image\Network.js = v2\test\image\Network.js
+		v2\test\image\TileInfo.js = v2\test\image\TileInfo.js
+		v2\test\image\TileSource.js = v2\test\image\TileSource.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{8FEB5F74-70DC-4746-9C00-155F8139DD58}"
+	ProjectSection(SolutionItems) = preProject
+		v2\test\utils\Browser.js = v2\test\utils\Browser.js
+		v2\test\utils\Function.js = v2\test\utils\Function.js
+		v2\test\utils\Math.js = v2\test\utils\Math.js
+		v2\test\utils\Object.js = v2\test\utils\Object.js
+		v2\test\utils\String.js = v2\test\utils\String.js
+		v2\test\utils\Uri.js = v2\test\utils\Uri.js
+		v2\test\utils\Xml.js = v2\test\utils\Xml.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "zoom", "zoom", "{537B0CF4-8064-423F-990B-2D65D9E37C96}"
+	ProjectSection(SolutionItems) = preProject
+		v2\test\zoom\canvas.html = v2\test\zoom\canvas.html
+		v2\test\zoom\html.html = v2\test\zoom\html.html
+		v2\test\zoom\html_scaling.html = v2\test\zoom\html_scaling.html
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bin", "bin", "{825F6A1F-7AD1-47B4-8F3E-EE0DAEE7A170}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "v2", "v2", "{04B52929-57B6-405F-9C36-1FBBE221FE58}"
+	ProjectSection(SolutionItems) = preProject
+		bin\v2\ajax.js = bin\v2\ajax.js
+		bin\v2\ajax.min.js = bin\v2\ajax.min.js
+		bin\v2\image.js = bin\v2\image.js
+		bin\v2\image.min.js = bin\v2\image.min.js
+		bin\v2\pivot.js = bin\v2\pivot.js
+		bin\v2\pivot.min.js = bin\v2\pivot.min.js
+		bin\v2\utils.js = bin\v2\utils.js
+		bin\v2\utils.min.js = bin\v2\utils.min.js
+		bin\v2\zoom.js = bin\v2\zoom.js
+		bin\v2\zoom.min.js = bin\v2\zoom.min.js
+		bin\v2\zoomimage.js = bin\v2\zoomimage.js
+		bin\v2\zoomimage.min.js = bin\v2\zoomimage.min.js
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWebApplication", "TestWebApplication\TestWebApplication.csproj", "{FFD54EAE-5B74-46F1-8333-537351916DB2}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{60C00EDD-77D0-45E7-BF86-31570D99DD38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60C00EDD-77D0-45E7-BF86-31570D99DD38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60C00EDD-77D0-45E7-BF86-31570D99DD38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60C00EDD-77D0-45E7-BF86-31570D99DD38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFD54EAE-5B74-46F1-8333-537351916DB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFD54EAE-5B74-46F1-8333-537351916DB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFD54EAE-5B74-46F1-8333-537351916DB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFD54EAE-5B74-46F1-8333-537351916DB2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{997A1789-8C6C-4269-B2D9-1C8E71380B01} = {C21F89D5-75A5-4ACA-A277-974A17939A9A}
+		{320CD664-A5BF-41D7-B9D0-8DB0CC23E803} = {997A1789-8C6C-4269-B2D9-1C8E71380B01}
+		{E22C06D4-40B3-4CAA-924C-7572028DBFAF} = {C21F89D5-75A5-4ACA-A277-974A17939A9A}
+		{124DCC4E-7BCB-409F-86EE-122992A5BF1A} = {C21F89D5-75A5-4ACA-A277-974A17939A9A}
+		{9175816F-3F23-42D6-9BB2-4DAD1062FB5C} = {124DCC4E-7BCB-409F-86EE-122992A5BF1A}
+		{0B3D2BCE-AE2C-4B50-A9E4-429AFCDEFCE8} = {9175816F-3F23-42D6-9BB2-4DAD1062FB5C}
+		{2E308CF1-59C0-41E7-859A-E28D5A02F72F} = {124DCC4E-7BCB-409F-86EE-122992A5BF1A}
+		{3F9F33FB-1ABD-448B-BA77-662CA35020C2} = {2E308CF1-59C0-41E7-859A-E28D5A02F72F}
+		{9E2DC2AF-B9F0-494F-9941-4475CF82537C} = {2E308CF1-59C0-41E7-859A-E28D5A02F72F}
+		{B2977132-C6F7-45CE-8F51-F760356E39AB} = {2E308CF1-59C0-41E7-859A-E28D5A02F72F}
+		{9E84616D-C06C-44EF-BF8D-10BC5A90B056} = {2E308CF1-59C0-41E7-859A-E28D5A02F72F}
+		{981D09D6-B20E-4D3F-BA7C-EA3F0CDB677E} = {2E308CF1-59C0-41E7-859A-E28D5A02F72F}
+		{030D7F9C-0CD2-4B78-942B-440C1010357D} = {2E308CF1-59C0-41E7-859A-E28D5A02F72F}
+		{39C62DC9-4DFD-4B01-BCF5-2DC47736CC33} = {2E308CF1-59C0-41E7-859A-E28D5A02F72F}
+		{95C4DBCF-3DA6-4D8C-9FFA-B0CD5D8113A8} = {124DCC4E-7BCB-409F-86EE-122992A5BF1A}
+		{ECD233C9-2100-49B5-BA81-B3AA067839C2} = {95C4DBCF-3DA6-4D8C-9FFA-B0CD5D8113A8}
+		{74616374-A1FD-4840-B4D7-C2C8761083D5} = {95C4DBCF-3DA6-4D8C-9FFA-B0CD5D8113A8}
+		{CE9EEC72-C2CD-4076-8AE2-F840807A6D94} = {95C4DBCF-3DA6-4D8C-9FFA-B0CD5D8113A8}
+		{FE005B8C-B3F8-46E9-B9E9-E77D865FFCCA} = {95C4DBCF-3DA6-4D8C-9FFA-B0CD5D8113A8}
+		{5FDA5485-D902-4EDD-B850-C6F98156621F} = {95C4DBCF-3DA6-4D8C-9FFA-B0CD5D8113A8}
+		{1DA160FE-8047-4690-95EF-BA2B49F0EC90} = {95C4DBCF-3DA6-4D8C-9FFA-B0CD5D8113A8}
+		{080F63A4-71C0-4855-BC97-6B3317864796} = {124DCC4E-7BCB-409F-86EE-122992A5BF1A}
+		{9AC6ED92-A748-4F00-B319-C2A94071E94D} = {080F63A4-71C0-4855-BC97-6B3317864796}
+		{802BB4B0-DE8A-48C6-BAD6-7D9AC0C42FBB} = {080F63A4-71C0-4855-BC97-6B3317864796}
+		{8FEB5F74-70DC-4746-9C00-155F8139DD58} = {080F63A4-71C0-4855-BC97-6B3317864796}
+		{537B0CF4-8064-423F-990B-2D65D9E37C96} = {080F63A4-71C0-4855-BC97-6B3317864796}
+		{825F6A1F-7AD1-47B4-8F3E-EE0DAEE7A170} = {C21F89D5-75A5-4ACA-A277-974A17939A9A}
+		{04B52929-57B6-405F-9C36-1FBBE221FE58} = {825F6A1F-7AD1-47B4-8F3E-EE0DAEE7A170}
 	EndGlobalSection
 EndGlobal
