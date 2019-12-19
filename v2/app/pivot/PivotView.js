@@ -279,11 +279,34 @@ var Pivot_init = Pivot.init = function (div, useHash) {
 
     // the rest of the top bar stuff.
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
-    zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In");
-    var graphButton = makeElement("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar);
-    graphButton.title = "Graph View";
-    var gridButton = makeElement("div", "pivot_sorttools pivot_grid pivot_activesort", topBar);
-    gridButton.title = "Grid View";
+    zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
+    
+    var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
+    var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_activesort", topBar, "Grid View");    
+
+    var buttons = [
+        gridButton,
+        graphButton
+    ];
+
+    viewer.views.forEach(function (view, index, array) {
+        view.onSelected = function () {
+            array.forEach(function (v, i, a) {
+                if (v != view) {
+                    buttons[i].deselect();
+                    v.deselect();
+                }
+            });
+            viewer.showView();
+        };
+    });
+
+    buttons.forEach(function (button, index, array) {
+        button.htmlElement.onclick = function () {
+            button.select();
+            viewer.views[index].select();
+        };
+    });
 
     // functions for making one view button look clickable and the other not
     function makeViewClickable(button) {
@@ -293,18 +316,6 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         button.className = button.className.replace(" pivot_hoverable", "") + " pivot_activesort";
     }
 
-    graphButton.onclick = function () {
-        if (viewer.graphView()) {
-            makeViewSelected(graphButton);
-            makeViewClickable(gridButton);
-        }
-    };
-    gridButton.onclick = function () {
-        if (viewer.gridView()) {
-            makeViewSelected(gridButton);
-            makeViewClickable(graphButton);
-        }
-    };
     var sortBox = makeElement("select", "pivot pivot_sorttools", topBar);
 
     // re-sort the collection when the sort box changes
@@ -775,11 +786,15 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         resetFilter(newFilter.facet, filterValues, facetType);
         if ((facetType === "String" || facetType === "Link" || facetType === "LongString") &&
                 filterValues.length === 1) {
-            // numbers and dates re-bucketize and look awesome, but strings don't
-            if (viewer.gridView()) {
-                makeViewSelected(gridButton);
-                makeViewClickable(graphButton);
-            }
+            viewer.views[0].select();
+            buttons[0].select();
+            viewer.views.forEach(function (view, index, array) {
+                if (index !== 0) {
+                    view.deselect();
+                    buttons[index].deselect();
+                }
+            });
+            viewer.showView();
         } else {
             viewer.filter();
         }

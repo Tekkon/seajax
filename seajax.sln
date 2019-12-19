@@ -40,10 +40,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app", "app", "{9175816F-3F2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pivot", "pivot", "{0B3D2BCE-AE2C-4B50-A9E4-429AFCDEFCE8}"
 	ProjectSection(SolutionItems) = preProject
+		v2\app\pivot\BaseView.js = v2\app\pivot\BaseView.js
+		v2\app\pivot\Button.js = v2\app\pivot\Button.js
 		v2\app\pivot\CxmlLoader.js = v2\app\pivot\CxmlLoader.js
 		v2\app\pivot\Date.js = v2\app\pivot\Date.js
 		v2\app\pivot\DatePicker.js = v2\app\pivot\DatePicker.js
+		v2\app\pivot\GraphView.js = v2\app\pivot\GraphView.js
+		v2\app\pivot\GridView.js = v2\app\pivot\GridView.js
 		v2\app\pivot\Lzw.js = v2\app\pivot\Lzw.js
+		v2\app\pivot\MapView.js = v2\app\pivot\MapView.js
 		v2\app\pivot\Number.js = v2\app\pivot\Number.js
 		v2\app\pivot\NumberPicker.js = v2\app\pivot\NumberPicker.js
 		v2\app\pivot\Pivot.js = v2\app\pivot\Pivot.js

@@ -39,16 +39,16 @@ makeElement, addText, hasOwnProperty, makeTemplate, document, lzwEncode, locatio
  * placeholder for a collapsed details pane).</dd>
  * <dt>zoom</dt><dd>function(zoomPercent): The UI should change its zoom slider to the
  * given percentage.</dd>
- * <dt>showDetails</dt><dd>function(centerItem, facets): The UI should show the details
+ * <dt>showDetails</dt><dd>function(centerItem, self.facets): The UI should show the details
  * pane, and fill in information about the provided centerItem. The viewer's list of
- * all facet categories is passed along too.</dd>
+ * all self.facet categories is passed along too.</dd>
  * <dt>showInfoButton</dt><dd>function(): The UI should show the info button (the
  * placeholder for a collapsed details pane).</dd>
  * <dt>filterrequest</dt><dd>function(filter): The user has clicked on a graph bar and
  * requested a new filter be applied. The UI should respond by updating its filter pane
  * state appropriately and calling addFilter on the viewer with the requested filter.
  * The UI must then call the viewer's filter method to initiate the update.</dd>
- * <dt>facetsSet</dt><dd>function(facets): A new set of facets was set as a result of
+ * <dt>facetsSet</dt><dd>function(self.facets): A new set of self.facets was set as a result of
  * calling the setFacets method. The UI should update its filter and sort options to
  * match.</dd>
  * <dt>titleChange</dt><dd>function(title): The UI should update its collection title
@@ -78,12 +78,21 @@ makeElement, addText, hasOwnProperty, makeTemplate, document, lzwEncode, locatio
 var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, backLayer, leftRailWidth, rightRailWidth, inputElmt) {
 
     // Fields
-
-    var facets = {},
-        items = [],
-        sortFacet = "";
-
     var self = this;
+
+    self.allSortedItems = undefined;
+
+    self.facets = {};
+    self.facet = {}
+    var items = [];
+    self.sortFacet = "";
+
+    self.numPerRow = undefined;
+    self.widthPerItem = undefined;
+    self.totalItemCount = undefined;
+    self.containerRect = undefined;
+    self.avgHeight = undefined;
+    self.activeItemsArr = [];
 
     var innerTracker;
 
@@ -101,10 +110,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     // it turns out iterating over properties in an object is pretty expensive,
     // so we'll optimize a bit by keeping track of the active items in an array too
-    var activeItemsArr = [];
+    
     var rearrangingItemsArr = [];
-
-    var isGridView = true;
 
     var now = new Date().getTime();
 
@@ -116,20 +123,23 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     var filters = [];
 
-    var lastMousePosition;
+    self.lastMousePosition = undefined;
+    self.contentMousePosition = undefined;
+    self.lastHoveredBar = undefined;
+    self.position = undefined;
     var hoveredItem;
     var hoveredItemIndex; // which of the hovered item's positions actually has the mouse
     var selectedItem;
     var selectedItemIndex;
     var centerItem;
     var centerItemIndex;
-    var topLeftItemInfo; // item and index of top-left corner
-    var rightmostItemInfo; // item and index of last item
+    self.topLeftItemInfo = undefined; // item and index of top-left corner
+    self.rightmostItemInfo = undefined; // item and index of last item
     var zoomedIn; // whether we're zoomed close enough to need details pane
-    var hoveredBar;
-    var barTemplate;
-    var bars = [];
-    var backZoomContainer;
+    self.hoveredBar = undefined;
+    self.barTemplate = undefined;
+    self.bars = [];
+    self.backZoomContainer = undefined;
     var frontZoomContainer;
     var dragCursorSet;
 
@@ -162,7 +172,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     var templateScale;
 
     // the size of an item at home zoom, which is necessary for choosing the appropriate template size
-    var finalItemWidth;
+    self.finalItemWidth = undefined;
 
     var delayedFunction; // anything we need to run at the beginning of the next repaint
 
@@ -205,10 +215,19 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     // Helpers -- FILTERING
 
+    self.GridView = new GridView(self, true);
+    self.GraphView = new GraphView(self, false);
+
+    // VIEWS
+    self.views = [
+        self.GridView,
+        self.GraphView
+    ];
+
     function runFilters() {
         // clear the active items
         activeItems = {};
-        activeItemsArr = [];
+        self.activeItemsArr = [];
 
         // run all current filters, and put the array contents in a set.
         // if this method is slow, try moving the inner function out here and keeping
@@ -216,7 +235,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         items.forEach(function (item) {
             if (filters.every(function (filter) { return filter(item); })) {
                 activeItems[item.id] = item;
-                activeItemsArr.push(item);
+                self.activeItemsArr.push(item);
             }
         });
     }
@@ -273,8 +292,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         frontLayer.appendChild(htmlContent);
     }
 
-    // clone the given node, and also copy over the unsetHTML property.
-    function clone(htmlElement) {
+    // self.clone the given node, and also copy over the unsetHTML property.
+    self.clone = function(htmlElement) {
         var result = htmlElement.cloneNode(true);
         result.unsetHTML = htmlElement.unsetHTML;
         return result;
@@ -393,7 +412,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.trigger("finishedRearrange");
 
         // raise an event if the collection just finished clearing
-        if (!items.length && !activeItemsArr.length) {
+        if (!items.length && !self.activeItemsArr.length) {
             self.trigger("itemsCleared");
         }
     }
@@ -403,8 +422,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.removeListener("animationfinish", rearrangePart4);
         resetRearrangingItems();
         var id, anythingInserted = false, item, j;
-        for (j = activeItemsArr.length - 1; j >= 0; j--) {
-            item = activeItemsArr[j];
+        for (j = self.activeItemsArr.length - 1; j >= 0; j--) {
+            item = self.activeItemsArr[j];
             id = item.id;
             if (!hasOwnProperty.call(prevActiveItems, id)) {
                 item.source = getLocationOutside(item.destination);
@@ -417,7 +436,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     if (templates[index].type === "html") {
                         var i;
                         for (i = item.source.length - 1; i > 0; i--) {
-                            htmlArray.push(clone(htmlArray[0]));
+                            htmlArray.push(self.clone(htmlArray[0]));
                         }
                     }
                 });
@@ -462,7 +481,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         resetRearrangingItems();
 
         // recalculate template sizes and scaling for the front layer
-        if (finalItemWidth && templates.length) {
+        if (self.finalItemWidth && templates.length) {
             setupFrontLayer(1);
         }
 
@@ -485,7 +504,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     html.forEach(function (htmlArray, index) {
                         if (templates[index].type === "html") {
                             var first = htmlArray[0];
-                            var copy = clone(first);
+                            var copy = self.clone(first);
                             htmlArray.push(copy);
                             if (index === currentTemplateLevel) {
                                 setTransform(copy, source[0]);
@@ -536,7 +555,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }
     }
 
-    function placeGrid(verticalOffset, horizontalOffset, allSortedItems, numPerRow, widthPerItem, heightPerItem, upward) {
+    self.placeGrid = function(verticalOffset, horizontalOffset, allSortedItems, numPerRow, widthPerItem, heightPerItem, upward) {
         var totalItemCount = allSortedItems.length,
             itemsPlaced = 0,
             i,
@@ -683,7 +702,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         return c * Math.pow(10, scale);
     }
 
-    var comparators = {
+    self.comparators = {
         Number: function (a, b) {
             return a - b;
         },
@@ -696,11 +715,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             return a > b ? 1 : a === b ? 0 : -1;
         }
     };
-    comparators.DateTime = comparators.Number;
-    comparators.LongString = comparators.String;
+    self.comparators.DateTime = self.comparators.Number;
+    self.comparators.LongString = self.comparators.String;
 
     // these functions set up the bar categories for graph view.
-    var bucketize = {
+    self.bucketize = {
         String: function (facetName) {
             var item, bucketMap = {}, id, facetData, bucket, allSortedItems = [], bucketName, i;
 
@@ -714,11 +733,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 bucket[id] = item;
             }
 
-            for (i = activeItemsArr.length - 1; i >= 0; i--) {
-                // any facet can have multiple values, and we sort the item into
+            for (i = self.activeItemsArr.length - 1; i >= 0; i--) {
+                // any self.facet can have multiple values, and we sort the item into
                 // all applicable buckets. if it doesn't have any values, put it
                 // into the "(no info)" bucket.
-                item = activeItemsArr[i];
+                item = self.activeItemsArr[i];
                 id = item.id;
                 facetData = item.facets[facetName];
                 if (facetData) {
@@ -738,11 +757,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 }
             }
 
-            var comparator = facets[facetName].comparator || function (a, b) {
+            var comparator = self.facets[facetName].comparator || function (a, b) {
                 return (a > b) ? 1 : (a === b) ? 0 : -1;
             };
 
-            // sort the buckets. by default, this is alphabetical, but the facet category
+            // sort the buckets. by default, this is alphabetical, but the self.facet category
             // could define a more sensible sorting order for its contents.
             allSortedItems.sort(function (a, b) {
                 var relation = comparator(a.label, b.label);
@@ -789,7 +808,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         }
                     }
                 });
-                // now that we're done combining stuff, put it back in allSortedItems
+                // now that we're done combining stuff, put it back in self.allSortedItems
                 allSortedItems = combinedItems;
             }
 
@@ -833,11 +852,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     min = value;
                 }
             }
-            for (i = activeItemsArr.length - 1; i >= 0; i--) {
-                item = activeItemsArr[i];
+            for (i = self.activeItemsArr.length - 1; i >= 0; i--) {
+                item = self.activeItemsArr[i];
                 facetData = item.facets[facetName];
                 if (facetData) {
-                    // any facet can have any number of values, and we'll use all of them.
+                    // any self.facet can have any number of values, and we'll use all of them.
                     facetData.forEach(updateMinMax);
                 } else {
                     noInfoItems = true;
@@ -848,7 +867,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 // choose the bucket size.
                 buckets = PivotDate_generateBuckets(min, max);
             } else {
-                // next, choose the bucket size. this should make at least 4 bars, but no more than 11.
+                // next, choose the bucket size. this should make at least 4 self.bars, but no more than 11.
                 bucketWidth = makeFriendlyNumber((max - min) / 4);
 
                 // adjust min so it's friendly-value aligned
@@ -888,7 +907,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             }
 
             // set up the function that is responsible for putting the current item
-            // into one of the possible arrays, given its facet value (Number or DateTime).
+            // into one of the possible arrays, given its self.facet value (Number or DateTime).
             putInBucket = isDate ?
                 function (value) {
                     // since the width of each bucket isn't constant (some months
@@ -920,8 +939,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
             // now iterate over the items again, putting them in the appropriate bucket.
             // note that each item may be listed in multiple buckets.
-            for (i = activeItemsArr.length - 1; i >= 0; i--) {
-                item = activeItemsArr[i];
+            for (i = self.activeItemsArr.length - 1; i >= 0; i--) {
+                item = self.activeItemsArr[i];
                 facetData = item.facets[facetName];
                 if (facetData) {
                     facetData.forEach(putInBucket);
@@ -933,12 +952,12 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             return buckets;
         }
     };
-    bucketize.LongString = bucketize.String;
+    self.bucketize.LongString = self.bucketize.String;
     // links are a lot like strings, so we'll reuse the bucketizing code
-    bucketize.Link = bucketize.String;
+    self.bucketize.Link = self.bucketize.String;
     // likewise DateTimes can share some code with Numbers
-    bucketize.DateTime = function (facetName) {
-        return bucketize.Number(facetName, true);
+    self.bucketize.DateTime = function (facetName) {
+        return self.bucketize.Number(facetName, true);
     };
 
     // we need to lay out items in a grid, but we don't know ahead of time what
@@ -965,7 +984,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     // find the best number of columns to use for a grid of items occupying the given
     // width and height, where each item's normalized height is given by itemHeight.
-    function computeLayoutWidth(count, width, height, itemHeight) {
+    self.computeLayoutWidth = function(count, width, height, itemHeight) {
         // make a reasonable first approximation
         var result = Math.ceil(Math.sqrt(itemHeight * width * count / height));
         // and then adjust it as necessary
@@ -995,7 +1014,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 item;
 
             currentTemplateLevel = 0;
-            while (templates[currentTemplateLevel] && templates[currentTemplateLevel].width < finalItemWidth * zoom) {
+            while (templates[currentTemplateLevel] && templates[currentTemplateLevel].width < self.finalItemWidth * zoom) {
                 currentTemplateLevel++;
             }
             if (currentTemplateLevel > templates.length - 1) {
@@ -1023,7 +1042,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                                     htmlContent.pvInDom = false;
                                     if (brokenInnerHTML) {
                                         // make a copy of the node to save it from its imminent demise
-                                        htmlArr[index] = clone(htmlContent);
+                                        htmlArr[index] = self.clone(htmlContent);
                                     }
                                 }
                             });
@@ -1034,7 +1053,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             }
 
             var oldTemplateScale = templateScale;
-            templateScale = currentTemplateWidth / finalItemWidth;
+            templateScale = currentTemplateWidth / self.finalItemWidth;
 
             if (oldTemplateScale !== templateScale) {
                 // change the CSS size of the front zoom container so it can fit the new item arrangement at its
@@ -1083,263 +1102,44 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         // now that the viewport has zoomed to its default position, run the filters
         runFilters();
 
-        // get rid of any grid bars we've drawn before
+        // get rid of any grid self.bars we've drawn before
         backLayer.innerHTML = "";
 
         // figure out the aspect ratio for grid boxes
-        var avgHeight = getAverageItemHeight();
+        self.avgHeight = getAverageItemHeight();
 
-        var facet = facets[sortFacet] || {}, i;
+        self.facet = self.facets[self.sortFacet] || {};
 
         // either an array of items, or an array of {label:string, items:array}
-        var allSortedItems;
+        //var self.allSortedItems;
 
-        var numPerRow, widthPerItem, totalItemCount;
         var containerSize = viewport.getContainerSize();
-        var containerRect = new Seadragon2.Rect(0, 0, containerSize.x, containerSize.y);
+        self.containerRect = new Seadragon2.Rect(0, 0, containerSize.x, containerSize.y);
 
         // regardless of the current view type, we need to reset the destination array
         // for all current items
-        for (i = activeItemsArr.length - 1; i >= 0; i--) {
-            activeItemsArr[i].destination = [];
+        for (var i = self.activeItemsArr.length - 1; i >= 0; i--) {
+            self.activeItemsArr[i].destination = [];
         }
 
-        // now that we have the items in order, arrange them
-        if (isGridView) {
-
-            // first, put the items in an array.
-            allSortedItems = activeItemsArr;
-
-            // second, sort it.
-            allSortedItems.sort(function (a, b) {
-                a = a.facets[sortFacet];
-                b = b.facets[sortFacet];
-                // check for undefined values! all facets are optional, but
-                // items without the facet listed should always be sorted last.
-                if (!a) {
-                    if (!b) {
-                        return 0;
-                    }
-                    return 1;
-                }
-                if (!b) {
-                    return -1;
-                }
-                // any facet may have multiple values, but we only sort by the first one
-                a = a[0];
-                b = b[0];
-
-                // from here on, the comparison depends on the type. sometimes string facets
-                // define custom comparators for orders that make more sense than alphabetical.
-                var comparator = facet.comparator || comparators[facet.type];
-                return comparator(a, b);
-            });
-
-            // third, lay out the items in a grid.
-            totalItemCount = allSortedItems.length;
-            // compute layout width
-            numPerRow = computeLayoutWidth(totalItemCount, containerRect.width, containerRect.height, avgHeight);
-            widthPerItem = containerRect.width / numPerRow;
-
-            // check: if there's only one row, we can probably make it a bit bigger
-            if (numPerRow > totalItemCount) {
-                widthPerItem = Math.min(
-                    containerRect.width / totalItemCount,
-                    containerRect.height / avgHeight
-                );
-            }
-
-            var gridInfo = placeGrid(
-                0,
-                0,
-                allSortedItems,
-                numPerRow,
-                widthPerItem,
-                widthPerItem * avgHeight
-            );
-            finalItemWidth = gridInfo.itemWidth;
-            topLeftItemInfo = gridInfo.topLeft;
-            rightmostItemInfo = gridInfo.rightmost;
-        } else {
-            allSortedItems = bucketize[facet.type || "String"](sortFacet);
-
-            var barWidth = containerRect.width / allSortedItems.length;
-            var innerBarWidth = barWidth * 0.86;
-
-            bars = [];
-            topLeftItemInfo = rightmostItemInfo = undefined;
-
-            // find the highest bar, so we can size them all properly
-            var biggestCategoryCount = 0, currentCategory;
-            for (i = 0; i < allSortedItems.length; i++) {
-                currentCategory = allSortedItems[i];
-                if (currentCategory.items.length > biggestCategoryCount) {
-                    biggestCategoryCount = currentCategory.items.length;
-                }
-            }
-
-            // set up some styles that will be the same for all bars
-            var sizeRatio = 100 / barWidth; // the ratio between screen pixels and css pixels in the bars
-            backZoomContainer.setSizeRatio(sizeRatio);
-            barTemplate.style.height = (sizeRatio * containerRect.height) + "px";
-
-            // if there are only a few bars, we don't want the labels getting ridiculously huge.
-            if (35 / sizeRatio > 70) {
-                var newHeight = Math.max(5, Math.round(70 * sizeRatio));
-                barTemplate.firstChild.style.bottom = newHeight + 7 + "px";
-                barTemplate.lastChild.style.height = newHeight + "px";
-                barTemplate.style.fontSize = newHeight / 2 + "px";
-                containerRect.height -= (newHeight + 13) / 100 * barWidth;
-            } else {
-                barTemplate.firstChild.style.bottom = "";
-                barTemplate.lastChild.style.height = "";
-                barTemplate.style.fontSize = "";
-                containerRect.height -= 0.48 * barWidth;
-            }
-
-
-            // choose the number of items per row, similar to grid view but upside down
-            var maxBarHeight = containerRect.height - 0.06 * barWidth;
-            numPerRow = computeLayoutWidth(biggestCategoryCount, innerBarWidth, maxBarHeight, avgHeight);
-            widthPerItem = innerBarWidth / numPerRow;
-
-            var prevRightLabel, curGridInfo, prevGridInfo, a, b;
-
-            // now go through and put all of the items in a location
-            for (i = 0; i < allSortedItems.length; i++) {
-                var horizOffset = barWidth * (i + 0.07);
-                currentCategory = allSortedItems[i];
-                totalItemCount = currentCategory.items.length;
-
-                // make the HTML elements that form the visual bar
-                var bar = clone(barTemplate);
-                bar.style.left = (100 * i + 1) + "px";
-                var outerBar = bar.firstChild,
-                    innerBar = outerBar.firstChild,
-                    barLabel = outerBar.nextSibling;
-                backLayer.appendChild(bar);
-                if (currentCategory.leftLabel) {
-                    // this graph bar has a label for its left and right edges.
-                    // we won't display its center label at all.
-                    var leftLabel = makeElement("div", "pivot_leftlabel", barLabel);
-                    addText(leftLabel, currentCategory.leftLabel);
-                    // now check whether the bar to our left wants to share our left label.
-                    if (prevRightLabel) {
-                        prevRightLabel.parentNode.removeChild(prevRightLabel);
-                        leftLabel.style.left = -leftLabel.offsetWidth / 2 + "px";
-                        leftLabel.style.textAlign = "center";
-                    } else {
-                        // we have less room for the left label, so make it narrower
-                        leftLabel.style.width = "50%";
-                    }
-                    var rightLabel = makeElement("div", "pivot_rightlabel", barLabel);
-                    addText(rightLabel, currentCategory.rightLabel);
-                    prevRightLabel = rightLabel;
-                } else {
-                    // this graph bar has a single, centered label
-                    addText(barLabel, currentCategory.label);
-                    prevRightLabel = undefined;
-                }
-
-                // check for whether we need to center the row
-                if (totalItemCount < numPerRow && totalItemCount > 0) {
-                    var adjustedWidth = 86 * totalItemCount / numPerRow;
-                    horizOffset = barWidth * i + (100 - adjustedWidth) / 2 * barWidth / 100;
-                    adjustedWidth += 4;
-                    // round to an even width, so it looks better
-                    adjustedWidth = Math.round(adjustedWidth / 2) * 2;
-                    innerBar.style.width = adjustedWidth + "px";
-                    innerBar.style.left = ((98 - adjustedWidth) / 2) + "px";
-                }
-
-                // place the items
-                curGridInfo = placeGrid(
-                    containerRect.height,
-                    horizOffset,
-                    currentCategory.items,
-                    numPerRow,
-                    widthPerItem,
-                    widthPerItem * avgHeight,
-                    true
-                );
-                finalItemWidth = curGridInfo.itemWidth;
-
-                // keep track of global leftmost and rightmost items
-                if (!topLeftItemInfo) {
-                    topLeftItemInfo = curGridInfo.topLeft;
-                }
-                if (curGridInfo.rightmost) {
-                    rightmostItemInfo = curGridInfo.rightmost;
-                }
-
-                // link up keyboard navigation to move between bars
-                if (prevGridInfo) {
-                    a = prevGridInfo.lowest;
-                    b = curGridInfo.topLeft;
-                    if (a && b) {
-                        a.item.destination[a.index].down = b;
-                        b.item.destination[b.index].up = a;
-                    }
-                    if (a && !curGridInfo.lowest) {
-                        curGridInfo.lowest = a;
-                    }
-                    a = prevGridInfo.rightmost;
-                    if (a && b) {
-                        a.item.destination[a.index].right = b;
-                        b.item.destination[b.index].left = a;
-                    }
-                    if (a && !curGridInfo.rightmost) {
-                        curGridInfo.rightmost = a;
-                    }
-                }
-                prevGridInfo = curGridInfo;
-
-                // set the height of the background bar
-                innerBar.style.height = Math.round(
-                    100 *
-                        Math.ceil(currentCategory.items.length / numPerRow) *
-                        widthPerItem * avgHeight / barWidth +
-                        4
-                ) + "px";
-
-                // keep track of all bars we make
-                var filterValues;
-                switch (facets[sortFacet].type) {
-                case "String":
-                case "Link":
-                    filterValues = currentCategory.values;
-                    break;
-                case "Number":
-                case "DateTime":
-                    filterValues = [{
-                        lowerBound: currentCategory.lowerBound,
-                        upperBound: currentCategory.upperBound,
-                        inclusive: currentCategory.inclusive
-                    }];
-                    break;
-                default:
-                    Seadragon2.Debug.warn("Unrecognized category type: " + facets[sortFacet].type);
-                }
-                bars.push({
-                    bar: bar,
-                    values: filterValues,
-                    min: barWidth * i,
-                    name: currentCategory.label,
-                    count: totalItemCount
-                });
-            }
-        }
-
+        self.views.filter(function (elem) {
+            return elem.isSelected;
+        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
+        
         // recalculate template sizes and scaling for the front layer
-        if (currentTemplateLevel === -1 && finalItemWidth && templates.length) {
+        if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
             setupFrontLayer(1);
         }
 
         // each of these squares should be able to zoom in up to 2x width of the container
-        viewport.maxZoom = containerSize.x / widthPerItem * 2;
+        viewport.maxZoom = containerSize.x / self.widthPerItem * 2;
 
         // move on to part 2
         rearrangePart2();
+    }
+
+    self.showView = function() {
+        rearrange();
     }
 
     function rearrange() {
@@ -1421,7 +1221,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         try {
             result = item.canvas[currentTemplateLevel](ctx, x, y, width, height, item);
         } catch (e) {
-            // do nothing - it might have failed if a required facet isn't available or something
+            // do nothing - it might have failed if a required self.facet isn't available or something
         }
         ctx.restore();
         return result;
@@ -1463,8 +1263,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
             // first draw any items that are staying put
             if (usingSdimg || usingCanvas) {
-                for (j = activeItemsArr.length - 1; j >= 0; j--) {
-                    item = activeItemsArr[j];
+                for (j = self.activeItemsArr.length - 1; j >= 0; j--) {
+                    item = self.activeItemsArr[j];
                     id = item.id;
                     if (!hasOwnProperty.call(rearrangingItems, id)) {
                         source = item.source;
@@ -1553,8 +1353,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 // since we're redrawing everything, we can re-detect what the mouse pointer is on
                 hoveredItem = undefined;
-                var lastHoveredBar = hoveredBar;
-                hoveredBar = undefined;
+                self.lastHoveredBar = self.hoveredBar;
+                self.hoveredBar = undefined;
 
                 var viewportBounds, targetViewportBounds, itemBounds, location, zoomPercent, centerItemBounds, currentBest = Infinity, distToCenter;
                 viewportBounds = self.getBounds(true);
@@ -1578,42 +1378,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 // update the UI slider
                 self.trigger("zoom", zoomPercent);
 
-                // find the mouse position in content coordinates
-                var contentMousePosition;
-                if (lastMousePosition) {
-                    contentMousePosition = viewport.pointFromPixel(lastMousePosition.minus(new Seadragon2.Point(self.padding.left, self.padding.top)), true);
+                // find the mouse position in content coordinates                
+                if (self.lastMousePosition) {
+                    self.contentMousePosition = viewport.pointFromPixel(self.lastMousePosition.minus(new Seadragon2.Point(self.padding.left, self.padding.top)), true);
                 }
 
-                if (!isGridView) {
-                    var barsCount;
-                    if (lastMousePosition) {
-                        // check for whether the mouse is over a bar, and
-                        // save it in hoveredBar to prepare for possible clicks.
-                        barsCount = bars.length;
-                        for (i = 0; i < barsCount; i++) {
-                            if (bars[i].min <= contentMousePosition.x) {
-                                hoveredBar = bars[i];
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                    if (hoveredBar && !hoveredBar.count) {
-                        // there are no items in this bar, so don't filter by it
-                        hoveredBar = undefined;
-                    }
-                    if (hoveredBar !== lastHoveredBar) {
-                        if (hoveredBar) {
-                            hoveredBar.bar.className = "pivot_bar pivot_highlight";
-                            container.title = hoveredBar.name;
-                        } else {
-                            container.title = "";
-                        }
-                        if (lastHoveredBar) {
-                            lastHoveredBar.bar.className = "pivot_bar";
-                        }
-                    }
-                }
+                self.views.filter(function (elem) {
+                    return elem.isSelected;
+                })[0].update({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
 
                 var wideEnough = (containerSize.x - rightRailWidth) * 0.5,
                     tallEnough = containerSize.y * 0.5,
@@ -1625,8 +1397,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 zoomedIn = false;
 
                 // draw every item on the canvas
-                for (j = activeItemsArr.length - 1; j >= 0; j--) {
-                    item = activeItemsArr[j];
+                for (j = self.activeItemsArr.length - 1; j >= 0; j--) {
+                    item = self.activeItemsArr[j];
                     itemBoundsArray = item.source;
                     sdimg = item.sdimg[currentTemplateLevel];
                     for (i = itemBoundsArray.length - 1; i >= 0; i--) {
@@ -1680,7 +1452,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                                 }
 
                                 // check whether the mouse is over the current item
-                                if (lastMousePosition && itemBounds.contains(contentMousePosition)) {
+                                if (self.lastMousePosition && itemBounds.contains(self.contentMousePosition)) {
                                     hoveredItem = item;
                                     hoveredItemIndex = i;
                                 }
@@ -1705,7 +1477,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 // show or hide the details pane as necessary
                 if (centerItem && zoomedIn) {
                     if (detailsEnabled) {
-                        self.trigger("showDetails", centerItem, facets);
+                        self.trigger("showDetails", centerItem, self.facets);
                     } else {
                         self.trigger("showInfoButton");
                     }
@@ -1740,13 +1512,13 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     // Mouse input handlers
 
     function onExit() {
-        lastMousePosition = undefined;
+        self.lastMousePosition = undefined;
         anythingChanged = true;
     }
 
     function onMove(e) {
         e = e || window.event;
-        lastMousePosition = Seadragon2.Mouse.getPosition(e).minus(Seadragon2.Element.getPosition(container));
+        self.lastMousePosition = Seadragon2.Mouse.getPosition(e).minus(Seadragon2.Element.getPosition(container));
         anythingChanged = true;
     }
 
@@ -1757,37 +1529,23 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         // don't start by telling us where the mouse is hovering.
         if (position) {
             // find the mouse position in content coordinates
-            position = viewport.pointFromPixel(position.minus(new Seadragon2.Point(self.padding.left, self.padding.top)), true);
+            self.position = viewport.pointFromPixel(position.minus(new Seadragon2.Point(self.padding.left, self.padding.top)), true);
 
             var i, j, itemBoundsArray, item;
 
-            if (!isGridView) {
-                var barsCount;
-                // check for whether the mouse is over a bar, and
-                // save it in hoveredBar to prepare for possible clicks.
-                barsCount = bars.length;
-                for (i = 0; i < barsCount; i++) {
-                    if (bars[i].min <= position.x) {
-                        hoveredBar = bars[i];
-                    } else {
-                        break;
-                    }
-                }
-                if (hoveredBar && !hoveredBar.count) {
-                    // there are no items in this bar, so don't filter by it
-                    hoveredBar = undefined;
-                }
-            }
+            self.views.filter(function (elem) {
+                return elem.isSelected;
+            })[0].onClick({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
 
             // iterate every item on the canvas
-            for (j = activeItemsArr.length - 1; j >= 0; j--) {
-                item = activeItemsArr[j];
+            for (j = self.activeItemsArr.length - 1; j >= 0; j--) {
+                item = self.activeItemsArr[j];
                 itemBoundsArray = item.source;
                 for (i = itemBoundsArray.length - 1; i >= 0; i--) {
                     itemBounds = itemBoundsArray[i];
                     if (itemBounds) {
                         // check whether the mouse is over the current item
-                        if (itemBounds.contains(position)) {
+                        if (itemBounds.contains(self.position)) {
                             hoveredItem = item;
                             hoveredItemIndex = i;
                         }
@@ -1825,12 +1583,12 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 // move there
                 viewport.fitBounds(itemBounds);
-            } else if (!hoveredItem && hoveredBar) {
+            } else if (!hoveredItem && self.hoveredBar) {
                 // add a filter
                 self.trigger("filterrequest", {
-                    facet: sortFacet,
-                    values: hoveredBar.values,
-                    type: facets[sortFacet].type
+                    facet: self.sortFacet,
+                    values: self.hoveredBar.values,
+                    type: self.facets[self.sortFacet].type
                 });
             } else {
                 // to mimic the functionality of real PivotViewer, most clicks go home
@@ -1887,11 +1645,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 switch (keyCode) {
                 case 37:
                 case 38:
-                    newItemInfo = rightmostItemInfo;
+                    newItemInfo = self.rightmostItemInfo;
                     break;
                 case 39:
                 case 40:
-                    newItemInfo = topLeftItemInfo;
+                    newItemInfo = self.topLeftItemInfo;
                     break;
                 }
             } else {
@@ -1970,7 +1728,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     function initialize() {
         // set up the HTML zoom layers
-        backZoomContainer = new Seadragon2.HTMLZoomContainer(backLayer);
+        self.backZoomContainer = new Seadragon2.HTMLZoomContainer(backLayer);
         frontZoomContainer = new Seadragon2.HTMLZoomContainer(frontLayer);
 
         // inherit from Viewer
@@ -1990,7 +1748,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             },
             dragCursor: "",
             zoomContainers: [
-                backZoomContainer,
+                self.backZoomContainer,
                 new Seadragon2.CanvasZoomContainer(canvas),
                 frontZoomContainer
             ]
@@ -2027,11 +1785,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         Seadragon2.Timer.register(updateOnce);
 
         // build some HTML as a template for each graph bar
-        barTemplate = makeElement("div", "pivot_bar");
+        self.barTemplate = makeElement("div", "pivot_bar");
         var outerBar;
-        outerBar = makeElement("div", "pivot_outerbar", barTemplate);
+        outerBar = makeElement("div", "pivot_outerbar", self.barTemplate);
         makeElement("div", "pivot_innerbar", outerBar);
-        makeElement("div", "pivot_barlabel", barTemplate);
+        makeElement("div", "pivot_barlabel", self.barTemplate);
 
         // make HTML overlay elements for the boxes that overlay selected or hovered items
         domHoverBorder = buildFakeBorder("pivot_hoverborder");
@@ -2053,7 +1811,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @method zoomToPercent
      * @param percent {number} The target zoom level
      */
-    this.zoomToPercent = function (percent) {
+    self.zoomToPercent = function (percent) {
         viewport.zoomToPercent(percent);
         viewport.applyConstraints();
     };
@@ -2062,7 +1820,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * Move the viewport to center on the item left of the center item. Wraps around at edges.
      * @method moveLeft
      */
-    this.moveLeft = function () {
+    self.moveLeft = function () {
         // same as pressing left key
         onKeyDown({keyCode: 37});
     };
@@ -2071,7 +1829,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * Move the viewport to center on the item right of the center item. Wraps around at edges.
      * @method moveRight
      */
-    this.moveRight = function () {
+    self.moveRight = function () {
         // same as pressing right key
         onKeyDown({keyCode: 39});
     };
@@ -2081,7 +1839,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @method setCenterItem
      * @param id {string} The ID of the item to center
      */
-    this.setCenterItem = function (id) {
+    self.setCenterItem = function (id) {
         if (!hasOwnProperty.call(allItemsById, id)) {
             throw "setCenterItem: No matching ID found: " + id;
         }
@@ -2103,7 +1861,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * Collapse the details pane and show the info button instead.
      * @method collapseDetails
      */
-    this.collapseDetails = function () {
+    self.collapseDetails = function () {
         detailsEnabled = false;
         if (selectedItem) {
             // move the viewport so the selected item stays centered
@@ -2120,7 +1878,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * Show the details pane and hide the info button.
      * @method expandDetails
      */
-    this.expandDetails = function () {
+    self.expandDetails = function () {
         detailsEnabled = true;
         if (selectedItem) {
             // move the viewport so the selected item stays centered
@@ -2130,52 +1888,26 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             onClick(undefined, 0, undefined, true);
         }
         self.trigger("hideInfoButton");
-        self.trigger("showDetails", centerItem, facets);
+        self.trigger("showDetails", centerItem, self.facets);
     };
 
     // Methods -- SORTING & FILTERING
 
     /**
-     * Sort the collection by the selected facet. The collection will immediately begin rearranging.
+     * Sort the collection by the selected self.facet. The collection will immediately begin rearranging.
      * @method sortBy
-     * @param facetName {string} the name of the facet category to sort by
+     * @param facetName {string} the name of the self.facet category to sort by
      */
-    this.sortBy = function (facetName) {
-        sortFacet = facetName;
+    self.sortBy = function (facetName) {
+        self.sortFacet = facetName;
         rearrange();
-    };
-
-    /**
-     * Go to grid view, if the viewer is currently in graph view. Otherwise, do nothing.
-     * @method gridView
-     */
-    this.gridView = function () {
-        if (!isGridView) {
-            isGridView = true;
-            rearrange();
-            return true;
-        }
-        return false;
-    };
-
-    /**
-     * Go to graph view, if the viewer is currently in grid view. Otherwise, do nothing.
-     * @method graphView
-     */
-    this.graphView = function () {
-        if (isGridView) {
-            isGridView = false;
-            rearrange();
-            return true;
-        }
-        return false;
     };
 
     /**
      * Start rearranging the viewer based on the currently selected filters.
      * @method filter
      */
-    this.filter = function () {
+    self.filter = function () {
         rearrange();
     };
 
@@ -2185,7 +1917,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @param filter {function} The filtering function. It takes one argument, a collection item,
      * and returns true if the item is allowed and false if the item is filtered out.
      */
-    this.addFilter = function (filter) {
+    self.addFilter = function (filter) {
         if (typeof filter === "function") {
             filters.push(filter);
         }
@@ -2197,7 +1929,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @param filter {function} The filtering function, which was previously added to the viewer
      * by a call to addFilter.
      */
-    this.removeFilter = function (filter) {
+    self.removeFilter = function (filter) {
         var index = filters.indexOf(filter);
         if (index !== -1) {
             filters.splice(index, 1);
@@ -2208,51 +1940,51 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * Clear all filters from the viewer. Do not immediately start rearranging.
      * @method clearFilters
      */
-    this.clearFilters = function () {
+    self.clearFilters = function () {
         filters = [];
     };
 
     // Methods -- CONTENT
 
     /**
-     * Set new facet categories for the collection. This method can only be called when the
+     * Set new self.facet categories for the collection. This method can only be called when the
      * viewer is empty, which means before any calls to addItems or after the "itemsCleared"
      * event has been triggered in response to a clearItems call.
      * @method setFacets
-     * @param newFacets {object} The new facet categories. The property names in this object
+     * @param newFacets {object} The new self.facet categories. The property names in this object
      * are the names of the categories, and the values of the properties are objects describing
      * the categories. Each category description should have the following properties:
      * <dl>
-     * <dt>type</dt><dd>string - The type of facet category. Valid types are "String",
+     * <dt>type</dt><dd>string - The type of self.facet category. Valid types are "String",
      * "LongString" (which gets treated like String), "Number", "DateTime", and "Link".</dd>
-     * <dt>isFilterVisible</dt><dd>bool - Whether the facet shows up in the filter selection
+     * <dt>isFilterVisible</dt><dd>bool - Whether the self.facet shows up in the filter selection
      * pane and the sort order drop-down</dd>
-     * <dt>isWordWheelVisible</dt><dd>bool - Whether the facet category will be accessible via
+     * <dt>isWordWheelVisible</dt><dd>bool - Whether the self.facet category will be accessible via
      * the search box</dd>
-     * <dt>isMetaDataVisible</dt><dd>bool - Whether the facet shows up in the details pane</dd>
+     * <dt>isMetaDataVisible</dt><dd>bool - Whether the self.facet shows up in the details pane</dd>
      * <dt>orders</dt><dd>optional Array - Allows you to set custom sort orders for String
-     * facets other than the default alphabetical and most-common-first orders. Each element
+     * self.facets other than the default alphabetical and most-common-first orders. Each element
      * in this array must have a "name" string property and an "order" array of strings, which
-     * contains all possible facet values in the desired order.</dd>
+     * contains all possible self.facet values in the desired order.</dd>
      * </dl>
      */
-    this.setFacets = function (newFacets) {
+    self.setFacets = function (newFacets) {
         if (items.length) {
-            throw "You must set facet categories before adding items.";
+            throw "You must set self.facet categories before adding items.";
         }
 
         // the old filters probably won't make any sense anymore, and
         // the view portion forgets them automatically.
         filters = [];
 
-        facets = newFacets;
+        self.facets = newFacets;
 
-        // look through the newly added facets and set up comparators
-        // for any facets that define a custom sort order
+        // look through the newly added self.facets and set up self.comparators
+        // for any self.facets that define a custom sort order
         var facetName, facetData, orders;
-        for (facetName in facets) {
-            if (hasOwnProperty.call(facets, facetName)) {
-                facetData = facets[facetName];
+        for (facetName in self.facets) {
+            if (hasOwnProperty.call(self.facets, facetName)) {
+                facetData = self.facets[facetName];
                 orders = facetData.orders;
                 if (orders && orders.length) {
                     // make a new variable scope so we can bind by value
@@ -2285,7 +2017,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         // fire an event so that the UI components can update themselves
         self.trigger("hideDetails");
         self.trigger("hideInfoButton");
-        self.trigger("facetsSet", facets);
+        self.trigger("facetsSet", self.facets);
     };
 
     // Helpers -- TEMPLATING
@@ -2308,7 +2040,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         // success callback
                         var result;
                         try {
-                            result = JSON.parse(this.responseText);
+                            result = JSON.parse(self.responseText);
                         } catch (e) {
                             Seadragon2.Debug.warn("Error in parsing JSON from content endpoint");
                             return;
@@ -2431,7 +2163,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         // success handler
                         var result;
                         try {
-                            result = JSON.parse(this.responseText);
+                            result = JSON.parse(self.responseText);
                         } catch (e) {
                             Seadragon2.Debug.warn("Failed to parse JSON response from server.");
                             return;
@@ -2454,7 +2186,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     }, function () {
                         // failure handler
                         Seadragon2.Debug.warn("Failed to post collection data. Status text: " +
-                            this.statusText + "; response: " + this.responseText);
+                            self.statusText + "; response: " + self.responseText);
                     }, jsonString);
                 }());
             }
@@ -2544,7 +2276,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     // be onscreen and likely have other useful position info and such on them,
                     // we'll reuse the container element but replace its inner HTML.
                     // In rare cases there might be multiple copies of the element's HTML because
-                    // it is present in multiple graph bars. TODO optimize templating in this case.
+                    // it is present in multiple graph self.bars. TODO optimize templating in this case.
                     htmlArray.push(oldHtmlArray[index]);
                     oldHtmlArray[index].forEach(function (htmlElement) {
                         makeTemplate(template, item, htmlElement);
@@ -2586,16 +2318,16 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * <dt>description</dt><dd>string - Extra text information about the item</dd>
      * <dt>href</dt><dd>string - The URL associated with the item</dd>
      * <dt>img</dt><dd>string - The URL of the DZI or DZC image for the item</dd>
-     * <dt>facets</dt><dd>object - Facet data. Property names are facet categories; property values
-     * are arrays of values for that facet (strings, numbers, or dates, depending on the facet type).
-     * Even if there is only one value for a particular facet, it must be in an array.
+     * <dt>self.facets</dt><dd>object - Facet data. Property names are self.facet categories; property values
+     * are arrays of values for that self.facet (strings, numbers, or dates, depending on the self.facet type).
+     * Even if there is only one value for a particular self.facet, it must be in an array.
      * </dl>
      */
-    this.addItems = function (newItems) {
+    self.addItems = function (newItems) {
         // if we're busy clearing a previous collection, wait until it's done before adding new items.
         // this helps protect against cases where IDs in the new collection collide with the old collection
         // and produce unintended results.
-        if (!items.length && (activeItemsArr.length || rearrangingItemsArr.length)) {
+        if (!items.length && (self.activeItemsArr.length || rearrangingItemsArr.length)) {
             // delay it
             delayFunction(function () {
                 self.addItems(newItems);
@@ -2613,10 +2345,10 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 // set up templates for the new items, if necessary.
                 // note that existing items may need their templates updated, since
-                // their facets/descriptions/names may have changed.
+                // their self.facets/descriptions/names may have changed.
                 newItems.forEach(updateTemplate);
 
-                // filter in all items and sort by the default facet.
+                // filter in all items and sort by the default self.facet.
                 // TODO it should be possible to skip this step in cases where no items
                 // were moved into or out of the current filters, and the current sort
                 // order didn't change.
@@ -2666,7 +2398,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             // refresh the details pane if necessary
             if (centerItem === item && zoomedIn && detailsEnabled) {
                 self.trigger("hideDetails");
-                self.trigger("showDetails", item, facets);
+                self.trigger("showDetails", item, self.facets);
             }
         });
         // now check to see whether we can immediately add items
@@ -2693,9 +2425,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * templates, read the <a href="../../app/pivot/quickstart.html">developer's guide</a>.</dd>
      * </dl>
      */
-    this.setTemplates = function (newTemplates) {
+    self.setTemplates = function (newTemplates) {
         // we disallow changing the template types while there are items in the view
-        if (items.length || activeItemsArr.length || rearrangingItemsArr.length) {
+        if (items.length || self.activeItemsArr.length || rearrangingItemsArr.length) {
             throw "You must set templates before adding items!";
         }
 
@@ -2725,7 +2457,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * Remove all items from the collection.
      * @method clearItems
      */
-    this.clearItems = function () {
+    self.clearItems = function () {
         items = [];
         allItemsById = {};
 
@@ -2738,7 +2470,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @param id {string} the ID to find
      * @return {object} the object representing the item, in the format used by addItems
      */
-    this.getItemById = function (id) {
+    self.getItemById = function (id) {
         return allItemsById[id];
     };
 
@@ -2747,7 +2479,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @method setTitle
      * @param title {string} the new title
      */
-    this.setTitle = function (title) {
+    self.setTitle = function (title) {
         // just raise an event so the UI can update
         self.trigger("titleChange", title);
     };
@@ -2761,7 +2493,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * <dt>href</dt><dd>string - The URL for more information</dd>
      * </dl>
      */
-    this.setCopyright = function (legalInfo) {
+    self.setCopyright = function (legalInfo) {
         // fire an event so the UI can update
         self.trigger("copyright", legalInfo);
     };
@@ -2774,14 +2506,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @param filter {function} the filter to not apply
      * @return {array} All items filtered in, excluding the given filter
      */
-    this.runFiltersWithout = function (filter) {
-        this.removeFilter(filter);
+    self.runFiltersWithout = function (filter) {
+        self.removeFilter(filter);
         var result = items.filter(function (item) {
             return filters.every(function (filter2) {
                 return filter2(item);
             });
         });
-        this.addFilter(filter);
+        self.addFilter(filter);
         return result;
     };
 
@@ -2794,11 +2526,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     }
 
     /**
-     * Look for all facet values containing the given search term.
+     * Look for all self.facet values containing the given search term.
      * If the splitResults argument is true, this function
      * returns an object with two properties: front, which contains
      * matches where the search string matches the beginning of the
-     * facet value, and rest, which contains other matches.
+     * self.facet value, and rest, which contains other matches.
      * Otherwise, it returns only one object, with all matches.
      * @method runSearch
      * @param searchTerm {string} The string to find
@@ -2808,7 +2540,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @return {object} The results of the search. Property names are the
      * matching strings; property values are the number of matches with that string.
      */
-    this.runSearch = function (searchTerm, splitResults) {
+    self.runSearch = function (searchTerm, splitResults) {
         var frontResults,
             restResults,
             result;

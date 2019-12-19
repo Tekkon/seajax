@@ -8,6 +8,7 @@ var fs = require("fs");
 var BUILD_SOURCE_PATH = "./v2/build";
 var BUILD_TARGET_PATH = "./bin/v2";
 var SRC_PATH = "./v2/src"
+var SCRIPTS_PATH = './TestWebApplication/Scripts';
 
 var TARGETS = {
     image: getFilesToBuild("image/standalone.txt"),
@@ -43,7 +44,9 @@ function buildSpecific(target, files) {
          .src(files)
          .pipe(concat(target + ".js"))
          .pipe(gulp.dest(BUILD_TARGET_PATH))
+         .pipe(gulp.dest(SCRIPTS_PATH))
          .pipe(uglify())
          .pipe(rename(target + ".min.js"))
-         .pipe(gulp.dest(BUILD_TARGET_PATH));
+         .pipe(gulp.dest(BUILD_TARGET_PATH))
+         .pipe(gulp.dest(SCRIPTS_PATH));
 }
