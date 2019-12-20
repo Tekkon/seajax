@@ -94,6 +94,17 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\icon-point-gas-inverted.png" />
+    <Content Include="Content\icon-point-gas.png" />
+    <Content Include="Content\leaflet.css" />
+    <Content Include="Content\map.css" />
+    <Content Include="Content\map.png" />
+    <Content Include="Content\marker-icon-red.png" />
+    <Content Include="Content\marker-icon.png" />
+    <Content Include="Content\marker-shadow.png" />
+    <Content Include="Content\MarkerCluster.css" />
+    <Content Include="Content\MarkerCluster.Default.css" />
+    <Content Include="Content\MarkerCluster.Redefined.css" />
     <Content Include="packages.config" />
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -119,12 +130,15 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\leaflet.js" />
+    <Content Include="Scripts\leaflet.min.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\pivot.js" />
     <Content Include="Scripts\pivot.min.js" />
     <Content Include="Content\PivotView.css" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\Yandex.js" />
     <Content Include="Web.config" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>

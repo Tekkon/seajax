@@ -3,14 +3,20 @@
 <head>
     <title></title>
 	<meta charset="utf-8" />
+    <script src="./Scripts/jquery-1.10.2.min.js" type="text/javascript"></script>
+    <link href="./Content/leaflet.css" rel="stylesheet" type="text/css">
+    <script src="./Scripts/leaflet.js" type="text/javascript"></script>
+
+    <link href="./Content/PivotView.css" rel="stylesheet" type="text/css">    
+    <link href="./Content/map.css" rel="stylesheet" type="text/css">
+    <link href="./Content/MarkerCluster.css" rel="stylesheet" type="text/css">    
+    
+    <!--<script src="https://api-maps.yandex.ru/2.0/?load=package.map&lang=ru-RU" type="text/javascript"></script>
+    <script src="./Scripts/Yandex.js" type="text/javascript"></script>-->
+    <script src="./Scripts/pivot.js" type="text/javascript"></script>
 </head>
 <body style="height:100%;width:100%;margin:0;overflow:hidden">
     <div id="pivotviewer" style="height:100%;width:100%;"></div>
-
-    <link href="./Content/PivotView.css" rel="stylesheet" type="text/css">
-
-    <script src="./Scripts/jquery-1.10.2.min.js" type="text/javascript"></script>
-    <script src="./Scripts/pivot.js" type="text/javascript"></script>
 
     <script type="text/javascript">
         $(document).ready(function () {

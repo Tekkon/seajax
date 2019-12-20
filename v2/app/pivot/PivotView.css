@@ -506,6 +506,16 @@ div.pivot_facetlabel {
     height:20px;
     border:1px solid #ccc;
     margin-left:0;
+    margin-right:0;
+    border-right-width:0px;
+}
+
+.pivot_map {
+    background:url('map1-16.png') no-repeat 6px 2px;
+    width:29px;
+    height:20px;
+    border:1px solid #ccc;
+    margin-left:0;
 }
 
 .pivot_activesort {

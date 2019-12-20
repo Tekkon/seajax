@@ -16,7 +16,8 @@ var TARGETS = {
     zoomimage: getFilesToBuild("zoomimage/standalone.txt"),
     pivot: getFilesToBuild("pivot/standalone.txt"),
     ajax: getFilesToBuild("ajax/standalone.txt"),
-    utils: getFilesToBuild("utils/standalone.txt")
+    utils: getFilesToBuild("utils/standalone.txt"),
+    leaflet: getFilesToBuild("leaflet/standalone.txt")
 }
 
 gulp.task('default', function () {

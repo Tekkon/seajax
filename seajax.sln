@@ -48,11 +48,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pivot", "pivot", "{0B3D2BCE
 		v2\app\pivot\GraphView.js = v2\app\pivot\GraphView.js
 		v2\app\pivot\GridView.js = v2\app\pivot\GridView.js
 		v2\app\pivot\Lzw.js = v2\app\pivot\Lzw.js
+		v2\app\pivot\map.png = v2\app\pivot\map.png
 		v2\app\pivot\MapView.js = v2\app\pivot\MapView.js
 		v2\app\pivot\Number.js = v2\app\pivot\Number.js
 		v2\app\pivot\NumberPicker.js = v2\app\pivot\NumberPicker.js
 		v2\app\pivot\Pivot.js = v2\app\pivot\Pivot.js
-		v2\app\pivot\PivotView.css = v2\app\pivot\PivotView.css
+		TestWebApplication\Content\PivotView.css = TestWebApplication\Content\PivotView.css
 		v2\app\pivot\PivotView.js = v2\app\pivot\PivotView.js
 		v2\app\pivot\PivotViewer.js = v2\app\pivot\PivotViewer.js
 		v2\app\pivot\quickstart.html = v2\app\pivot\quickstart.html
@@ -238,6 +239,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "v2", "v2", "{04B52929-57B6-
 		bin\v2\ajax.min.js = bin\v2\ajax.min.js
 		bin\v2\image.js = bin\v2\image.js
 		bin\v2\image.min.js = bin\v2\image.min.js
+		bin\v2\leaflet.js = bin\v2\leaflet.js
+		bin\v2\leaflet.min.js = bin\v2\leaflet.min.js
 		bin\v2\pivot.js = bin\v2\pivot.js
 		bin\v2\pivot.min.js = bin\v2\pivot.min.js
 		bin\v2\utils.js = bin\v2\utils.js
@@ -249,6 +252,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "v2", "v2", "{04B52929-57B6-
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWebApplication", "TestWebApplication\TestWebApplication.csproj", "{FFD54EAE-5B74-46F1-8333-537351916DB2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "leaflet", "leaflet", "{F702526B-C609-4EEF-96DB-2A13FFA78109}"
+	ProjectSection(SolutionItems) = preProject
+		v2\app\leaflet\leaflet-0.7.7.js = v2\app\leaflet\leaflet-0.7.7.js
+		v2\app\leaflet\leaflet-0.7.7.min.js = v2\app\leaflet\leaflet-0.7.7.min.js
+		v2\app\leaflet\leaflet.markercluster.js = v2\app\leaflet\leaflet.markercluster.js
+		v2\app\leaflet\leafletHtmlIcon.js = v2\app\leaflet\leafletHtmlIcon.js
+		v2\app\leaflet\leafletViewer.js = v2\app\leaflet\leafletViewer.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "leaflet", "leaflet", "{505BE2F8-2319-41DD-8F76-5F470688C36F}"
+	ProjectSection(SolutionItems) = preProject
+		v2\build\leaflet\standalone.txt = v2\build\leaflet\standalone.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -293,5 +310,7 @@ Global
 		{537B0CF4-8064-423F-990B-2D65D9E37C96} = {080F63A4-71C0-4855-BC97-6B3317864796}
 		{825F6A1F-7AD1-47B4-8F3E-EE0DAEE7A170} = {C21F89D5-75A5-4ACA-A277-974A17939A9A}
 		{04B52929-57B6-405F-9C36-1FBBE221FE58} = {825F6A1F-7AD1-47B4-8F3E-EE0DAEE7A170}
+		{F702526B-C609-4EEF-96DB-2A13FFA78109} = {9175816F-3F23-42D6-9BB2-4DAD1062FB5C}
+		{505BE2F8-2319-41DD-8F76-5F470688C36F} = {2E308CF1-59C0-41E7-859A-E28D5A02F72F}
 	EndGlobalSection
 EndGlobal

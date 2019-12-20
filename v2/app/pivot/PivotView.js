@@ -281,12 +281,14 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
     
+    var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_hoverable", topBar, "Map View");
     var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
     var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_activesort", topBar, "Grid View");    
 
     var buttons = [
         gridButton,
-        graphButton
+        graphButton,
+        mapButton
     ];
 
     viewer.views.forEach(function (view, index, array) {
