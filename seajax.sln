@@ -255,11 +255,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWebApplication", "TestW
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "leaflet", "leaflet", "{F702526B-C609-4EEF-96DB-2A13FFA78109}"
 	ProjectSection(SolutionItems) = preProject
-		v2\app\leaflet\leaflet-0.7.7.js = v2\app\leaflet\leaflet-0.7.7.js
 		v2\app\leaflet\leaflet-0.7.7.min.js = v2\app\leaflet\leaflet-0.7.7.min.js
 		v2\app\leaflet\leaflet.markercluster.js = v2\app\leaflet\leaflet.markercluster.js
 		v2\app\leaflet\leafletHtmlIcon.js = v2\app\leaflet\leafletHtmlIcon.js
-		v2\app\leaflet\leafletViewer.js = v2\app\leaflet\leafletViewer.js
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "leaflet", "leaflet", "{505BE2F8-2319-41DD-8F76-5F470688C36F}"

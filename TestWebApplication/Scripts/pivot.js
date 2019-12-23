@@ -11445,7 +11445,11 @@ var GridView = function (container, isSelected) {
 GridView.prototype = Object.create(BaseView.prototype);
 GridView.prototype.constructor = GridView;
 
-GridView.prototype.createView = function(options) {
+GridView.prototype.createView = function (options) {
+    options.mapLayer.style = "visibility: hidden;"
+    //options.frontLayer.style = "visibility: visible;"
+    //options.backLayer.style = "visibility: visible;"
+
     // first, put the items in an array.
     this.container.allSortedItems = this.container.activeItemsArr;
 
@@ -11509,6 +11513,10 @@ GraphView.prototype = Object.create(BaseView.prototype);
 GraphView.prototype.constructor = GraphView;
 
 GraphView.prototype.createView = function (options) {
+    options.mapLayer.style = "visibility: hidden;"
+    //options.frontLayer.style = "visibility: visible;"
+    //options.backLayer.style = "visibility: visible;"
+
     this.container.allSortedItems = this.container.bucketize[this.container.facet.type || "String"](this.container.sortFacet);
 
     var barWidth = this.container.containerRect.width / this.container.allSortedItems.length;
@@ -11733,6 +11741,27 @@ MapView.prototype = Object.create(BaseView.prototype);
 MapView.prototype.constructor = MapView;
 
 MapView.prototype.createView = function (options) {
+    if (this.map == null) {
+        var div = makeElement("div", "", options.mapLayer);
+        div.style = "width: 68.9%; height: 76.9496%; position: relative; transform-origin: 0px 0px; transform: matrix(1.28288, 0, 0, 1.28288, 216, 5);";
+        var map = L.map(div).setView([51.505, -0.09], 13);
+
+        L.tileLayer('http://mt{s}.google.com/vt/lyrs=m&z={z}&x={x}&y={y}&lang=ru_RU', {
+            subdomains: ['0', '1', '2', '3'],
+            attribution: '<a http="google.ru" target="_blank">Google</a>',
+            reuseTiles: true,
+            updateWhenIdle: false
+        }).addTo(map);
+
+        this.map = map;
+    }
+
+    options.mapLayer.style = "visibility: visible;"
+    //options.frontLayer.style = "visibility: hidden;"
+    //options.backLayer.style = "visibility: hidden;"
+}
+
+/*MapView.prototype.createView = function (options) {
     var map = null;
     var markerLayer = null;
     var changeExisting = true;
@@ -11773,20 +11802,20 @@ MapView.prototype.createView = function (options) {
             this.options.crs = newCrs;
         }
 
-        var yndx = new L.Yandex();
+        /*var yndx = new L.Yandex();
         var ytraffic = new L.Yandex("null", { traffic: true, opacity: 1, overlay: false });
         var ysat = new L.Yandex("hybrid");
-        var ypublic = new L.Yandex("publicMap");
+        var ypublic = new L.Yandex("publicMap");*/
 
-        if (!changeExisting) {
+        /*if (!changeExisting) {
             map = new L.map(options.frontLayer, { layers: [yndx] });
             this.map = map;
-        }
+        }*/
 
-        var baseMaps = {
-            "яндекс": yndx,
-            "яндекс спутник": ysat,
-            "яндекс пробки": ytraffic,
+        /*var baseMaps = {
+            //"яндекс": yndx,
+            //"яндекс спутник": ysat,
+            //"яндекс пробки": ytraffic,
             "Google": googleMap,
             "Google спутник": googleMapSat,
             "Open Streets": openStreetsMap
@@ -11988,20 +12017,12 @@ MapView.prototype.createView = function (options) {
         resetHighlightedMarkers();
         setMarkerIcon(clickedMarker, highlightedMarkerIconURL);
         highlightedMarkers.push(clickedMarker);
-
-        /*if (self.canMasterFilter()) {
-            var componentName = self.model.componentName();
-            self.preventSelection = true;
-            self.clearMasterFilter.fire(componentName);
-            self.setMasterFilter(clickedMarker.options.dataRow);
-            self.preventSelection = false;
-        }*/
     });
 
     this.markerLayer.on("mouseover", function (event) {
         event.layer.openPopup();
     });
-}
+}*/
 // Copyright (c) Microsoft Corporation
 // All rights reserved. 
 // BSD License
@@ -12079,7 +12100,7 @@ makeElement, addText, hasOwnProperty, makeTemplate, document, lzwEncode, locatio
  * @param inputElmt {HTMLInputElement} A focusable textbox that is in the DOM but not
  * visible to the user.
  */
-var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, backLayer, leftRailWidth, rightRailWidth, inputElmt) {
+var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, backLayer, mapLayer, leftRailWidth, rightRailWidth, inputElmt) {
 
     // Fields
     var self = this;
@@ -13130,7 +13151,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
         self.views.filter(function (elem) {
             return elem.isSelected;
-        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
+        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
@@ -13391,7 +13412,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 self.views.filter(function (elem) {
                     return elem.isSelected;
-                })[0].update({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
+                })[0].update({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
 
                 var wideEnough = (containerSize.x - rightRailWidth) * 0.5,
                     tallEnough = containerSize.y * 0.5,
@@ -13541,7 +13562,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
             self.views.filter(function (elem) {
                 return elem.isSelected;
-            })[0].onClick({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
+            })[0].onClick({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
 
             // iterate every item on the canvas
             for (j = self.activeItemsArr.length - 1; j >= 0; j--) {
@@ -14930,11 +14951,12 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     canvas.height = canvas.offsetHeight;
     canvas.width = canvas.offsetWidth;
     var frontLayer = makeElement("div", "pivot pivot_layer", mouseBox);
+    var mapLayer = makeElement("div", "pivot pivot_layer map_layer", mouseBox);
     var filterPane = makeElement("div", "pivot pivot_pane pivot_filterpane", canvasBox);
 
     var railWidth = filterPane.offsetLeft + filterPane.offsetWidth;
     // The actual viewer object that will do zooming, panning, layout, and animation.
-    var viewer = new PivotViewer(canvas, mouseBox, frontLayer, behindLayer, railWidth, railWidth, inputElmt);
+    var viewer = new PivotViewer(canvas, mouseBox, frontLayer, behindLayer, mapLayer, railWidth, railWidth, inputElmt);
 
     var detailsPane = makeElement("div", "pivot pivot_pane pivot_detailspane", canvasBox);
     detailsPane.style.opacity = 0;

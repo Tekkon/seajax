@@ -63,11 +63,12 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     canvas.height = canvas.offsetHeight;
     canvas.width = canvas.offsetWidth;
     var frontLayer = makeElement("div", "pivot pivot_layer", mouseBox);
+    var mapLayer = makeElement("div", "pivot pivot_layer map_layer", mouseBox);
     var filterPane = makeElement("div", "pivot pivot_pane pivot_filterpane", canvasBox);
 
     var railWidth = filterPane.offsetLeft + filterPane.offsetWidth;
     // The actual viewer object that will do zooming, panning, layout, and animation.
-    var viewer = new PivotViewer(canvas, mouseBox, frontLayer, behindLayer, railWidth, railWidth, inputElmt);
+    var viewer = new PivotViewer(canvas, mouseBox, frontLayer, behindLayer, mapLayer, railWidth, railWidth, inputElmt);
 
     var detailsPane = makeElement("div", "pivot pivot_pane pivot_detailspane", canvasBox);
     detailsPane.style.opacity = 0;

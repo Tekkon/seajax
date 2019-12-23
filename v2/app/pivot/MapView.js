@@ -6,6 +6,27 @@ MapView.prototype = Object.create(BaseView.prototype);
 MapView.prototype.constructor = MapView;
 
 MapView.prototype.createView = function (options) {
+    if (this.map == null) {
+        var div = makeElement("div", "", options.mapLayer);
+        div.style = "width: 68.9%; height: 76.9496%; position: relative; transform-origin: 0px 0px; transform: matrix(1.28288, 0, 0, 1.28288, 216, 5);";
+        var map = L.map(div).setView([51.505, -0.09], 13);
+
+        L.tileLayer('http://mt{s}.google.com/vt/lyrs=m&z={z}&x={x}&y={y}&lang=ru_RU', {
+            subdomains: ['0', '1', '2', '3'],
+            attribution: '<a http="google.ru" target="_blank">Google</a>',
+            reuseTiles: true,
+            updateWhenIdle: false
+        }).addTo(map);
+
+        this.map = map;
+    }
+
+    options.mapLayer.style = "visibility: visible;"
+    //options.frontLayer.style = "visibility: hidden;"
+    //options.backLayer.style = "visibility: hidden;"
+}
+
+/*MapView.prototype.createView = function (options) {
     var map = null;
     var markerLayer = null;
     var changeExisting = true;
@@ -46,20 +67,20 @@ MapView.prototype.createView = function (options) {
             this.options.crs = newCrs;
         }
 
-        var yndx = new L.Yandex();
+        /*var yndx = new L.Yandex();
         var ytraffic = new L.Yandex("null", { traffic: true, opacity: 1, overlay: false });
         var ysat = new L.Yandex("hybrid");
-        var ypublic = new L.Yandex("publicMap");
+        var ypublic = new L.Yandex("publicMap");*/
 
-        if (!changeExisting) {
+        /*if (!changeExisting) {
             map = new L.map(options.frontLayer, { layers: [yndx] });
             this.map = map;
-        }
+        }*/
 
-        var baseMaps = {
-            "яндекс": yndx,
-            "яндекс спутник": ysat,
-            "яндекс пробки": ytraffic,
+        /*var baseMaps = {
+            //"яндекс": yndx,
+            //"яндекс спутник": ysat,
+            //"яндекс пробки": ytraffic,
             "Google": googleMap,
             "Google спутник": googleMapSat,
             "Open Streets": openStreetsMap
@@ -261,17 +282,9 @@ MapView.prototype.createView = function (options) {
         resetHighlightedMarkers();
         setMarkerIcon(clickedMarker, highlightedMarkerIconURL);
         highlightedMarkers.push(clickedMarker);
-
-        /*if (self.canMasterFilter()) {
-            var componentName = self.model.componentName();
-            self.preventSelection = true;
-            self.clearMasterFilter.fire(componentName);
-            self.setMasterFilter(clickedMarker.options.dataRow);
-            self.preventSelection = false;
-        }*/
     });
 
     this.markerLayer.on("mouseover", function (event) {
         event.layer.openPopup();
     });
-}
+}*/

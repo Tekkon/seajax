@@ -6,6 +6,10 @@ GraphView.prototype = Object.create(BaseView.prototype);
 GraphView.prototype.constructor = GraphView;
 
 GraphView.prototype.createView = function (options) {
+    options.mapLayer.style = "visibility: hidden;"
+    //options.frontLayer.style = "visibility: visible;"
+    //options.backLayer.style = "visibility: visible;"
+
     this.container.allSortedItems = this.container.bucketize[this.container.facet.type || "String"](this.container.sortFacet);
 
     var barWidth = this.container.containerRect.width / this.container.allSortedItems.length;
