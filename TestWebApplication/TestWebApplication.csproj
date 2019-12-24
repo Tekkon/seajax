@@ -94,14 +94,18 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\icon-point-gas-inverted.png" />
-    <Content Include="Content\icon-point-gas.png" />
+    <Content Include="Content\images\icon-point-gas-inverted.png" />
+    <Content Include="Content\images\icon-point-gas.png" />
+    <Content Include="Content\images\layers.png" />
+    <Content Include="Content\images\map1-16.png" />
+    <Content Include="Content\images\map2-16.png" />
+    <Content Include="Content\images\map3-16.png" />
     <Content Include="Content\leaflet.css" />
     <Content Include="Content\map.css" />
-    <Content Include="Content\map.png" />
-    <Content Include="Content\marker-icon-red.png" />
-    <Content Include="Content\marker-icon.png" />
-    <Content Include="Content\marker-shadow.png" />
+    <Content Include="Content\images\map.png" />
+    <Content Include="Content\images\marker-icon-red.png" />
+    <Content Include="Content\images\marker-icon.png" />
+    <Content Include="Content\images\marker-shadow.png" />
     <Content Include="Content\MarkerCluster.css" />
     <Content Include="Content\MarkerCluster.Default.css" />
     <Content Include="Content\MarkerCluster.Redefined.css" />
@@ -109,6 +113,7 @@
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Data\azsData.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -117,7 +122,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\search.gif" />
+    <Content Include="Content\images\search.gif" />
     <Content Include="Index.html" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -131,7 +136,9 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\leaflet.js" />
+    <Content Include="Scripts\leaflet.markercluster.js" />
     <Content Include="Scripts\leaflet.min.js" />
+    <Content Include="Scripts\leafletHtmlIcon.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\pivot.js" />
     <Content Include="Scripts\pivot.min.js" />

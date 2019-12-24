@@ -5,12 +5,13 @@
 	<meta charset="utf-8" />
     <script src="./Scripts/jquery-1.10.2.min.js" type="text/javascript"></script>
     <link href="./Content/leaflet.css" rel="stylesheet" type="text/css">
-    <script src="./Scripts/leaflet.js" type="text/javascript"></script>
-
-    <link href="./Content/PivotView.css" rel="stylesheet" type="text/css">    
     <link href="./Content/map.css" rel="stylesheet" type="text/css">
     <link href="./Content/MarkerCluster.css" rel="stylesheet" type="text/css">    
+    <link href="./Content/PivotView.css" rel="stylesheet" type="text/css">  
     
+    <script src="./Scripts/leaflet.js" type="text/javascript"></script>
+    <script src="./Scripts/leaflet.markercluster.js"></script>
+    <script src="./Scripts/leafletHtmlIcon.js"></script>
     <!--<script src="https://api-maps.yandex.ru/2.0/?load=package.map&lang=ru-RU" type="text/javascript"></script>
     <script src="./Scripts/Yandex.js" type="text/javascript"></script>-->
     <script src="./Scripts/pivot.js" type="text/javascript"></script>
@@ -19,6 +20,27 @@
     <div id="pivotviewer" style="height:100%;width:100%;"></div>
 
     <script type="text/javascript">
+        var data = {};
+
+        (function () {
+            var throttle = function (type, name, obj) {
+                obj = obj || window;
+                var running = false;
+                var func = function () {
+                    if (running) { return; }
+                    running = true;
+                    requestAnimationFrame(function () {
+                        obj.dispatchEvent(new CustomEvent(name));
+                        running = false;
+                    });
+                };
+                obj.addEventListener(type, func);
+            };
+
+            /* init - you can init any event */
+            throttle("resize", "optimizedResize");
+        })();
+
         $(document).ready(function () {
             var pivotViewer = Pivot.init(document.getElementById("pivotviewer"));
             pivotViewer.setTitle("Резервуары");
@@ -30,7 +52,7 @@
                     console.log(error);
                 },
                 success: function (json) {
-                    var data = AddHeight(json);
+                    data = AddHeight(json);
                     LoadCollection(pivotViewer, data);
                 }
             });
@@ -50,6 +72,8 @@
                 element['Температура'] = element['TEMP'];
                 element['Текущий уровень'] = element['FILL_UP_LEVEL'];
                 element['Уровень воды'] = element['WATER_LEVEL'];
+                element['Широта'] = element['LATITUDE'];
+                element['Долгота'] = element['LONGITUDE'];
 
                 element['HEIGHT'] = 100-element['CURR_VOLUME']/element['MAX_VOLUME']*100;
                 element['SMALL_HEIGHT'] = 100-element['CURR_VOLUME']/element['MAX_VOLUME']*100;
@@ -174,6 +198,20 @@
                 isFilterVisible: false,
                 isWordWheelVisible: false,
                 isMetaDataVisible: false
+            };
+
+            facets["LATITUDE"] = {
+                type: "Number",
+                isFilterVisible: false,
+                isWordWheelVisible: false,
+                isMetaDataVisible: true
+            };
+
+            facets["LONGITUDE"] = {
+                type: "Number",
+                isFilterVisible: false,
+                isWordWheelVisible: false,
+                isMetaDataVisible: true
             };
 
             pivotViewer.setFacets(facets);

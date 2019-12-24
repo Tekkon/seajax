@@ -7,8 +7,6 @@ GridView.prototype.constructor = GridView;
 
 GridView.prototype.createView = function (options) {
     options.mapLayer.style = "visibility: hidden;"
-    //options.frontLayer.style = "visibility: visible;"
-    //options.backLayer.style = "visibility: visible;"
 
     // first, put the items in an array.
     this.container.allSortedItems = this.container.activeItemsArr;
