@@ -240,6 +240,10 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 self.activeItemsArr.push(item);
             }
         });
+
+        self.views.forEach(function (view) {
+            view.filter(activeItems);
+        });
     }
 
     // Helpers -- ARRANGEMENT
@@ -1944,6 +1948,10 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      */
     self.clearFilters = function () {
         filters = [];
+        
+        self.views.forEach(function (view) {
+            view.clearFilter();
+        });
     };
 
     // Methods -- CONTENT
