@@ -11454,8 +11454,6 @@ GridView.prototype = Object.create(BaseView.prototype);
 GridView.prototype.constructor = GridView;
 
 GridView.prototype.createView = function (options) {
-    options.mapLayer.style = "visibility: hidden;"
-
     // first, put the items in an array.
     this.container.allSortedItems = this.container.activeItemsArr;
 
@@ -11519,8 +11517,6 @@ GraphView.prototype = Object.create(BaseView.prototype);
 GraphView.prototype.constructor = GraphView;
 
 GraphView.prototype.createView = function (options) {
-    options.mapLayer.style = "visibility: hidden;"
-
     this.container.allSortedItems = this.container.bucketize[this.container.facet.type || "String"](this.container.sortFacet);
 
     var barWidth = this.container.containerRect.width / this.container.allSortedItems.length;
@@ -11761,7 +11757,6 @@ MapView.prototype = Object.create(BaseView.prototype);
 MapView.prototype.constructor = MapView;
 
 MapView.prototype.createView = function (options) {
-    options.mapLayer.style = "visibility: visible;"
     var self = this;
 
     if (this.map == null) {
@@ -15208,6 +15203,16 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         button.htmlElement.onclick = function () {
             button.select();
             viewer.views[index].select();
+
+            if (index < 2) {
+                frontLayer.style.visibility = "visible";
+                behindLayer.style.visibility = "visible";
+                mapLayer.style.visibility = "hidden";
+            } else if (index === 2) {
+                frontLayer.style.visibility = "hidden";
+                behindLayer.style.visibility = "hidden";
+                mapLayer.style.visibility = "visible";
+            }
         };
     });
 

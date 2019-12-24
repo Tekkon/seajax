@@ -22,7 +22,6 @@ MapView.prototype = Object.create(BaseView.prototype);
 MapView.prototype.constructor = MapView;
 
 MapView.prototype.createView = function (options) {
-    options.mapLayer.style = "visibility: visible;"
     var self = this;
 
     if (this.map == null) {
