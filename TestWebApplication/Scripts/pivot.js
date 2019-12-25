@@ -11859,7 +11859,7 @@ MapView.prototype.createView = function (options) {
 
         map.on('baselayerchange', setLayer);
 
-        L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
+        L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
 
         if (this.multipleClusterColors) {
             loadjscssfile("Content/MarkerCluster.Default.css", "css");
@@ -11867,7 +11867,11 @@ MapView.prototype.createView = function (options) {
             loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
         }
 
-        this.setMarkers(data);
+        if (options.activeItems !== {}) {
+            this.setMarkers(options.activeItems);
+        } else {
+            this.setMarkers(data);
+        }        
     }
 }
 
@@ -11913,15 +11917,15 @@ MapView.prototype.setMarkerIcon = function (marker, iconURL) {
     }));
 }
 
-MapView.prototype.setMarkers = function (values) {
+MapView.prototype.setMarkers = function (items) {
     var self = this;
 
     if (this.map != null) {
         this.markers = [];
         var filteredData = [];
 
-        if (typeof values === "object") {
-            values = Object.values(values).map(function (val) { return val.id !== undefined ? val.id : val.ID; })
+        if (typeof items === "object") {
+            var values = Object.values(items).map(function (val) { return val.id || val.ID; });
             filteredData = data.filter(function (elem) {
                 return values.includes(elem.ID);
             });
@@ -12015,6 +12019,18 @@ MapView.prototype.setMarkers = function (values) {
             resetHighlightedMarkers();
             self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
             self.highlightedMarkers.push(clickedMarker);
+
+            var itemsArr;
+            if (typeof items === "object") {
+                itemsArr = Object.values(items);
+            } else {
+                itemsArr = items;
+            }
+
+            var clickedItem = itemsArr.filter(function (item) {
+                return item.id === clickedMarker.options.dataRow.ID;
+            })[0];
+            self.container.trigger("showDetails", clickedItem, self.container.facets);
         });
 
         self.markerLayer.on("mouseover", function (event) {
@@ -12305,7 +12321,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             loc = locArray[i];
             center = loc.getCenter().minus(containerCenter);
             center = center.times(farEnough / center.distanceTo(originPoint));
-            result.push(new Seadragon2.Rect(center.x - 100, center.y - 100, loc.width * 1.2, loc.height * 1.2));
+            result.push(new Seadragon2.Rect(center.x - 100, center.y - 100, loc.width * 1.2, loc.height * 1.2));            
         }
         return result;
     }
@@ -12397,7 +12413,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 rectString = rect.toString();
                 if (!rects.hasOwnProperty(rectString)) {
                     rects[rectString] = true;
-                    source.push(rect);
+                    if (rect !== undefined) {
+                        source.push(rect);
+                    }
                 }
             }
 
@@ -12527,7 +12545,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 // make sure the source and destination arrays are the same length
                 // by inserting duplicates. we assume each has at least one entry.
                 for (i = sourceLength; i < destLength; i++) {
-                    source.push(source[0]);
+                    if (source[0] !== undefined) {
+                        source.push(source[0]);
+                    }
 
                     // we also must make duplicates of the HTML objects that represent this item, if
                     // they are being used instead of drawing on a canvas.
@@ -12545,7 +12565,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     });
                 }
                 for (i = destLength; i < sourceLength; i++) {
-                    dest.push(dest[0]);
+                    if (dest[0] !== undefined) {
+                        dest.push(dest[0]);
+                    }
                 }
 
                 if (beginAnimate(item)) {
@@ -13154,7 +13176,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
         self.views.filter(function (elem) {
             return elem.isSelected;
-        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
+        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, activeItems: activeItems });
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
@@ -13972,10 +13994,6 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      */
     self.clearFilters = function () {
         filters = [];
-        
-        self.views.forEach(function (view) {
-            view.clearFilter();
-        });
     };
 
     // Methods -- CONTENT
@@ -15205,12 +15223,12 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             viewer.views[index].select();
 
             if (index < 2) {
-                frontLayer.style.visibility = "visible";
-                behindLayer.style.visibility = "visible";
+                //frontLayer.style.visibility = "visible";
+                //behindLayer.style.visibility = "visible";
                 mapLayer.style.visibility = "hidden";
             } else if (index === 2) {
-                frontLayer.style.visibility = "hidden";
-                behindLayer.style.visibility = "hidden";
+                //frontLayer.style.visibility = "hidden";
+                //behindLayer.style.visibility = "hidden";
                 mapLayer.style.visibility = "visible";
             }
         };

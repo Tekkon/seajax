@@ -310,12 +310,12 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             viewer.views[index].select();
 
             if (index < 2) {
-                frontLayer.style.visibility = "visible";
-                behindLayer.style.visibility = "visible";
+                //frontLayer.style.visibility = "visible";
+                //behindLayer.style.visibility = "visible";
                 mapLayer.style.visibility = "hidden";
             } else if (index === 2) {
-                frontLayer.style.visibility = "hidden";
-                behindLayer.style.visibility = "hidden";
+                //frontLayer.style.visibility = "hidden";
+                //behindLayer.style.visibility = "hidden";
                 mapLayer.style.visibility = "visible";
             }
         };

@@ -124,7 +124,7 @@ MapView.prototype.createView = function (options) {
 
         map.on('baselayerchange', setLayer);
 
-        L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
+        L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
 
         if (this.multipleClusterColors) {
             loadjscssfile("Content/MarkerCluster.Default.css", "css");
@@ -132,7 +132,11 @@ MapView.prototype.createView = function (options) {
             loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
         }
 
-        this.setMarkers(data);
+        if (options.activeItems !== {}) {
+            this.setMarkers(options.activeItems);
+        } else {
+            this.setMarkers(data);
+        }        
     }
 }
 
@@ -178,15 +182,15 @@ MapView.prototype.setMarkerIcon = function (marker, iconURL) {
     }));
 }
 
-MapView.prototype.setMarkers = function (values) {
+MapView.prototype.setMarkers = function (items) {
     var self = this;
 
     if (this.map != null) {
         this.markers = [];
         var filteredData = [];
 
-        if (typeof values === "object") {
-            values = Object.values(values).map(function (val) { return val.id !== undefined ? val.id : val.ID; })
+        if (typeof items === "object") {
+            var values = Object.values(items).map(function (val) { return val.id || val.ID; });
             filteredData = data.filter(function (elem) {
                 return values.includes(elem.ID);
             });
@@ -280,6 +284,18 @@ MapView.prototype.setMarkers = function (values) {
             resetHighlightedMarkers();
             self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
             self.highlightedMarkers.push(clickedMarker);
+
+            var itemsArr;
+            if (typeof items === "object") {
+                itemsArr = Object.values(items);
+            } else {
+                itemsArr = items;
+            }
+
+            var clickedItem = itemsArr.filter(function (item) {
+                return item.id === clickedMarker.options.dataRow.ID;
+            })[0];
+            self.container.trigger("showDetails", clickedItem, self.container.facets);
         });
 
         self.markerLayer.on("mouseover", function (event) {

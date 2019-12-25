@@ -281,7 +281,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             loc = locArray[i];
             center = loc.getCenter().minus(containerCenter);
             center = center.times(farEnough / center.distanceTo(originPoint));
-            result.push(new Seadragon2.Rect(center.x - 100, center.y - 100, loc.width * 1.2, loc.height * 1.2));
+            result.push(new Seadragon2.Rect(center.x - 100, center.y - 100, loc.width * 1.2, loc.height * 1.2));            
         }
         return result;
     }
@@ -373,7 +373,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 rectString = rect.toString();
                 if (!rects.hasOwnProperty(rectString)) {
                     rects[rectString] = true;
-                    source.push(rect);
+                    if (rect !== undefined) {
+                        source.push(rect);
+                    }
                 }
             }
 
@@ -503,7 +505,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 // make sure the source and destination arrays are the same length
                 // by inserting duplicates. we assume each has at least one entry.
                 for (i = sourceLength; i < destLength; i++) {
-                    source.push(source[0]);
+                    if (source[0] !== undefined) {
+                        source.push(source[0]);
+                    }
 
                     // we also must make duplicates of the HTML objects that represent this item, if
                     // they are being used instead of drawing on a canvas.
@@ -521,7 +525,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     });
                 }
                 for (i = destLength; i < sourceLength; i++) {
-                    dest.push(dest[0]);
+                    if (dest[0] !== undefined) {
+                        dest.push(dest[0]);
+                    }
                 }
 
                 if (beginAnimate(item)) {
@@ -1130,7 +1136,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
         self.views.filter(function (elem) {
             return elem.isSelected;
-        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
+        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, activeItems: activeItems });
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
@@ -1948,10 +1954,6 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      */
     self.clearFilters = function () {
         filters = [];
-        
-        self.views.forEach(function (view) {
-            view.clearFilter();
-        });
     };
 
     // Methods -- CONTENT
