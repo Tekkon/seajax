@@ -93,7 +93,7 @@ function PivotNumberPicker(optionsDiv, items, facetName, currentFilterValues) {
 
     if (step < 0) {
         // none of the current items have this facet set, which is boring.
-        statusLabel.innerHTML = "Not Currently Applicable";
+        statusLabel.innerHTML = i18n.t("notApplicable");
         return self;
     }
 
@@ -168,11 +168,11 @@ function PivotNumberPicker(optionsDiv, items, facetName, currentFilterValues) {
             lowerBound === -Infinity ?
                 upperBound === Infinity ?
                     "" :
-                    "Under " + PivotNumber_format(upperBound) :
+                    i18n.t("under") + PivotNumber_format(upperBound) :
             upperBound === Infinity ?
-                "Over " + PivotNumber_format(lowerBound) :
+                i18n.t("over") + PivotNumber_format(lowerBound) :
                 lowerBound === upperBound ?
-                    "Exactly " + PivotNumber_format(lowerBound) :
+                    i18n.t("exactly") + PivotNumber_format(lowerBound) :
                     PivotNumber_format(lowerBound) + " &ndash; " + PivotNumber_format(upperBound);
     }
 
@@ -226,7 +226,7 @@ function PivotNumberPicker(optionsDiv, items, facetName, currentFilterValues) {
         upperBound = currentFilterValues.upperBound;
         if (lowerBound === undefined) {
             // the currently active filter is for items with this facet not set!
-            statusLabel.innerHTML = "(no info)";
+            statusLabel.innerHTML = i18n.t("noInfo");
             lowerBound = -Infinity;
             upperBound = Infinity;
         } else {

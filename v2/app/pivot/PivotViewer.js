@@ -748,14 +748,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             for (i = self.activeItemsArr.length - 1; i >= 0; i--) {
                 // any self.facet can have multiple values, and we sort the item into
                 // all applicable buckets. if it doesn't have any values, put it
-                // into the "(no info)" bucket.
+                // into the i18n.t("noInfo") bucket.
                 item = self.activeItemsArr[i];
                 id = item.id;
                 facetData = item.facets[facetName];
                 if (facetData) {
                     facetData.forEach(putInBucket);
                 } else {
-                    putInBucket("(no info)");
+                    putInBucket(i18n.t("noInfo"));
                 }
             }
 
@@ -778,7 +778,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             allSortedItems.sort(function (a, b) {
                 var relation = comparator(a.label, b.label);
                 return relation ?
-                    ((relation > 0 && b.label !== "(no info)") || a.label === "(no info)") ?
+                    ((relation > 0 && b.label !== i18n.t("noInfo")) || a.label === i18n.t("noInfo")) ?
                         1 :
                         -1 :
                     0;
@@ -793,7 +793,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     curBucketItems,
                     curBucket;
                 allSortedItems.forEach(function (bucket, index) {
-                    if (index % reducingFactor === 0 || bucket.label === "(no info)") {
+                    if (index % reducingFactor === 0 || bucket.label === i18n.t("noInfo")) {
                         // start a new bucket!
                         curBucket = {
                             label: bucket.label
@@ -814,7 +814,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         // check whether we should end working on this bucket
                         if (index % reducingFactor === reducingFactor - 1 ||
                                 index === allSortedItems.length - 1 ||
-                                allSortedItems[index + 1].label === "(no info)") {
+                                allSortedItems[index + 1].label === i18n.t("noInfo")) {
                             // end the current bucket!
                             curBucket.label += " to " + bucket.label;
                         }
@@ -913,7 +913,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             if (noInfoItems) {
                 noInfoBucket = [];
                 buckets.push({
-                    label: "(no info)",
+                    label: i18n.t("noInfo"),
                     items: noInfoBucket
                 });
             }
@@ -2054,7 +2054,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         try {
                             result = JSON.parse(self.responseText);
                         } catch (e) {
-                            Seadragon2.Debug.warn("Error in parsing JSON from content endpoint");
+                            Seadragon2.Debug.warn(i18n.t("parsingJsonError"));
                             return;
                         }
 
@@ -2115,7 +2115,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         }
                     }, function () {
                         // failure callback
-                        Seadragon2.Debug.warn("Received failure code from server-side renderer");
+                        Seadragon2.Debug.warn(i18n.t("receivedFailureCode"));
                     });
                 }());
             }
@@ -2177,7 +2177,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         try {
                             result = JSON.parse(self.responseText);
                         } catch (e) {
-                            Seadragon2.Debug.warn("Failed to parse JSON response from server.");
+                            Seadragon2.Debug.warn(i18n.t("parsingJsonFailed"));
                             return;
                         }
 
@@ -2197,7 +2197,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         }
                     }, function () {
                         // failure handler
-                        Seadragon2.Debug.warn("Failed to post collection data. Status text: " +
+                        Seadragon2.Debug.warn(i18n.t("postCollectionDataFailed") +
                             self.statusText + "; response: " + self.responseText);
                     }, jsonString);
                 }());
@@ -2300,7 +2300,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 sdimgArray.push(undefined);
                 break;
             default:
-                Seadragon2.Debug.warn("updateTemplate: unrecognized template type");
+                Seadragon2.Debug.warn(i18n.t("unrecognizedTemplateType"));
             }
         });
 

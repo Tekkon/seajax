@@ -10251,7 +10251,7 @@ function PivotNumberPicker(optionsDiv, items, facetName, currentFilterValues) {
 
     if (step < 0) {
         // none of the current items have this facet set, which is boring.
-        statusLabel.innerHTML = "Not Currently Applicable";
+        statusLabel.innerHTML = i18n.t("notApplicable");
         return self;
     }
 
@@ -10326,11 +10326,11 @@ function PivotNumberPicker(optionsDiv, items, facetName, currentFilterValues) {
             lowerBound === -Infinity ?
                 upperBound === Infinity ?
                     "" :
-                    "Under " + PivotNumber_format(upperBound) :
+                    i18n.t("under") + PivotNumber_format(upperBound) :
             upperBound === Infinity ?
-                "Over " + PivotNumber_format(lowerBound) :
+                i18n.t("over") + PivotNumber_format(lowerBound) :
                 lowerBound === upperBound ?
-                    "Exactly " + PivotNumber_format(lowerBound) :
+                    i18n.t("exactly") + PivotNumber_format(lowerBound) :
                     PivotNumber_format(lowerBound) + " &ndash; " + PivotNumber_format(upperBound);
     }
 
@@ -10384,7 +10384,7 @@ function PivotNumberPicker(optionsDiv, items, facetName, currentFilterValues) {
         upperBound = currentFilterValues.upperBound;
         if (lowerBound === undefined) {
             // the currently active filter is for items with this facet not set!
-            statusLabel.innerHTML = "(no info)";
+            statusLabel.innerHTML = i18n.t("noInfo");
             lowerBound = -Infinity;
             upperBound = Infinity;
         } else {
@@ -10509,18 +10509,18 @@ var PivotDate_getHalfMonth = function (month) {
     },
     
     PivotDate_months = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
+        i18n.t("january"),
+        i18n.t("february"),
+        i18n.t("march"),
+        i18n.t("april"),
+        i18n.t("may"),
+        i18n.t("june"),
+        i18n.t("july"),
+        i18n.t("august"),
+        i18n.t("september"),
+        i18n.t("october"),
+        i18n.t("november"),
+        i18n.t("december")
     ],
     
     PivotDate_minScale = -9,
@@ -10852,7 +10852,7 @@ var PivotDatePicker = function (optionsDiv, items, facetName, currentFilterValue
     if (min === Infinity) {
         // none of the items have this facet set
         label = makeElement("div", "pivot_numberlabel", optionsDiv);
-        addText(label, "Not Currently Applicable");
+        addText(label, i18n.t("notApplicable"));
         return this;
     }
 
@@ -12837,14 +12837,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             for (i = self.activeItemsArr.length - 1; i >= 0; i--) {
                 // any self.facet can have multiple values, and we sort the item into
                 // all applicable buckets. if it doesn't have any values, put it
-                // into the "(no info)" bucket.
+                // into the i18n.t("noInfo") bucket.
                 item = self.activeItemsArr[i];
                 id = item.id;
                 facetData = item.facets[facetName];
                 if (facetData) {
                     facetData.forEach(putInBucket);
                 } else {
-                    putInBucket("(no info)");
+                    putInBucket(i18n.t("noInfo"));
                 }
             }
 
@@ -12867,7 +12867,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             allSortedItems.sort(function (a, b) {
                 var relation = comparator(a.label, b.label);
                 return relation ?
-                    ((relation > 0 && b.label !== "(no info)") || a.label === "(no info)") ?
+                    ((relation > 0 && b.label !== i18n.t("noInfo")) || a.label === i18n.t("noInfo")) ?
                         1 :
                         -1 :
                     0;
@@ -12882,7 +12882,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     curBucketItems,
                     curBucket;
                 allSortedItems.forEach(function (bucket, index) {
-                    if (index % reducingFactor === 0 || bucket.label === "(no info)") {
+                    if (index % reducingFactor === 0 || bucket.label === i18n.t("noInfo")) {
                         // start a new bucket!
                         curBucket = {
                             label: bucket.label
@@ -12903,7 +12903,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         // check whether we should end working on this bucket
                         if (index % reducingFactor === reducingFactor - 1 ||
                                 index === allSortedItems.length - 1 ||
-                                allSortedItems[index + 1].label === "(no info)") {
+                                allSortedItems[index + 1].label === i18n.t("noInfo")) {
                             // end the current bucket!
                             curBucket.label += " to " + bucket.label;
                         }
@@ -13002,7 +13002,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             if (noInfoItems) {
                 noInfoBucket = [];
                 buckets.push({
-                    label: "(no info)",
+                    label: i18n.t("noInfo"),
                     items: noInfoBucket
                 });
             }
@@ -14143,7 +14143,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         try {
                             result = JSON.parse(self.responseText);
                         } catch (e) {
-                            Seadragon2.Debug.warn("Error in parsing JSON from content endpoint");
+                            Seadragon2.Debug.warn(i18n.t("parsingJsonError"));
                             return;
                         }
 
@@ -14204,7 +14204,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         }
                     }, function () {
                         // failure callback
-                        Seadragon2.Debug.warn("Received failure code from server-side renderer");
+                        Seadragon2.Debug.warn(i18n.t("receivedFailureCode"));
                     });
                 }());
             }
@@ -14266,7 +14266,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         try {
                             result = JSON.parse(self.responseText);
                         } catch (e) {
-                            Seadragon2.Debug.warn("Failed to parse JSON response from server.");
+                            Seadragon2.Debug.warn(i18n.t("parsingJsonFailed"));
                             return;
                         }
 
@@ -14286,7 +14286,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         }
                     }, function () {
                         // failure handler
-                        Seadragon2.Debug.warn("Failed to post collection data. Status text: " +
+                        Seadragon2.Debug.warn(i18n.t("postCollectionDataFailed") +
                             self.statusText + "; response: " + self.responseText);
                     }, jsonString);
                 }());
@@ -14389,7 +14389,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 sdimgArray.push(undefined);
                 break;
             default:
-                Seadragon2.Debug.warn("updateTemplate: unrecognized template type");
+                Seadragon2.Debug.warn(i18n.t("unrecognizedTemplateType"));
             }
         });
 
@@ -15170,7 +15170,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                             filter = {lowerBound:value, upperBound:new Date(value.getTime() + 1000)};
                             break;
                         default:
-                            Seadragon2.Debug.warn("Unrecognized facet type in details pane: " + facetCategory.type);
+                            Seadragon2.Debug.warn(i18n.t("unrecognizedFacet") + facetCategory.type);
                     }
                     if (filter !== undefined && facetCategory.isFilterVisible) {
                         // the user should be able to click on this value to re-filter by it.
@@ -15304,7 +15304,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     };
 
     var sortLabel = makeElement("div", "pivot_sorttools pivot_subtle", topBar);
-    addText(sortLabel, "Sort:");    
+    addText(sortLabel, i18n.t("sort"));
 
     // functions for updating zoom slider from viewer and vice versa
     viewer.addListener("zoom", function (percent) {
@@ -15401,7 +15401,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                         };
                         break;
                     default:
-                        Seadragon2.Debug.warn("Unrecognized facet type " + type);
+                        Seadragon2.Debug.warn(i8n.t("unrecognizedFacet1") + type);
                         return;
                 }
                 filterData = activeFilters[facet] = {
@@ -15632,7 +15632,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                 datePicker.addListener("filter", onDateRangeSet);
                 break;
             default:
-                Seadragon2.Debug.warn("Unrecognized facet type: " + openFacetType);
+                Seadragon2.Debug.warn(i18n.t("unrecognizedFacet1") + openFacetType);
         }
 
         // now open up the facet
@@ -15708,7 +15708,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             searchButton.onmousedown = clearSearch;
         } else {
             searchForm.className = "pivot_watermark";
-            searchBox.value = "Search...";
+            searchBox.value = i18n.t("search");
             searchButton.onmousedown = null;
         }
         searchSuggestions.innerHTML = "";
@@ -16094,11 +16094,11 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                             return temp(a.value, b.value);
                         });
                     }());
-                    comparatorNames.push("Sort: " + facet.orders[0].name);
+                    comparatorNames.push(i18n.t("sort1") + facet.orders[0].name);
                 }
-                comparatorNames.push("Sort: Quantity");
+                comparatorNames.push(i18n.t("sortQuantity"));
                 comparators.push(compareByQuantity);
-                comparatorNames.push("Sort: A-Z");
+                comparatorNames.push(i18n.t("sortAZ"));
                 comparators.push(compareAlphabetical);
             }
             clearButton = clearButtons[name] = clearButton.cloneNode(true);

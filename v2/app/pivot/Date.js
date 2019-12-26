@@ -26,18 +26,18 @@ var PivotDate_getHalfMonth = function (month) {
     },
     
     PivotDate_months = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
+        i18n.t("january"),
+        i18n.t("february"),
+        i18n.t("march"),
+        i18n.t("april"),
+        i18n.t("may"),
+        i18n.t("june"),
+        i18n.t("july"),
+        i18n.t("august"),
+        i18n.t("september"),
+        i18n.t("october"),
+        i18n.t("november"),
+        i18n.t("december")
     ],
     
     PivotDate_minScale = -9,

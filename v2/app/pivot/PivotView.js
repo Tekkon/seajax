@@ -208,7 +208,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                             filter = {lowerBound:value, upperBound:new Date(value.getTime() + 1000)};
                             break;
                         default:
-                            Seadragon2.Debug.warn("Unrecognized facet type in details pane: " + facetCategory.type);
+                            Seadragon2.Debug.warn(i18n.t("unrecognizedFacet") + facetCategory.type);
                     }
                     if (filter !== undefined && facetCategory.isFilterVisible) {
                         // the user should be able to click on this value to re-filter by it.
@@ -342,7 +342,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     };
 
     var sortLabel = makeElement("div", "pivot_sorttools pivot_subtle", topBar);
-    addText(sortLabel, "Sort:");    
+    addText(sortLabel, i18n.t("sort"));
 
     // functions for updating zoom slider from viewer and vice versa
     viewer.addListener("zoom", function (percent) {
@@ -439,7 +439,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                         };
                         break;
                     default:
-                        Seadragon2.Debug.warn("Unrecognized facet type " + type);
+                        Seadragon2.Debug.warn(i8n.t("unrecognizedFacet1") + type);
                         return;
                 }
                 filterData = activeFilters[facet] = {
@@ -670,7 +670,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                 datePicker.addListener("filter", onDateRangeSet);
                 break;
             default:
-                Seadragon2.Debug.warn("Unrecognized facet type: " + openFacetType);
+                Seadragon2.Debug.warn(i18n.t("unrecognizedFacet1") + openFacetType);
         }
 
         // now open up the facet
@@ -746,7 +746,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             searchButton.onmousedown = clearSearch;
         } else {
             searchForm.className = "pivot_watermark";
-            searchBox.value = "Search...";
+            searchBox.value = i18n.t("search");
             searchButton.onmousedown = null;
         }
         searchSuggestions.innerHTML = "";
@@ -1132,11 +1132,11 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                             return temp(a.value, b.value);
                         });
                     }());
-                    comparatorNames.push("Sort: " + facet.orders[0].name);
+                    comparatorNames.push(i18n.t("sort1") + facet.orders[0].name);
                 }
-                comparatorNames.push("Sort: Quantity");
+                comparatorNames.push(i18n.t("sortQuantity"));
                 comparators.push(compareByQuantity);
-                comparatorNames.push("Sort: A-Z");
+                comparatorNames.push(i18n.t("sortAZ"));
                 comparators.push(compareAlphabetical);
             }
             clearButton = clearButtons[name] = clearButton.cloneNode(true);

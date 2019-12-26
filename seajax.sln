@@ -271,6 +271,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "leaflet", "leaflet", "{505B
 		v2\build\leaflet\standalone.txt = v2\build\leaflet\standalone.txt
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "translation", "translation", "{DF5D5025-C9B1-4926-ADAA-C825C1DC78FB}"
+	ProjectSection(SolutionItems) = preProject
+		v2\app\translation\en.js = v2\app\translation\en.js
+		v2\app\translation\I18n.js = v2\app\translation\I18n.js
+		v2\app\translation\ru.js = v2\app\translation\ru.js
+		v2\app\translation\translation.js = v2\app\translation\translation.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "translation", "translation", "{9853F964-9B9F-4D27-A955-E5314B46AAE4}"
+	ProjectSection(SolutionItems) = preProject
+		v2\build\translation\standalone.txt = v2\build\translation\standalone.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -316,5 +329,7 @@ Global
 		{04B52929-57B6-405F-9C36-1FBBE221FE58} = {825F6A1F-7AD1-47B4-8F3E-EE0DAEE7A170}
 		{F702526B-C609-4EEF-96DB-2A13FFA78109} = {9175816F-3F23-42D6-9BB2-4DAD1062FB5C}
 		{505BE2F8-2319-41DD-8F76-5F470688C36F} = {2E308CF1-59C0-41E7-859A-E28D5A02F72F}
+		{DF5D5025-C9B1-4926-ADAA-C825C1DC78FB} = {9175816F-3F23-42D6-9BB2-4DAD1062FB5C}
+		{9853F964-9B9F-4D27-A955-E5314B46AAE4} = {2E308CF1-59C0-41E7-859A-E28D5A02F72F}
 	EndGlobalSection
 EndGlobal

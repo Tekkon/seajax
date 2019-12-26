@@ -59,7 +59,7 @@ var PivotDatePicker = function (optionsDiv, items, facetName, currentFilterValue
     if (min === Infinity) {
         // none of the items have this facet set
         label = makeElement("div", "pivot_numberlabel", optionsDiv);
-        addText(label, "Not Currently Applicable");
+        addText(label, i18n.t("notApplicable"));
         return this;
     }
 
