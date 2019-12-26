@@ -282,6 +282,11 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
     
+    var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Export to CSV");
+    exportButton.htmlElement.onclick = function () {
+        (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return item.facets; }));
+    };
+
     var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_hoverable", topBar, "Map View");
     var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
     var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_activesort", topBar, "Grid View");    
@@ -310,12 +315,12 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             viewer.views[index].select();
 
             if (index < 2) {
-                //frontLayer.style.visibility = "visible";
-                //behindLayer.style.visibility = "visible";
+                frontLayer.style.visibility = "visible";
+                behindLayer.style.visibility = "visible";
                 mapLayer.style.visibility = "hidden";
             } else if (index === 2) {
-                //frontLayer.style.visibility = "hidden";
-                //behindLayer.style.visibility = "hidden";
+                frontLayer.style.visibility = "hidden";
+                behindLayer.style.visibility = "hidden";
                 mapLayer.style.visibility = "visible";
             }
         };
@@ -337,7 +342,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     };
 
     var sortLabel = makeElement("div", "pivot_sorttools pivot_subtle", topBar);
-    addText(sortLabel, "Sort:");
+    addText(sortLabel, "Sort:");    
 
     // functions for updating zoom slider from viewer and vice versa
     viewer.addListener("zoom", function (percent) {

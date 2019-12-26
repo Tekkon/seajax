@@ -94,6 +94,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\images\export.png" />
     <Content Include="Content\images\icon-point-gas-inverted.png" />
     <Content Include="Content\images\icon-point-gas.png" />
     <Content Include="Content\images\layers.png" />

@@ -62,6 +62,8 @@ zoomcontainer/Viewer.js
 ../app/pivot/GridView.js
 ../app/pivot/GraphView.js
 ../app/pivot/MapView.js
+../app/pivot/Exporter.js
+../app/pivot/CSVExporter.js
 ../app/pivot/PivotViewer.js
 ../app/pivot/CxmlLoader.js
 ../app/pivot/PivotView.js
