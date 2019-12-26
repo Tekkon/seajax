@@ -14,8 +14,8 @@ CSVExporter.prototype.constructor = CSVExporter;
 
 CSVExporter.prototype.export = function (rows) {
     var self = this;
-
-    var csvContent = "data:text/csv;charset=" + self.encoding + "," + Object.keys(rows[0]).join(self.fieldSeparator) + self.rowSeparator +
+    var bom = '\ufeff';
+    var csvContent = "data:text/csv;charset=" + self.encoding + "," + bom + Object.keys(rows[0]).join(self.fieldSeparator) + self.rowSeparator +
         rows.map(function (row) { 
             return Object.values(row).map(function (r) {
                 var val = Array.isArray(r) ? r[0] : r;
@@ -41,6 +41,6 @@ CSVExporter.prototype.openFile = function (content) {
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", "data.csv");
     document.body.appendChild(link); // Required for FF
-
     link.click();
+    document.body.removeChild(link);
 }

@@ -12057,8 +12057,8 @@ CSVExporter.prototype.constructor = CSVExporter;
 
 CSVExporter.prototype.export = function (rows) {
     var self = this;
-
-    var csvContent = "data:text/csv;charset=" + self.encoding + "," + Object.keys(rows[0]).join(self.fieldSeparator) + self.rowSeparator +
+    var bom = '\ufeff';
+    var csvContent = "data:text/csv;charset=" + self.encoding + "," + bom + Object.keys(rows[0]).join(self.fieldSeparator) + self.rowSeparator +
         rows.map(function (row) { 
             return Object.values(row).map(function (r) {
                 var val = Array.isArray(r) ? r[0] : r;
@@ -12084,8 +12084,8 @@ CSVExporter.prototype.openFile = function (content) {
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", "data.csv");
     document.body.appendChild(link); // Required for FF
-
     link.click();
+    document.body.removeChild(link);
 }
 // Copyright (c) Microsoft Corporation
 // All rights reserved. 
@@ -15243,15 +15243,15 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     // the rest of the top bar stuff.
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
-    
+
+    var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_hoverable", topBar, "Map View");
+    var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
+    var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_activesort", topBar, "Grid View");
+
     var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Export to CSV");
     exportButton.htmlElement.onclick = function () {
         (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return item.facets; }));
     };
-
-    var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_hoverable", topBar, "Map View");
-    var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
-    var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_activesort", topBar, "Grid View");    
 
     var buttons = [
         gridButton,
