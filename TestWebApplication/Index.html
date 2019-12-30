@@ -52,13 +52,13 @@
                     console.log(error);
                 },
                 success: function (json) {
-                    data = AddHeight(json);
+                    data = PrepairData(json);
                     LoadCollection(pivotViewer, data);
                 }
             });
         });
 
-        function AddHeight(data) {
+        function PrepairData(data) {
             data.forEach(function(element) {
                 element['Последнее обновление'] = new Date(element['LAST_UPDATE']).toLocaleString("ru-RU");
                 element['Название'] = element['NAME'];

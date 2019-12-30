@@ -10129,7 +10129,11 @@ var PIVOT_PARAMETERS = {
         markerIconURL: "Content/images/icon-point-gas.png",
         highlightedMarkerIconURL: "Content/images/icon-point-gas-inverted.png",
         shadowURL: "Content/images/marker-shadow.png",
-        highlightedMarkers: []
+        highlightedMarkers: [],
+        latitudeFacetName: "LATITUDE",
+        longitudeFacetName: "LONGITUDE",
+        labelFacetName: "ORG_NAME",
+        hintFacetName: "ORG_NAME"
     }
 }
 // Copyright (c) Microsoft Corporation
@@ -11534,9 +11538,6 @@ BaseView.prototype.filter = function (filterData) {
 
 }
 
-BaseView.prototype.clearFilter = function () {
-
-}
 var GridView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
 }
@@ -11961,17 +11962,15 @@ MapView.prototype.createView = function (options) {
         if (options.activeItems !== {}) {
             this.setMarkers(options.activeItems);
         } else {
-            this.setMarkers(data);
-        }        
+            this.setMarkers(options.items);
+        }
+
+        self.items = options.items;
     }
 }
 
 MapView.prototype.filter = function (filterData) {
     this.setMarkers(filterData);
-}
-
-MapView.prototype.clearFilter = function () {
-    this.setMarkers(data);
 }
 
 MapView.prototype.substituteValues = function (s, params) {
@@ -12008,27 +12007,30 @@ MapView.prototype.setMarkerIcon = function (marker, iconURL) {
     }));
 }
 
-MapView.prototype.setMarkers = function (items) {
+MapView.prototype.setMarkers = function (_items) {
     var self = this;
 
     if (this.map != null) {
         this.markers = [];
         var filteredData = [];
 
-        if (typeof items === "object") {
-            var values = Object.values(items).map(function (val) { return val.id || val.ID; });
-            filteredData = data.filter(function (elem) {
+        if (typeof _items === "object") {
+            /*var values = Object.values(_items).map(function (val) { return val.id || val.ID; });
+            filteredData = self.items.filter(function (elem) {
                 return values.includes(elem.ID);
-            });
+            });*/
+
+            filteredData = Object.values(_items);
         } else if (Array.isArray(values)) {
-            filteredData = data;
+            //filteredData = self.items;
+            filteredData = _items;
         }
 
         filteredData.forEach(function (dataRow) {
-            var latitude = dataRow.LATITUDE;
-            var longitude = dataRow.LONGITUDE;
-            var label = dataRow.ORG_NAME;
-            var hint = dataRow.ORG_NAME;
+            var latitude = dataRow.facets[PIVOT_PARAMETERS.map.latitudeFacetName][0];
+            var longitude = dataRow.facets[PIVOT_PARAMETERS.map.longitudeFacetName][0];
+            var label = dataRow.facets[PIVOT_PARAMETERS.map.labelFacetName][0];
+            var hint = dataRow.facets[PIVOT_PARAMETERS.map.hintFacetName][0];
 
             if (typeof latitude != 'undefined' && latitude != null &&
                 typeof longitude != 'undefined' && longitude != null) {
@@ -12045,7 +12047,7 @@ MapView.prototype.setMarkers = function (items) {
                 }
 
                 self.setMarkerIcon(marker, self.markerIconURL);
-                marker.options.dataRow = dataRow;
+                marker.options.dataRow = dataRow.facets;
 
                 self.markers.push(marker);
             }
@@ -12112,14 +12114,14 @@ MapView.prototype.setMarkers = function (items) {
             self.highlightedMarkers.push(clickedMarker);
 
             var itemsArr;
-            if (typeof items === "object") {
-                itemsArr = Object.values(items);
+            if (typeof _items === "object") {
+                itemsArr = Object.values(_items);
             } else {
-                itemsArr = items;
+                itemsArr = _items;
             }
 
             var clickedItem = itemsArr.filter(function (item) {
-                return item.id === clickedMarker.options.dataRow.ID;
+                return item.id === clickedMarker.options.dataRow.ID[0];
             })[0];
             self.container.trigger("showDetails", clickedItem, self.container.facets);
         });
@@ -13316,7 +13318,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
         self.views.filter(function (elem) {
             return elem.isSelected;
-        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, activeItems: activeItems });
+        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {

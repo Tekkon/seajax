@@ -12,6 +12,10 @@ var PIVOT_PARAMETERS = {
         markerIconURL: "Content/images/icon-point-gas.png",
         highlightedMarkerIconURL: "Content/images/icon-point-gas-inverted.png",
         shadowURL: "Content/images/marker-shadow.png",
-        highlightedMarkers: []
+        highlightedMarkers: [],
+        latitudeFacetName: "LATITUDE",
+        longitudeFacetName: "LONGITUDE",
+        labelFacetName: "ORG_NAME",
+        hintFacetName: "ORG_NAME"
     }
 }
