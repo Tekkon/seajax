@@ -188,14 +188,8 @@ MapView.prototype.setMarkers = function (_items) {
         var filteredData = [];
 
         if (typeof _items === "object") {
-            /*var values = Object.values(_items).map(function (val) { return val.id || val.ID; });
-            filteredData = self.items.filter(function (elem) {
-                return values.includes(elem.ID);
-            });*/
-
             filteredData = Object.values(_items);
         } else if (Array.isArray(values)) {
-            //filteredData = self.items;
             filteredData = _items;
         }
 
