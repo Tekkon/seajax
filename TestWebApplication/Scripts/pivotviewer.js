@@ -12121,7 +12121,7 @@ MapView.prototype.setMarkers = function (_items) {
             }
 
             var clickedItem = itemsArr.filter(function (item) {
-                return item.id === clickedMarker.options.dataRow[self.idFacetName][0];
+                return item.facets === clickedMarker.options.dataRow;
             })[0];
             self.container.trigger("showDetails", clickedItem, self.container.facets);
         });
