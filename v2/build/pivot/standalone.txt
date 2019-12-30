@@ -49,6 +49,10 @@ zoomcontainer/HTMLZoomContainer.js
 zoomcontainer/CanvasZoomContainer.js
 zoomcontainer/Viewport.js
 zoomcontainer/Viewer.js
+../app/translation/I18n.js
+../app/translation/translation.js
+../app/translation/en.js
+../app/translation/ru.js
 ../app/pivot/Pivot.js
 ../app/pivot/Number.js
 ../app/pivot/NumberPicker.js
