@@ -141,9 +141,9 @@
     <Content Include="Scripts\leaflet.min.js" />
     <Content Include="Scripts\leafletHtmlIcon.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
-    <Content Include="Scripts\pivot.js" />
-    <Content Include="Scripts\pivot.min.js" />
     <Content Include="Content\PivotView.css" />
+    <Content Include="Scripts\pivotviewer.js" />
+    <Content Include="Scripts\pivotviewer.min.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\Yandex.js" />

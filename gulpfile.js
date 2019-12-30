@@ -15,7 +15,7 @@ var TARGETS = {
     zoom: getFilesToBuild("zoom/standalone.txt"),
     zoomimage: getFilesToBuild("zoomimage/standalone.txt"),
     //translation: getFilesToBuild("translation/standalone.txt"),
-    pivot: getFilesToBuild("pivot/standalone.txt"),
+    pivotviewer: getFilesToBuild("pivot/standalone.txt"),
     ajax: getFilesToBuild("ajax/standalone.txt"),
     utils: getFilesToBuild("utils/standalone.txt"),
     leaflet: getFilesToBuild("leaflet/standalone.txt")

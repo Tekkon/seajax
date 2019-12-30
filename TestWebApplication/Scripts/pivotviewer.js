@@ -10085,35 +10085,35 @@ TRANSLATION.en = {
     exactly: "Exactly "
 }
 TRANSLATION.ru = {
-    sort: "Сортировка:",
-    sort1: "Сортировка: ",
-    sortQuantity: "Сортировка: Количество",
-    sortAZ: "Сортировка: А-Я",
-    unrecognizedFacet: "Неопознанный тип фасета в панели деталей: ",
-    unrecognizedFacet1: "Неопознанный тип фасета ",
-    search: "Поиск...",
-    noInfo: "(нет данных)",
-    parsingJsonError: "Ошибка в парсинге JSON",
-    receivedFailureCode: "Получен код ошибки со стороны сервера",
-    parsingJsonFailed: "Не удалось распарсить JSON-ответ от сервера.",
-    postCollectionDataFailed: "Не удалось отправить данные коллекции. Текст ошибки: ",
-    unrecognizedTemplateType: "updateTemplate: не опознан тип шаблона",
-    january: "Январь",
+    sort: "РЎРѕСЂС‚РёСЂРѕРІРєР°:",
+    sort1: "РЎРѕСЂС‚РёСЂРѕРІРєР°: ",
+    sortQuantity: "РЎРѕСЂС‚РёСЂРѕРІРєР°: РљРѕР»РёС‡РµСЃС‚РІРѕ",
+    sortAZ: "РЎРѕСЂС‚РёСЂРѕРІРєР°: Рђ-РЇ",
+    unrecognizedFacet: "РќРµРѕРїРѕР·РЅР°РЅРЅС‹Р№ С‚РёРї С„Р°СЃРµС‚Р° РІ РїР°РЅРµР»Рё РґРµС‚Р°Р»РµР№: ",
+    unrecognizedFacet1: "РќРµРѕРїРѕР·РЅР°РЅРЅС‹Р№ С‚РёРї С„Р°СЃРµС‚Р° ",
+    search: "РџРѕРёСЃРє...",
+    noInfo: "(РЅРµС‚ РґР°РЅРЅС‹С…)",
+    parsingJsonError: "РћС€РёР±РєР° РІ РїР°СЂСЃРёРЅРіРµ JSON",
+    receivedFailureCode: "РџРѕР»СѓС‡РµРЅ РєРѕРґ РѕС€РёР±РєРё СЃРѕ СЃС‚РѕСЂРѕРЅС‹ СЃРµСЂРІРµСЂР°",
+    parsingJsonFailed: "РќРµ СѓРґР°Р»РѕСЃСЊ СЂР°СЃРїР°СЂСЃРёС‚СЊ JSON-РѕС‚РІРµС‚ РѕС‚ СЃРµСЂРІРµСЂР°.",
+    postCollectionDataFailed: "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ РґР°РЅРЅС‹Рµ РєРѕР»Р»РµРєС†РёРё. РўРµРєСЃС‚ РѕС€РёР±РєРё: ",
+    unrecognizedTemplateType: "updateTemplate: РЅРµ РѕРїРѕР·РЅР°РЅ С‚РёРї С€Р°Р±Р»РѕРЅР°",
+    january: "РЇРЅРІР°СЂСЊ",
     february: "February",
-    march: "Март",
-    april: "Апрель",
-    may: "Май",
-    june: "Июнь",
-    july: "Июль",
-    august: "Август",
-    september: "Сентябрь",
-    october: "Октябрь",
-    november: "Ноябрь",
-    december: "Декабрь",
-    notApplicable: "Не применимо в данный момент",
-    under: "Менее ",
-    over: "Более ",
-    exactly: "Ровно "
+    march: "РњР°СЂС‚",
+    april: "РђРїСЂРµР»СЊ",
+    may: "РњР°Р№",
+    june: "РСЋРЅСЊ",
+    july: "РСЋР»СЊ",
+    august: "РђРІРіСѓСЃС‚",
+    september: "РЎРµРЅС‚СЏР±СЂСЊ",
+    october: "РћРєС‚СЏР±СЂСЊ",
+    november: "РќРѕСЏР±СЂСЊ",
+    december: "Р”РµРєР°Р±СЂСЊ",
+    notApplicable: "РќРµ РїСЂРёРјРµРЅРёРјРѕ РІ РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚",
+    under: "РњРµРЅРµРµ ",
+    over: "Р‘РѕР»РµРµ ",
+    exactly: "Р РѕРІРЅРѕ "
 }
 // Copyright (c) Microsoft Corporation
 // All rights reserved. 
@@ -11923,11 +11923,11 @@ MapView.prototype.createView = function (options) {
         }
 
         var baseMaps = {
-            "РЇРЅРґРµРєСЃ": yndx,
-            "РЇРЅРґРµРєСЃ СЃРїСѓС‚РЅРёРє": ysat,
-            "РЇРЅРґРµРєСЃ РїСЂРѕР±РєРё": ytraffic,
+            "Р Р‡Р Р…Р Т‘Р ВµР С”РЎРѓ": yndx,
+            "Р Р‡Р Р…Р Т‘Р ВµР С”РЎРѓ РЎРѓР С—РЎС“РЎвЂљР Р…Р С‘Р С”": ysat,
+            "Р Р‡Р Р…Р Т‘Р ВµР С”РЎРѓ Р С—РЎР‚Р С•Р В±Р С”Р С‘": ytraffic,
             "Google": googleMap,
-            "Google СЃРїСѓС‚РЅРёРє": googleMapSat,
+            "Google РЎРѓР С—РЎС“РЎвЂљР Р…Р С‘Р С”": googleMapSat,
             "Open Streets": openStreetsMap
         };
 
