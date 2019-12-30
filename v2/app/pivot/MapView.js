@@ -16,6 +16,11 @@
     this.highlightedMarkerIconURL = PIVOT_PARAMETERS.map.highlightedMarkerIconURL;
     this.shadowURL = PIVOT_PARAMETERS.map.shadowURL;
     this.highlightedMarkers = PIVOT_PARAMETERS.map.highlightedMarkers;
+    this.latitudeFacetName = PIVOT_PARAMETERS.map.latitudeFacetName;
+    this.longitudeFacetName = PIVOT_PARAMETERS.map.longitudeFacetName;
+    this.labelFacetName = PIVOT_PARAMETERS.map.labelFacetName;
+    this.hintFacetName = PIVOT_PARAMETERS.map.hintFacetName;
+    this.idFacetName = PIVOT_PARAMETERS.map.idFacetName;
 }
 
 MapView.prototype = Object.create(BaseView.prototype);
@@ -194,10 +199,10 @@ MapView.prototype.setMarkers = function (_items) {
         }
 
         filteredData.forEach(function (dataRow) {
-            var latitude = dataRow.facets[PIVOT_PARAMETERS.map.latitudeFacetName][0];
-            var longitude = dataRow.facets[PIVOT_PARAMETERS.map.longitudeFacetName][0];
-            var label = dataRow.facets[PIVOT_PARAMETERS.map.labelFacetName][0];
-            var hint = dataRow.facets[PIVOT_PARAMETERS.map.hintFacetName][0];
+            var latitude = dataRow.facets[self.latitudeFacetName][0];
+            var longitude = dataRow.facets[self.longitudeFacetName][0];
+            var label = dataRow.facets[self.labelFacetName][0];
+            var hint = dataRow.facets[self.hintFacetName][0];
 
             if (typeof latitude != 'undefined' && latitude != null &&
                 typeof longitude != 'undefined' && longitude != null) {
@@ -288,7 +293,7 @@ MapView.prototype.setMarkers = function (_items) {
             }
 
             var clickedItem = itemsArr.filter(function (item) {
-                return item.id === clickedMarker.options.dataRow.ID[0];
+                return item.id === clickedMarker.options.dataRow[self.idFacetName][0];
             })[0];
             self.container.trigger("showDetails", clickedItem, self.container.facets);
         });

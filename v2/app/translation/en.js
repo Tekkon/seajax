@@ -1,4 +1,4 @@
-TRANSLATION.en = {
+﻿TRANSLATION.en = {
     sort: "Sort:",
     sort1: "Sort: ",
     sortQuantity: "Sort: Quantity",

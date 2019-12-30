@@ -1,4 +1,4 @@
-var GridView = function (container, isSelected) {
+﻿var GridView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
 }
 

@@ -1,4 +1,4 @@
-var CSVExporter = function (decimalSeparator, fieldSeparator, rowSeparator, quote, culture, encoding) {
+﻿var CSVExporter = function (decimalSeparator, fieldSeparator, rowSeparator, quote, culture, encoding) {
     Exporter.call(this);
 
     this.decimalSeparator = decimalSeparator;

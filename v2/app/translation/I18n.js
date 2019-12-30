@@ -1,4 +1,4 @@
-var I18n = function (lang) {
+﻿var I18n = function (lang) {
     this.lang = lang;
 }
 

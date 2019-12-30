@@ -1,3 +1,3 @@
-var Exporter = function () {
+﻿var Exporter = function () {
 
 }

@@ -1,4 +1,4 @@
-var BaseView = function (container, isSelected) {
+﻿var BaseView = function (container, isSelected) {
     this.isSelected = isSelected;
     this.container = container;
 }

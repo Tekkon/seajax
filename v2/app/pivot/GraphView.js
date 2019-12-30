@@ -1,4 +1,4 @@
-var GraphView = function (container, isSelected) {
+﻿var GraphView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
 }
 

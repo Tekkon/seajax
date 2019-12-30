@@ -1,4 +1,4 @@
-var PIVOT_PARAMETERS = {
+﻿var PIVOT_PARAMETERS = {
     map: {
         iconHTML: "",
         higligtedIconHTML: "",
@@ -16,6 +16,7 @@ var PIVOT_PARAMETERS = {
         latitudeFacetName: "LATITUDE",
         longitudeFacetName: "LONGITUDE",
         labelFacetName: "ORG_NAME",
-        hintFacetName: "ORG_NAME"
+        hintFacetName: "ORG_NAME",
+        idFacetName: "ID"
     }
 }
