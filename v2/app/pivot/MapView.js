@@ -3,19 +3,19 @@
 
     this.markers = [];
     this.mLayers = [];
-    this.iconHTML = "";
-    this.higligtedIconHTML = "";
-    this.popupHTML = "";
-    this.popupURL = "";
-    this.enableClustering = true;
-    this.multipleClusterColors = false;
-    this.clusterRadius = 50;
-    this.startClusterLimit = 10;
-    this.myURL = "";
-    this.markerIconURL = "Content/images/icon-point-gas.png";
-    this.highlightedMarkerIconURL = "Content/images/icon-point-gas-inverted.png";
-    this.shadowURL = "Content/images/marker-shadow.png";
-    this.highlightedMarkers = [];
+    this.iconHTML = PIVOT_PARAMETERS.map.iconHTML;
+    this.higligtedIconHTML = PIVOT_PARAMETERS.map.higligtedIconHTML;
+    this.popupHTML = PIVOT_PARAMETERS.map.popupHTML;
+    this.popupURL = PIVOT_PARAMETERS.map.popupURL;
+    this.enableClustering = PIVOT_PARAMETERS.map.enableClustering;
+    this.multipleClusterColors = PIVOT_PARAMETERS.map.multipleClusterColors;
+    this.clusterRadius = PIVOT_PARAMETERS.map.clusterRadius;
+    this.startClusterLimit = PIVOT_PARAMETERS.map.startClusterLimit;
+    this.myURL = PIVOT_PARAMETERS.map.myURL;
+    this.markerIconURL = PIVOT_PARAMETERS.map.markerIconURL;
+    this.highlightedMarkerIconURL = PIVOT_PARAMETERS.map.highlightedMarkerIconURL;
+    this.shadowURL = PIVOT_PARAMETERS.map.shadowURL;
+    this.highlightedMarkers = PIVOT_PARAMETERS.map.highlightedMarkers;
 }
 
 MapView.prototype = Object.create(BaseView.prototype);

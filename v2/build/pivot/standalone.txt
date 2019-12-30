@@ -53,6 +53,7 @@ zoomcontainer/Viewer.js
 ../app/translation/translation.js
 ../app/translation/en.js
 ../app/translation/ru.js
+../app/pivot/Parameters.js
 ../app/pivot/Pivot.js
 ../app/pivot/Number.js
 ../app/pivot/NumberPicker.js
