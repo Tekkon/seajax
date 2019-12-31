@@ -58,6 +58,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pivot", "pivot", "{0B3D2BCE
 		v2\app\pivot\MapView.js = v2\app\pivot\MapView.js
 		v2\app\pivot\Number.js = v2\app\pivot\Number.js
 		v2\app\pivot\NumberPicker.js = v2\app\pivot\NumberPicker.js
+		v2\app\pivot\OptimizedResize.js = v2\app\pivot\OptimizedResize.js
 		v2\app\pivot\Parameters.js = v2\app\pivot\Parameters.js
 		v2\app\pivot\Pivot.js = v2\app\pivot\Pivot.js
 		TestWebApplication\Content\PivotView.css = TestWebApplication\Content\PivotView.css
