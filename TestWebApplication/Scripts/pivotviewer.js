@@ -11861,9 +11861,9 @@ MapView.prototype.createView = function (options) {
         var div = makeElement("div", "", options.mapLayer);
         
         function setMapLayerStyle() {
-            var width = options.mapLayer.clientWidth - options.leftRailWidth;
-            var height = options.mapLayer.clientHeight - 11;
-            div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: 215px; margin-top: 6px;";
+            var width = options.mapLayer.clientWidth - options.leftRailWidth - 11;
+            var height = options.mapLayer.clientHeight - 12;
+            div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
         }
         setMapLayerStyle();
 
