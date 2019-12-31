@@ -33,7 +33,7 @@ MapView.prototype.createView = function (options) {
         var div = makeElement("div", "", options.mapLayer);
         
         function setMapLayerStyle() {
-            var width = options.mapLayer.clientWidth - 220;
+            var width = options.mapLayer.clientWidth - options.leftRailWidth;
             var height = options.mapLayer.clientHeight - 11;
             div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: 215px; margin-top: 6px;";
         }
