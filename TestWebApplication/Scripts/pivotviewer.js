@@ -10129,6 +10129,28 @@ var throttle = function (type, name, obj) {
     obj.addEventListener(type, func);
 };
 
+function debounce(func, wait, immediate) {
+    var timeout;
+
+    return function executedFunction() {
+        var context = this;
+        var args = arguments;
+
+        var later = function () {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+
+        var callNow = immediate && !timeout;
+
+        clearTimeout(timeout);
+
+        timeout = setTimeout(later, wait);
+
+        if (callNow) func.apply(context, args);
+    };
+};
+
 /* init - you can init any event */
 throttle("resize", "optimizedResize");
 var PIVOT_PARAMETERS = {
@@ -11876,16 +11898,14 @@ MapView.prototype.createView = function (options) {
     if (this.map == null) {
         var div = makeElement("div", "", options.mapLayer);
         
-        function setMapLayerStyle() {
-            var width = options.mapLayer.clientWidth - options.leftRailWidth - 11;
-            var height = options.mapLayer.clientHeight - 12;
+        var setMapLayerStyle = function () {
+            var width = options.canvas.clientWidth - options.leftRailWidth - 11;
+            var height = options.canvas.clientHeight - 12;
             div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
         }
         setMapLayerStyle();
 
-        window.addEventListener("optimizedResize", function () {
-            setMapLayerStyle();
-        });
+        //window.addEventListener('optimizedResize', setMapLayerStyle);
 
         var setLayer = function (layer) {
             var centerPoint = self.map.getCenter();
