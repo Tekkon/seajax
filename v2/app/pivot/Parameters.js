@@ -17,6 +17,7 @@
         longitudeFacetName: "LONGITUDE",
         labelFacetName: "ORG_NAME",
         hintFacetName: "ORG_NAME",
-        idFacetName: "ID"
-    }
+        idFacetName: "ID"        
+    },
+    detailsEnabled: true
 }

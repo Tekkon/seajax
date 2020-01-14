@@ -10172,8 +10172,9 @@ var PIVOT_PARAMETERS = {
         longitudeFacetName: "LONGITUDE",
         labelFacetName: "ORG_NAME",
         hintFacetName: "ORG_NAME",
-        idFacetName: "ID"
-    }
+        idFacetName: "ID"        
+    },
+    detailsEnabled: true
 }
 // Copyright (c) Microsoft Corporation
 // All rights reserved. 
@@ -12363,7 +12364,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     var itemBorder = 0.05;
 
-    var detailsEnabled = true;
+    self.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
 
     // references for performance
     var originPoint = new Seadragon2.Point(0, 0);
@@ -12462,6 +12463,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.views.forEach(function (view) {
             view.filter(activeItems);
         });
+
+        window.dispatchEvent(new CustomEvent('items', { 'detail': activeItems }));
     }
 
     // Helpers -- ARRANGEMENT
@@ -13706,7 +13709,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 // show or hide the details pane as necessary
                 if (centerItem && zoomedIn) {
-                    if (detailsEnabled) {
+                    if (self.detailsEnabled) {
                         self.trigger("showDetails", centerItem, self.facets);
                     } else {
                         self.trigger("showInfoButton");
@@ -13716,7 +13719,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     // without the details pane getting in the way.
                     viewport.visibilityRatio = (containerSize.x - rightRailWidth) / containerSize.x;
                 } else {
-                    if (detailsEnabled) {
+                    if (self.detailsEnabled) {
                         self.trigger("hideDetails");
                     } else {
                         self.trigger("hideInfoButton");
@@ -13797,7 +13800,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     containerWidth = containerSize.x,
                     containerHeight = containerSize.y,
                     widthPadding,
-                    innerContainerWidth = detailsEnabled ? containerWidth - rightRailWidth : containerWidth;
+                    innerContainerWidth = self.detailsEnabled ? containerWidth - rightRailWidth : containerWidth;
 
                 // adjust the itemBounds to leave extra room for the right rail
                 widthPadding = Math.max(
@@ -14092,7 +14095,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @method collapseDetails
      */
     self.collapseDetails = function () {
-        detailsEnabled = false;
+        self.detailsEnabled = false;
         if (selectedItem) {
             // move the viewport so the selected item stays centered
             hoveredItem = selectedItem;
@@ -14109,7 +14112,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @method expandDetails
      */
     self.expandDetails = function () {
-        detailsEnabled = true;
+        self.detailsEnabled = true;
         if (selectedItem) {
             // move the viewport so the selected item stays centered
             hoveredItem = selectedItem;
@@ -14626,7 +14629,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             }
 
             // refresh the details pane if necessary
-            if (centerItem === item && zoomedIn && detailsEnabled) {
+            if (centerItem === item && zoomedIn && self.detailsEnabled) {
                 self.trigger("hideDetails");
                 self.trigger("showDetails", item, self.facets);
             }
