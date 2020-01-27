@@ -10163,16 +10163,10 @@ var PIVOT_PARAMETERS = {
         multipleClusterColors: false,
         clusterRadius: 50,
         startClusterLimit: 10,
-        myURL: "",
+        sourceURL: "",
         markerIconURL: "Content/images/icon-point-gas.png",
         highlightedMarkerIconURL: "Content/images/icon-point-gas-inverted.png",
-        shadowURL: "Content/images/marker-shadow.png",
-        highlightedMarkers: [],
-        latitudeFacetName: "LATITUDE",
-        longitudeFacetName: "LONGITUDE",
-        labelFacetName: "ORG_NAME",
-        hintFacetName: "ORG_NAME",
-        idFacetName: "ID"        
+        shadowURL: "Content/images/marker-shadow.png"    
     },
     detailsEnabled: true
 }
@@ -11870,6 +11864,8 @@ var MapView = function (container, isSelected) {
 
     this.markers = [];
     this.mLayers = [];
+    this.highlightedMarkers = [];
+
     this.iconHTML = PIVOT_PARAMETERS.map.iconHTML;
     this.higligtedIconHTML = PIVOT_PARAMETERS.map.higligtedIconHTML;
     this.popupHTML = PIVOT_PARAMETERS.map.popupHTML;
@@ -11878,16 +11874,10 @@ var MapView = function (container, isSelected) {
     this.multipleClusterColors = PIVOT_PARAMETERS.map.multipleClusterColors;
     this.clusterRadius = PIVOT_PARAMETERS.map.clusterRadius;
     this.startClusterLimit = PIVOT_PARAMETERS.map.startClusterLimit;
-    this.myURL = PIVOT_PARAMETERS.map.myURL;
+    this.sourceURL = PIVOT_PARAMETERS.map.sourceURL;
     this.markerIconURL = PIVOT_PARAMETERS.map.markerIconURL;
     this.highlightedMarkerIconURL = PIVOT_PARAMETERS.map.highlightedMarkerIconURL;
     this.shadowURL = PIVOT_PARAMETERS.map.shadowURL;
-    this.highlightedMarkers = PIVOT_PARAMETERS.map.highlightedMarkers;
-    this.latitudeFacetName = PIVOT_PARAMETERS.map.latitudeFacetName;
-    this.longitudeFacetName = PIVOT_PARAMETERS.map.longitudeFacetName;
-    this.labelFacetName = PIVOT_PARAMETERS.map.labelFacetName;
-    this.hintFacetName = PIVOT_PARAMETERS.map.hintFacetName;
-    this.idFacetName = PIVOT_PARAMETERS.map.idFacetName;
 }
 
 MapView.prototype = Object.create(BaseView.prototype);
@@ -11936,13 +11926,13 @@ MapView.prototype.createView = function (options) {
             if (filetype == "js") {
                 var fileref = document.createElement('script')
                 fileref.setAttribute("type", "text/javascript")
-                fileref.setAttribute("src", self.myURL + filename)
+                fileref.setAttribute("src", self.sourceURL + filename)
             }
             else if (filetype == "css") {
                 var fileref = document.createElement("link")
                 fileref.setAttribute("rel", "stylesheet")
                 fileref.setAttribute("type", "text/css")
-                fileref.setAttribute("href", self.myURL + filename)
+                fileref.setAttribute("href", self.sourceURL + filename)
             }
             if (typeof fileref != "undefined")
                 document.getElementsByTagName("head")[0].appendChild(fileref)
@@ -12064,13 +12054,13 @@ MapView.prototype.setMarkers = function (_items) {
         }
 
         filteredData.forEach(function (dataRow) {
-            var latitude = dataRow.facets[self.latitudeFacetName][0];
-            var longitude = dataRow.facets[self.longitudeFacetName][0];
-            var label = dataRow.facets[self.labelFacetName][0];
-            var hint = dataRow.facets[self.hintFacetName][0];
+            var latitude = dataRow.facets["LATITUDE"][0] || dataRow.facets["LAT"][0] || dataRow.facets["Широта"][0] || dataRow.facets["ШИРОТА"][0];
+            var longitude = dataRow.facets["LONGITUDE"][0] || dataRow.facets["LONG"][0] || dataRow.facets["Долгота"][0] || dataRow.facets["ДОЛГОТА"][0];
+            var label = dataRow.facets["NAME"][0] || dataRow.facets["FULLNAME"][0] || dataRow.facets["SHORTNAME"][0] || dataRow.facets["FULL_NAME"][0] || dataRow.facets["SHORT_NAME"][0];
+            var hint = label;
 
-            if (typeof latitude != 'undefined' && latitude != null &&
-                typeof longitude != 'undefined' && longitude != null) {
+            if (typeof latitude != 'undefined' && latitude != null && latitude != 0 &&
+                typeof longitude != 'undefined' && longitude != null && longitude != 0) {
 
                 var marker = new L.marker([latitude, longitude]);
 
@@ -12161,6 +12151,7 @@ MapView.prototype.setMarkers = function (_items) {
                 return item.facets === clickedMarker.options.dataRow;
             })[0];
             self.container.trigger("showDetails", clickedItem, self.container.facets);
+            self.container.trigger("filterItem", clickedItem, self.container.facets);
         });
 
         self.markerLayer.on("mouseover", function (event) {
@@ -12464,7 +12455,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             view.filter(activeItems);
         });
 
-        window.dispatchEvent(new CustomEvent('items', { 'detail': activeItems }));
+        self.trigger('filterSet', activeItems);
     }
 
     // Helpers -- ARRANGEMENT
@@ -13715,6 +13706,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         self.trigger("showInfoButton");
                     }
 
+                    self.trigger("filterItem", centerItem, self.facets);
+
                     // relax the pan constraints so that we can see stuff on the far right side
                     // without the details pane getting in the way.
                     viewport.visibilityRatio = (containerSize.x - rightRailWidth) / containerSize.x;
@@ -13724,6 +13717,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     } else {
                         self.trigger("hideInfoButton");
                     }
+
+                    //self.trigger("clearFilter");
                     viewport.visibilityRatio = 1;
                 }
 
@@ -14105,6 +14100,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }
         self.trigger("hideDetails");
         self.trigger("showInfoButton");
+        //self.trigger("clearFilter");
     };
 
     /**
@@ -14122,6 +14118,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }
         self.trigger("hideInfoButton");
         self.trigger("showDetails", centerItem, self.facets);
+        self.trigger("filterItem", centerItem, self.facets);
     };
 
     // Methods -- SORTING & FILTERING
@@ -14251,6 +14248,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.trigger("hideDetails");
         self.trigger("hideInfoButton");
         self.trigger("facetsSet", self.facets);
+        //self.trigger("clearFilter");
     };
 
     // Helpers -- TEMPLATING
@@ -14632,6 +14630,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             if (centerItem === item && zoomedIn && self.detailsEnabled) {
                 self.trigger("hideDetails");
                 self.trigger("showDetails", item, self.facets);
+                self.trigger("filterItem", item, self.facets);
             }
         });
         // now check to see whether we can immediately add items

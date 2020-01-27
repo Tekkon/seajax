@@ -245,7 +245,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             view.filter(activeItems);
         });
 
-        window.dispatchEvent(new CustomEvent('items', { 'detail': activeItems }));
+        self.trigger('filterSet', activeItems);
     }
 
     // Helpers -- ARRANGEMENT
@@ -1496,6 +1496,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                         self.trigger("showInfoButton");
                     }
 
+                    self.trigger("filterItem", centerItem, self.facets);
+
                     // relax the pan constraints so that we can see stuff on the far right side
                     // without the details pane getting in the way.
                     viewport.visibilityRatio = (containerSize.x - rightRailWidth) / containerSize.x;
@@ -1505,6 +1507,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     } else {
                         self.trigger("hideInfoButton");
                     }
+
+                    //self.trigger("clearFilter");
                     viewport.visibilityRatio = 1;
                 }
 
@@ -1886,6 +1890,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }
         self.trigger("hideDetails");
         self.trigger("showInfoButton");
+        //self.trigger("clearFilter");
     };
 
     /**
@@ -1903,6 +1908,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }
         self.trigger("hideInfoButton");
         self.trigger("showDetails", centerItem, self.facets);
+        self.trigger("filterItem", centerItem, self.facets);
     };
 
     // Methods -- SORTING & FILTERING
@@ -2032,6 +2038,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.trigger("hideDetails");
         self.trigger("hideInfoButton");
         self.trigger("facetsSet", self.facets);
+        //self.trigger("clearFilter");
     };
 
     // Helpers -- TEMPLATING
@@ -2413,6 +2420,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             if (centerItem === item && zoomedIn && self.detailsEnabled) {
                 self.trigger("hideDetails");
                 self.trigger("showDetails", item, self.facets);
+                self.trigger("filterItem", item, self.facets);
             }
         });
         // now check to see whether we can immediately add items

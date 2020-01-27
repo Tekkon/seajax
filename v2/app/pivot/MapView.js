@@ -3,6 +3,8 @@
 
     this.markers = [];
     this.mLayers = [];
+    this.highlightedMarkers = [];
+
     this.iconHTML = PIVOT_PARAMETERS.map.iconHTML;
     this.higligtedIconHTML = PIVOT_PARAMETERS.map.higligtedIconHTML;
     this.popupHTML = PIVOT_PARAMETERS.map.popupHTML;
@@ -11,16 +13,10 @@
     this.multipleClusterColors = PIVOT_PARAMETERS.map.multipleClusterColors;
     this.clusterRadius = PIVOT_PARAMETERS.map.clusterRadius;
     this.startClusterLimit = PIVOT_PARAMETERS.map.startClusterLimit;
-    this.myURL = PIVOT_PARAMETERS.map.myURL;
+    this.sourceURL = PIVOT_PARAMETERS.map.sourceURL;
     this.markerIconURL = PIVOT_PARAMETERS.map.markerIconURL;
     this.highlightedMarkerIconURL = PIVOT_PARAMETERS.map.highlightedMarkerIconURL;
     this.shadowURL = PIVOT_PARAMETERS.map.shadowURL;
-    this.highlightedMarkers = PIVOT_PARAMETERS.map.highlightedMarkers;
-    this.latitudeFacetName = PIVOT_PARAMETERS.map.latitudeFacetName;
-    this.longitudeFacetName = PIVOT_PARAMETERS.map.longitudeFacetName;
-    this.labelFacetName = PIVOT_PARAMETERS.map.labelFacetName;
-    this.hintFacetName = PIVOT_PARAMETERS.map.hintFacetName;
-    this.idFacetName = PIVOT_PARAMETERS.map.idFacetName;
 }
 
 MapView.prototype = Object.create(BaseView.prototype);
@@ -69,13 +65,13 @@ MapView.prototype.createView = function (options) {
             if (filetype == "js") {
                 var fileref = document.createElement('script')
                 fileref.setAttribute("type", "text/javascript")
-                fileref.setAttribute("src", self.myURL + filename)
+                fileref.setAttribute("src", self.sourceURL + filename)
             }
             else if (filetype == "css") {
                 var fileref = document.createElement("link")
                 fileref.setAttribute("rel", "stylesheet")
                 fileref.setAttribute("type", "text/css")
-                fileref.setAttribute("href", self.myURL + filename)
+                fileref.setAttribute("href", self.sourceURL + filename)
             }
             if (typeof fileref != "undefined")
                 document.getElementsByTagName("head")[0].appendChild(fileref)
@@ -197,13 +193,13 @@ MapView.prototype.setMarkers = function (_items) {
         }
 
         filteredData.forEach(function (dataRow) {
-            var latitude = dataRow.facets[self.latitudeFacetName][0];
-            var longitude = dataRow.facets[self.longitudeFacetName][0];
-            var label = dataRow.facets[self.labelFacetName][0];
-            var hint = dataRow.facets[self.hintFacetName][0];
+            var latitude = dataRow.facets["LATITUDE"][0] || dataRow.facets["LAT"][0] || dataRow.facets["Широта"][0] || dataRow.facets["ШИРОТА"][0];
+            var longitude = dataRow.facets["LONGITUDE"][0] || dataRow.facets["LONG"][0] || dataRow.facets["Долгота"][0] || dataRow.facets["ДОЛГОТА"][0];
+            var label = dataRow.facets["NAME"][0] || dataRow.facets["FULLNAME"][0] || dataRow.facets["SHORTNAME"][0] || dataRow.facets["FULL_NAME"][0] || dataRow.facets["SHORT_NAME"][0];
+            var hint = label;
 
-            if (typeof latitude != 'undefined' && latitude != null &&
-                typeof longitude != 'undefined' && longitude != null) {
+            if (typeof latitude != 'undefined' && latitude != null && latitude != 0 &&
+                typeof longitude != 'undefined' && longitude != null && longitude != 0) {
 
                 var marker = new L.marker([latitude, longitude]);
 
@@ -294,6 +290,7 @@ MapView.prototype.setMarkers = function (_items) {
                 return item.facets === clickedMarker.options.dataRow;
             })[0];
             self.container.trigger("showDetails", clickedItem, self.container.facets);
+            self.container.trigger("filterItem", clickedItem, self.container.facets);
         });
 
         self.markerLayer.on("mouseover", function (event) {
