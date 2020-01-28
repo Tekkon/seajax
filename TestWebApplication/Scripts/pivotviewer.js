@@ -11878,6 +11878,7 @@ var MapView = function (container, isSelected) {
     this.markerIconURL = PIVOT_PARAMETERS.map.markerIconURL;
     this.highlightedMarkerIconURL = PIVOT_PARAMETERS.map.highlightedMarkerIconURL;
     this.shadowURL = PIVOT_PARAMETERS.map.shadowURL;
+    this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
 }
 
 MapView.prototype = Object.create(BaseView.prototype);
@@ -12053,10 +12054,14 @@ MapView.prototype.setMarkers = function (_items) {
             filteredData = _items;
         }
 
+        function getFacet(dataRow, facetName) {
+            return dataRow.facets[facetName] != undefined ? dataRow.facets[facetName][0] : undefined;
+        }
+
         filteredData.forEach(function (dataRow) {
-            var latitude = dataRow.facets["LATITUDE"][0] || dataRow.facets["LAT"][0] || dataRow.facets["Широта"][0] || dataRow.facets["ШИРОТА"][0];
-            var longitude = dataRow.facets["LONGITUDE"][0] || dataRow.facets["LONG"][0] || dataRow.facets["Долгота"][0] || dataRow.facets["ДОЛГОТА"][0];
-            var label = dataRow.facets["NAME"][0] || dataRow.facets["FULLNAME"][0] || dataRow.facets["SHORTNAME"][0] || dataRow.facets["FULL_NAME"][0] || dataRow.facets["SHORT_NAME"][0];
+            var latitude = getFacet(dataRow, "LATITUDE") || getFacet(dataRow, "LAT") || getFacet(dataRow, "Широта") || getFacet(dataRow, "ШИРОТА");
+            var longitude = getFacet(dataRow, "LONGITUDE") || getFacet(dataRow, "LONG") || getFacet(dataRow, "Долгота") || getFacet(dataRow, "ДОЛГОТА");
+            var label = getFacet(dataRow, "NAME") || getFacet(dataRow, "FULLNAME") || getFacet(dataRow, "SHORTNAME") || getFacet(dataRow, "FULL_NAME") || getFacet(dataRow, "SHORT_NAME");
             var hint = label;
 
             if (typeof latitude != 'undefined' && latitude != null && latitude != 0 &&
@@ -12150,7 +12155,9 @@ MapView.prototype.setMarkers = function (_items) {
             var clickedItem = itemsArr.filter(function (item) {
                 return item.facets === clickedMarker.options.dataRow;
             })[0];
-            self.container.trigger("showDetails", clickedItem, self.container.facets);
+            if (self.detailsEnabled) {
+                self.container.trigger("showDetails", clickedItem, self.container.facets);
+            }
             self.container.trigger("filterItem", clickedItem, self.container.facets);
         });
 
