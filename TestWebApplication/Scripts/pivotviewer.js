@@ -13709,7 +13709,6 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 if (centerItem && zoomedIn) {
                     if (self.detailsEnabled) {
                         self.trigger("showDetails", centerItem, self.facets);
-                    } else {
                         self.trigger("showInfoButton");
                     }
 
@@ -13721,7 +13720,6 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 } else {
                     if (self.detailsEnabled) {
                         self.trigger("hideDetails");
-                    } else {
                         self.trigger("hideInfoButton");
                     }
 
