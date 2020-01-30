@@ -297,6 +297,7 @@ MapView.prototype.setMarkers = function (_items) {
             })[0];
             if (self.detailsEnabled) {
                 self.container.trigger("showDetails", clickedItem, self.container.facets);
+                self.trigger("showInfoButton");
             }
             self.container.trigger("filterItem", clickedItem, self.container.facets);
         });
