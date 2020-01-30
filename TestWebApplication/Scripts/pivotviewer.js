@@ -12061,7 +12061,8 @@ MapView.prototype.setMarkers = function (_items) {
         filteredData.forEach(function (dataRow) {
             var latitude = getFacet(dataRow, "LATITUDE") || getFacet(dataRow, "LAT") || getFacet(dataRow, "Широта") || getFacet(dataRow, "ШИРОТА");
             var longitude = getFacet(dataRow, "LONGITUDE") || getFacet(dataRow, "LONG") || getFacet(dataRow, "Долгота") || getFacet(dataRow, "ДОЛГОТА");
-            var label = getFacet(dataRow, "NAME") || getFacet(dataRow, "FULLNAME") || getFacet(dataRow, "SHORTNAME") || getFacet(dataRow, "FULL_NAME") || getFacet(dataRow, "SHORT_NAME");
+            var label = getFacet(dataRow, "NAME") || getFacet(dataRow, "FULLNAME") || getFacet(dataRow, "SHORTNAME") || getFacet(dataRow, "FULL_NAME") || getFacet(dataRow, "SHORT_NAME")
+                || getFacet(dataRow, "Наименование") || getFacet(dataRow, "Короткое наименование");
             var hint = label;
 
             if (typeof latitude != 'undefined' && latitude != null && latitude != 0 &&
@@ -12166,6 +12167,49 @@ MapView.prototype.setMarkers = function (_items) {
         });
     }
 }
+var TableView = function (container, isSelected) {
+    BaseView.call(this, container, isSelected);
+}
+
+TableView.prototype = Object.create(BaseView.prototype);
+TableView.prototype.constructor = TableView;
+
+TableView.prototype.createView = function (options) {
+    var div = makeElement("div", "tableView", options.tableLayer);
+
+    div.innerHtml = '';
+    var width = options.canvas.clientWidth - options.leftRailWidth - 11;
+    var height = options.canvas.clientHeight - 12;
+    div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
+    $('.tableView').dxDataGrid({
+        dataSource: Object.entries(options.activeItems).map(function(item) {
+            return item[1].facets;
+        }),
+        allowColumnReordering: false,
+        allowColumnResizing: false,
+        columnAutoWidth: false,
+        columnWidth: 300,
+        scrolling: {
+            columnRenderingMode: "standard",
+            mode: "standard",
+            preloadEnabled: false,
+            rowRenderingMode: "standard",
+            scrollByContent: true,
+            scrollByThumb: true,
+            showScrollbar: "always",
+            useNative: "auto"
+        },
+        showBorders: true,
+        showColumnHeaders: true,
+        showColumnLines: true,
+        showRowLines: true
+    });
+}
+
+TableView.prototype.filter = function (filterData) {
+   
+}
+
 var Exporter = function () {
 
 }
@@ -12292,7 +12336,7 @@ makeElement, addText, hasOwnProperty, makeTemplate, document, lzwEncode, locatio
  * @param inputElmt {HTMLInputElement} A focusable textbox that is in the DOM but not
  * visible to the user.
  */
-var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, backLayer, mapLayer, leftRailWidth, rightRailWidth, inputElmt) {
+var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, backLayer, mapLayer, tableLayer, leftRailWidth, rightRailWidth, inputElmt) {
 
     // Fields
     var self = this;
@@ -12435,12 +12479,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     self.GridView = new GridView(self, true);
     self.GraphView = new GraphView(self, false);
     self.MapView = new MapView(self, false);
+    self.TableView = new TableView(self, false);
 
     // VIEWS
     self.views = [
         self.GridView,
         self.GraphView,
-        self.MapView
+        self.MapView,
+        self.TableView
     ];
 
     function runFilters() {
@@ -13355,7 +13401,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
         self.views.filter(function (elem) {
             return elem.isSelected;
-        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
+        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
@@ -13616,7 +13662,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 self.views.filter(function (elem) {
                     return elem.isSelected;
-                })[0].update({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
+                })[0].update({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
 
                 var wideEnough = (containerSize.x - rightRailWidth) * 0.5,
                     tallEnough = containerSize.y * 0.5,
@@ -13768,7 +13814,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
             self.views.filter(function (elem) {
                 return elem.isSelected;
-            })[0].onClick({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
+            })[0].onClick({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
 
             // iterate every item on the canvas
             for (j = self.activeItemsArr.length - 1; j >= 0; j--) {
@@ -15162,11 +15208,12 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     canvas.width = canvas.offsetWidth;
     var frontLayer = makeElement("div", "pivot pivot_layer", mouseBox);
     var mapLayer = makeElement("div", "pivot pivot_layer map_layer", mouseBox);
+    var tableLayer = makeElement("div", "pivot pivot_layer table_layer", mouseBox);
     var filterPane = makeElement("div", "pivot pivot_pane pivot_filterpane", canvasBox);
 
     var railWidth = filterPane.offsetLeft + filterPane.offsetWidth;
     // The actual viewer object that will do zooming, panning, layout, and animation.
-    var viewer = new PivotViewer(canvas, mouseBox, frontLayer, behindLayer, mapLayer, railWidth, railWidth, inputElmt);
+    var viewer = new PivotViewer(canvas, mouseBox, frontLayer, behindLayer, mapLayer, tableLayer, railWidth, railWidth, inputElmt);
 
     var detailsPane = makeElement("div", "pivot pivot_pane pivot_detailspane", canvasBox);
     detailsPane.style.opacity = 0;
@@ -15380,6 +15427,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
 
+    var tableButton = new Button("div", "pivot_sorttools pivot_table pivot_hoverable", topBar, "Table View");
     var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_hoverable", topBar, "Map View");
     var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
     var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_activesort", topBar, "Grid View");
@@ -15392,7 +15440,8 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var buttons = [
         gridButton,
         graphButton,
-        mapButton
+        mapButton,
+        tableButton
     ];
 
     viewer.views.forEach(function (view, index, array) {
@@ -15416,10 +15465,17 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                 frontLayer.style.visibility = "visible";
                 behindLayer.style.visibility = "visible";
                 mapLayer.style.visibility = "hidden";
+                tableLayer.style.visibility = "hidden";
             } else if (index === 2) {
                 frontLayer.style.visibility = "hidden";
                 behindLayer.style.visibility = "hidden";
                 mapLayer.style.visibility = "visible";
+                tableLayer.style.visibility = "hidden";
+            } else if (index === 3) {
+                frontLayer.style.visibility = "hidden";
+                behindLayer.style.visibility = "hidden";
+                mapLayer.style.visibility = "hidden";
+                tableLayer.style.visibility = "visible";
             }
         };
     });

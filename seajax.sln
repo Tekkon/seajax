@@ -67,6 +67,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pivot", "pivot", "{0B3D2BCE
 		v2\app\pivot\quickstart.html = v2\app\pivot\quickstart.html
 		v2\app\pivot\search.gif = v2\app\pivot\search.gif
 		v2\app\pivot\Slider.js = v2\app\pivot\Slider.js
+		v2\app\pivot\TableView.js = v2\app\pivot\TableView.js
 		v2\app\pivot\Template.js = v2\app\pivot\Template.js
 	EndProjectSection
 EndProject

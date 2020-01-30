@@ -94,6 +94,8 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\dx.common.css" />
+    <Content Include="Content\dx.light.css" />
     <Content Include="Content\images\export.png" />
     <Content Include="Content\images\icon-point-gas-inverted.png" />
     <Content Include="Content\images\icon-point-gas.png" />
@@ -101,6 +103,7 @@
     <Content Include="Content\images\map1-16.png" />
     <Content Include="Content\images\map2-16.png" />
     <Content Include="Content\images\map3-16.png" />
+    <Content Include="Content\images\spreadsheet.png" />
     <Content Include="Content\leaflet.css" />
     <Content Include="Content\map.css" />
     <Content Include="Content\images\map.png" />
@@ -129,6 +132,7 @@
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Data\data.json" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
+    <Content Include="Scripts\dx.all.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />

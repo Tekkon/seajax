@@ -75,7 +75,7 @@ makeElement, addText, hasOwnProperty, makeTemplate, document, lzwEncode, locatio
  * @param inputElmt {HTMLInputElement} A focusable textbox that is in the DOM but not
  * visible to the user.
  */
-var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, backLayer, mapLayer, leftRailWidth, rightRailWidth, inputElmt) {
+var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, backLayer, mapLayer, tableLayer, leftRailWidth, rightRailWidth, inputElmt) {
 
     // Fields
     var self = this;
@@ -218,12 +218,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     self.GridView = new GridView(self, true);
     self.GraphView = new GraphView(self, false);
     self.MapView = new MapView(self, false);
+    self.TableView = new TableView(self, false);
 
     // VIEWS
     self.views = [
         self.GridView,
         self.GraphView,
-        self.MapView
+        self.MapView,
+        self.TableView
     ];
 
     function runFilters() {
@@ -1138,7 +1140,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
         self.views.filter(function (elem) {
             return elem.isSelected;
-        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
+        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
@@ -1399,7 +1401,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 self.views.filter(function (elem) {
                     return elem.isSelected;
-                })[0].update({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
+                })[0].update({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
 
                 var wideEnough = (containerSize.x - rightRailWidth) * 0.5,
                     tallEnough = containerSize.y * 0.5,
@@ -1551,7 +1553,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
             self.views.filter(function (elem) {
                 return elem.isSelected;
-            })[0].onClick({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
+            })[0].onClick({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
 
             // iterate every item on the canvas
             for (j = self.activeItemsArr.length - 1; j >= 0; j--) {

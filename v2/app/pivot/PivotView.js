@@ -64,11 +64,12 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     canvas.width = canvas.offsetWidth;
     var frontLayer = makeElement("div", "pivot pivot_layer", mouseBox);
     var mapLayer = makeElement("div", "pivot pivot_layer map_layer", mouseBox);
+    var tableLayer = makeElement("div", "pivot pivot_layer table_layer", mouseBox);
     var filterPane = makeElement("div", "pivot pivot_pane pivot_filterpane", canvasBox);
 
     var railWidth = filterPane.offsetLeft + filterPane.offsetWidth;
     // The actual viewer object that will do zooming, panning, layout, and animation.
-    var viewer = new PivotViewer(canvas, mouseBox, frontLayer, behindLayer, mapLayer, railWidth, railWidth, inputElmt);
+    var viewer = new PivotViewer(canvas, mouseBox, frontLayer, behindLayer, mapLayer, tableLayer, railWidth, railWidth, inputElmt);
 
     var detailsPane = makeElement("div", "pivot pivot_pane pivot_detailspane", canvasBox);
     detailsPane.style.opacity = 0;
@@ -282,6 +283,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
 
+    var tableButton = new Button("div", "pivot_sorttools pivot_table pivot_hoverable", topBar, "Table View");
     var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_hoverable", topBar, "Map View");
     var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
     var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_activesort", topBar, "Grid View");
@@ -294,7 +296,8 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var buttons = [
         gridButton,
         graphButton,
-        mapButton
+        mapButton,
+        tableButton
     ];
 
     viewer.views.forEach(function (view, index, array) {
@@ -318,10 +321,17 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                 frontLayer.style.visibility = "visible";
                 behindLayer.style.visibility = "visible";
                 mapLayer.style.visibility = "hidden";
+                tableLayer.style.visibility = "hidden";
             } else if (index === 2) {
                 frontLayer.style.visibility = "hidden";
                 behindLayer.style.visibility = "hidden";
                 mapLayer.style.visibility = "visible";
+                tableLayer.style.visibility = "hidden";
+            } else if (index === 3) {
+                frontLayer.style.visibility = "hidden";
+                behindLayer.style.visibility = "hidden";
+                mapLayer.style.visibility = "hidden";
+                tableLayer.style.visibility = "visible";
             }
         };
     });
