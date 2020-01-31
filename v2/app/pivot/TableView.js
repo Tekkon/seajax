@@ -62,7 +62,7 @@ TableView.prototype.createView = function (options) {
                 self.container.trigger("hideDetails");
                 self.container.trigger("hideInfoButton");
             }
-            self.container.trigger("filterMultipleItems", clickedItems, self.container.facets);
+            self.container.trigger("filterSet", clickedItems, self.container.facets);
         }
     });
 }
