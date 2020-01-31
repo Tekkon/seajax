@@ -12230,7 +12230,7 @@ TableView.prototype.createView = function (options) {
                 self.trigger("showInfoButton");
             } else {
                 self.container.trigger("hideDetails");
-                self.trigger("hideInfoButton");
+                self.container.trigger("hideInfoButton");
             }
             self.container.trigger("filterMultipleItems", clickedItems, self.container.facets);
         }
