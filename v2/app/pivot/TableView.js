@@ -18,7 +18,14 @@ TableView.prototype.createView = function (options) {
     div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
     $('.tableView').dxDataGrid({
         dataSource: Object.entries(options.activeItems).map(function(item) {
-            return item[1].facets;
+            var clone = Object.assign({}, item[1].facets);
+            Object.entries(clone).forEach(function (property) {
+                if (property[0][0] === '_') {
+                    delete clone[property[0]];
+                }
+            });
+
+            return clone;
         }),
         allowColumnReordering: true,
         allowColumnResizing: true,

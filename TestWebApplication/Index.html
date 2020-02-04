@@ -63,7 +63,7 @@
                 element['SMALL_HEIGHT'] = 100-element['CURR_VOLUME']/element['MAX_VOLUME']*100;
 
                 var state = storageState(element['MAX_VOLUME'], element['CURR_VOLUME']);
-                element['COLOR'] = state.color;
+                element['_COLOR'] = state.color;
                 element['Статус'] = state.status;
             });
             return data;
@@ -115,69 +115,69 @@
             };
 
             facets["Базовая высота"] = {
-                type: "Number",
+                type: "String",
                 isFilterVisible: true,
                 isWordWheelVisible: true,
                 isMetaDataVisible: true
             };
 
             facets["Максимальный объем"] = {
-                type:"Number",
+                type: "String",
                 isFilterVisible: true,
                 isWordWheelVisible: true,
                 isMetaDataVisible: true
             };
 
             facets["Текущий объем"] = {
-                type:"Number",
+                type: "String",
                 isFilterVisible: true,
                 isWordWheelVisible: true,
                 isMetaDataVisible: true
             };
 
             facets["Мертвый остаток"] = {
-                type:"Number",
+                type: "String",
                 isFilterVisible: true,
                 isWordWheelVisible: true,
                 isMetaDataVisible: true
             };
 
             facets["Плотность"] = {
-                type:"Number",
+                type: "String",
                 isFilterVisible: true,
                 isWordWheelVisible: true,
                 isMetaDataVisible: true
             };
 
             facets["Температура"] = {
-                type:"Number",
+                type: "String",
                 isFilterVisible: true,
                 isWordWheelVisible: true,
                 isMetaDataVisible: true
             };
 
             facets["Текущий уровень"] = {
-                type:"Number",
+                type: "String",
                 isFilterVisible: true,
                 isWordWheelVisible: true,
                 isMetaDataVisible: true
             };
 
             facets["Уровень воды"] = {
-                type:"Number",
+                type: "String",
                 isFilterVisible: true,
                 isWordWheelVisible: true,
                 isMetaDataVisible: true
             };
 
             facets["HEIGHT"] = {
-                type:"Number",
+                type: "String",
                 isFilterVisible: false,
                 isWordWheelVisible: false,
                 isMetaDataVisible: false
             };
 
-            facets["COLOR"] = {
+            facets["_COLOR"] = {
                 type:"String",
                 isFilterVisible: false,
                 isWordWheelVisible: false,
@@ -211,7 +211,7 @@
                     type: "html",
                     width: 100,
                     height: 100,
-                    template: '<div style="width:100px;height:100px;-webkit-border-radius:50px;-moz-border-radius:50px;border-radius:50px;background:<?facets[\"COLOR\"]?>;">\
+                    template: '<div style="width:100px;height:100px;-webkit-border-radius:50px;-moz-border-radius:50px;border-radius:50px;background:<?facets[\"_COLOR\"]?>;">\
                     </div>'
                 },
                 {
@@ -228,7 +228,7 @@
                         </defs>\
                         <a transform="translate(50,50)">\
                             <g>\
-                                <circle fill="<?facets[\"COLOR\"]?>" r="50" x="50" y="50"></circle>\
+                                <circle fill="<?facets[\"_COLOR\"]?>" r="50" x="50" y="50"></circle>\
                             </g>\
                             <g>\
                                 <circle fill="#FFFFFF" r="47" x="50" y="50" clip-path="url(#g-clip-<?facets[\"ID\"]?>)"></circle>\
