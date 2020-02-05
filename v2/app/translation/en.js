@@ -27,5 +27,6 @@
     notApplicable: "Not Currently Applicable",
     under: "Under ",
     over: "Over ",
-    exactly: "Exactly "
+    exactly: "Exactly ",
+    clearAll: "Clear All"
 }

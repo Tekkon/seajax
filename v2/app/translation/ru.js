@@ -27,5 +27,6 @@
     notApplicable: "Не применимо в данный момент",
     under: "Менее ",
     over: "Более ",
-    exactly: "Ровно "
+    exactly: "Ровно ",
+    clearAll: "Очистить все"
 }

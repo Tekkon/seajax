@@ -799,6 +799,8 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             viewer.filter();
             refreshFilterPane();
         }
+
+        viewer.trigger("clearFilter");
     }
 
     // this event is only raised for filter changes that originate inside the viewer,
@@ -1094,7 +1096,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         clearButtons = {};
         clearButton = makeElement("div", "pivot_clrbtn pivot_clr", clearOption);
         clearButton.innerHTML = "&times;";
-        addText(clearOption, "Clear All");
+        addText(clearOption, i18n.t("clearAll"));
         searchForm = makeElement("form", null, filterPane);
         searchForm.onsubmit = function (e) {
             onSearch();
