@@ -11,7 +11,8 @@
         sourceURL: "",
         markerIconURL: "Content/images/icon-point-gas.png",
         highlightedMarkerIconURL: "Content/images/icon-point-gas-inverted.png",
-        shadowURL: "Content/images/marker-shadow.png"    
+        shadowURL: "Content/images/marker-shadow.png"        
     },
-    detailsEnabled: true
+    detailsEnabled: true,
+    filterElement: "ID"
 }

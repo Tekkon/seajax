@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="./Scripts/jquery-1.10.2.min.js" type="text/javascript"></script>
+    <link href="./Content/leaflet.css" rel="stylesheet" type="text/css">
+    <link href="./Content/map.css" rel="stylesheet" type="text/css">
+    <link href="./Content/MarkerCluster.css" rel="stylesheet" type="text/css">
+    <link href="./Content/PivotView.css" rel="stylesheet" type="text/css">
+    <link href="./Content/dx.common.css" rel="stylesheet" type="text/css" />
+    <link href="./Content/dx.light.css" rel="stylesheet" type="text/css" />
+    <link href="./Content/datagrid.css" rel="stylesheet" type="text/css" />
+
+    <script src="./Scripts/leaflet.js" type="text/javascript"></script>
+    <script src="./Scripts/leaflet.markercluster.js"></script>
+    <script src="./Scripts/leafletHtmlIcon.js"></script>
+    <script src="https://api-maps.yandex.ru/2.0/?load=package.map&lang=ru-RU" type="text/javascript"></script>
+    <script src="./Scripts/Yandex.js" type="text/javascript"></script>
+    <script src="./Scripts/pivotviewer.js" type="text/javascript"></script>
+    <script src="./Scripts/dx.all.js" type="text/javascript"></script>
+    <script src="./Scripts/ag-grid-community.min.js" type="text/javascript"></script>
+</head>
+<body>
+    <div id="myGrid" style="height: 200px; width:500px;" class="ag-theme-balham"></div>
+
+    <script type="text/javascript">
+        var columnDefs = [
+              { headerName: "Make", field: "make" },
+              { headerName: "Model", field: "model" },
+              { headerName: "Price", field: "price" }
+        ];
+
+        // specify the data
+        var rowData = [
+              { make: "Toyota", model: "Celica", price: 35000 },
+              { make: "Ford", model: "Mondeo", price: 32000 },
+              { make: "Porsche", model: "Boxter", price: 72000 }
+        ];
+
+        // let the grid know which columns and what data to use
+        var gridOptions = {
+            columnDefs: columnDefs,
+            rowData: rowData
+        };
+
+        // setup the grid after the page has finished loading
+        document.addEventListener('DOMContentLoaded', function () {
+            var gridDiv = document.querySelector('#myGrid');
+            new agGrid.Grid(gridDiv, gridOptions);
+        });
+    </script>
+</body>
+</html>

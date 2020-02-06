@@ -10168,9 +10168,10 @@ var PIVOT_PARAMETERS = {
         sourceURL: "",
         markerIconURL: "Content/images/icon-point-gas.png",
         highlightedMarkerIconURL: "Content/images/icon-point-gas-inverted.png",
-        shadowURL: "Content/images/marker-shadow.png"    
+        shadowURL: "Content/images/marker-shadow.png"        
     },
-    detailsEnabled: true
+    detailsEnabled: true,
+    filterElement: "ID"
 }
 // Copyright (c) Microsoft Corporation
 // All rights reserved. 
@@ -12174,6 +12175,7 @@ var TableView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
 
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
+    this.filterElement = PIVOT_PARAMETERS.filterElement;
     this.isCreated = false;
 }
 
@@ -12186,14 +12188,14 @@ TableView.prototype.createView = function (options) {
     if (!self.isCreated) {
         self.isCreated = true;
 
-        var div = makeElement("div", "tableView", options.tableLayer);
+        var div = makeElement("div", "tableView ag-theme-balham", options.tableLayer);
 
         div.innerHtml = '';
         var width = options.canvas.clientWidth - options.leftRailWidth - 11;
         var height = options.canvas.clientHeight - 12;
         div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
 
-        self.deleteAdditionalPeoperties = function(item) {
+        self.deleteAdditionalProperties = function(item) {
             var clone = Object.assign({}, item.facets);
             Object.entries(clone).forEach(function (property) {
                 if (property[0][0] === '_') {
@@ -12204,78 +12206,70 @@ TableView.prototype.createView = function (options) {
             return clone;
         }
 
-        $('.tableView').dxDataGrid({
-            dataSource: Object.entries(options.activeItems).map(function (item) {
-                return self.deleteAdditionalPeoperties(item[1]);
-            }),
-            allowColumnReordering: true,
-            allowColumnResizing: true,
-            columnAutoWidth: true,
-            scrolling: {
-                columnRenderingMode: "standard",
-                mode: "standard",
-                preloadEnabled: false,
-                rowRenderingMode: "standard",
-                scrollByContent: true,
-                scrollByThumb: true,
-                showScrollbar: "always",
-                useNative: "auto"
-            },
-            paging: {
-                enabled: true,
-                pageIndex: 0,
-                pageSize: 25
-            },
-            showBorders: true,
-            showColumnHeaders: true,
-            showColumnLines: true,
-            showRowLines: true,
-            selection: {
-                allowSelectAll: true,
-                deferred: false,
-                mode: "multiple",
-                selectAllMode: "allPages",
-                showCheckBoxesMode: "onClick"
-            },
-            onSelectionChanged: function (obj) {
-                clickedItems = Object.entries(options.activeItems).map(function (item) { return item[1]; }).filter(function (item) {
-                    var result = false;
+        var data = Object.entries(options.activeItems).map(function (item) {
+            var dataObj = {};
+            Object.entries(self.deleteAdditionalProperties(item[1])).forEach(function (item1) {
+                dataObj[item1[0]] = item1[1][0];
+            });
+            return dataObj;
+        });
 
-                    obj.selectedRowsData.forEach(function (data) {
-                        result = item.id === data["ID"] || result;
-                    });
+        var columns = [ { headerName: "", field: "make", checkboxSelection: true, suppressSizeToFit: true, width: 30 } ];
+        var item = Object.entries(options.activeItems)[0];
+        Object.entries(self.deleteAdditionalProperties(item[1])).forEach(function (item1) {
+            columns.push({ headerName: item1[0], field: item1[0], sortable: true, resizable: true });
+        });
 
-                    return result;
+        var setFilter = function () {
+            var selectedNodes = self.gridOptions.api.getSelectedNodes()
+            var selectedData = selectedNodes.map(function (node) { return node.data })
+
+            var clickedItems = Object.entries(options.activeItems).map(function (item) { return item[1]; }).filter(function (item) {
+                var result = false;
+                selectedData.forEach(function (data) {
+                    result = (Array.isArray(item.id) ? item.id[0] : item.id) === data[self.filterElement] || result;
                 });
+                return result;
+            });
 
-                if (self.detailsEnabled && clickedItems.length === 1) {
-                    self.container.trigger("showDetails", clickedItems[0], self.container.facets);
-                    self.trigger("showInfoButton");
-                } else {
-                    self.container.trigger("hideDetails");
-                    self.container.trigger("hideInfoButton");
-                }
-                self.container.trigger("filterSet", clickedItems, self.container.facets);
+            if (self.detailsEnabled && clickedItems.length === 1) {
+                self.container.trigger("showDetails", clickedItems[0], self.container.facets);
+                self.container.trigger("showInfoButton");
+            } else {
+                self.container.trigger("hideDetails");
+                self.container.trigger("hideInfoButton");
             }
-        });
+            self.container.trigger("filterSet", clickedItems, self.container.facets);
+        }
 
-        self.container.addListener("clearFilter", function () {
-            var dataGrid = $('.tableView').dxDataGrid('instance');
-
-            if (dataGrid !== undefined) {
-                dataGrid.clearSelection();
+        self.gridOptions = {
+            columnDefs: columns,
+            rowData: data,
+            rowSelection: 'multiple',
+            onRowSelected: function (row) {
+                setFilter();
             }
+        };        
+
+        new agGrid.Grid(document.querySelector('.tableView'), self.gridOptions);
+        var allColumnIds = self.gridOptions.columnApi.getAllColumns().map(function (column) {
+            return column.colId;
         });
+        var skeepHeader = false;
+        self.gridOptions.columnApi.autoSizeColumns(allColumnIds, skeepHeader);
     }
 }
 
 TableView.prototype.filter = function (filterData) {
     var self = this;
-    var dataGrid = $('.tableView').dxDataGrid('instance');
 
-    if (dataGrid !== undefined) {
-        dataGrid.option("dataSource", Object.entries(filterData).map(function (item) {
-            return self.deleteAdditionalPeoperties(item[1]);
+    if (self.isCreated) {
+        self.gridOptions.api.setRowData(Object.entries(filterData).map(function (item) {
+            var dataObj = {};
+            Object.entries(self.deleteAdditionalProperties(item[1])).forEach(function (item1) {
+                dataObj[item1[0]] = item1[1][0];
+            });
+            return dataObj;
         }));
     }
 }

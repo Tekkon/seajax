@@ -94,16 +94,40 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\datagrid.css" />
     <Content Include="Content\dx.common.css" />
     <Content Include="Content\dx.light.css" />
+    <Content Include="Content\easyui.css" />
+    <Content Include="Content\images\accordion_arrows.png" />
+    <Content Include="Content\images\blank.gif" />
+    <Content Include="Content\images\calendar_arrows.png" />
+    <Content Include="Content\images\combo_arrow.png" />
+    <Content Include="Content\images\datagrid_icons.png" />
+    <Content Include="Content\images\datebox_arrow.png" />
     <Content Include="Content\images\export.png" />
     <Content Include="Content\images\icon-point-gas-inverted.png" />
     <Content Include="Content\images\icon-point-gas.png" />
     <Content Include="Content\images\layers.png" />
+    <Content Include="Content\images\layout_arrows.png" />
+    <Content Include="Content\images\linkbutton_bg.png" />
+    <Content Include="Content\images\loading.gif" />
     <Content Include="Content\images\map1-16.png" />
     <Content Include="Content\images\map2-16.png" />
     <Content Include="Content\images\map3-16.png" />
+    <Content Include="Content\images\menu_arrows.png" />
+    <Content Include="Content\images\messager_icons.png" />
+    <Content Include="Content\images\pagination_icons.png" />
+    <Content Include="Content\images\panel_tools.png" />
+    <Content Include="Content\images\passwordbox_close.png" />
+    <Content Include="Content\images\passwordbox_open.png" />
+    <Content Include="Content\images\searchbox_button.png" />
+    <Content Include="Content\images\slider_handle.png" />
+    <Content Include="Content\images\spinner_arrows.png" />
     <Content Include="Content\images\spreadsheet.png" />
+    <Content Include="Content\images\tabs_icons.png" />
+    <Content Include="Content\images\tagbox_icons.png" />
+    <Content Include="Content\images\tree_icons.png" />
+    <Content Include="Content\images\validatebox_warning.png" />
     <Content Include="Content\leaflet.css" />
     <Content Include="Content\map.css" />
     <Content Include="Content\images\map.png" />
@@ -113,6 +137,7 @@
     <Content Include="Content\MarkerCluster.css" />
     <Content Include="Content\MarkerCluster.Default.css" />
     <Content Include="Content\MarkerCluster.Redefined.css" />
+    <Content Include="Content\pagination.css" />
     <Content Include="packages.config" />
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -128,6 +153,7 @@
   <ItemGroup>
     <Content Include="Content\images\search.gif" />
     <Content Include="Index.html" />
+    <Content Include="Scripts\ag-grid-community.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Data\data.json" />
@@ -136,6 +162,7 @@
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery.easyui.min.js" />
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
@@ -151,6 +178,7 @@
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\Yandex.js" />
+    <Content Include="Test.html" />
     <Content Include="Web.config" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>

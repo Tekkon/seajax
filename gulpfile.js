@@ -14,7 +14,6 @@ var TARGETS = {
     image: getFilesToBuild("image/standalone.txt"),
     zoom: getFilesToBuild("zoom/standalone.txt"),
     zoomimage: getFilesToBuild("zoomimage/standalone.txt"),
-    //pivotViewerLocalization: getFilesToBuild("translation/standalone.txt"),
     pivotviewer: getFilesToBuild("pivot/standalone.txt"),
     ajax: getFilesToBuild("ajax/standalone.txt"),
     utils: getFilesToBuild("utils/standalone.txt"),
