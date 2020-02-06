@@ -10117,6 +10117,51 @@ TRANSLATION.ru = {
     exactly: "Ровно ",
     clearAll: "Очистить все"
 }
+function parseHTML(str) {
+    return new DOMParser().parseFromString(str, "text/html");
+}
+
+function isHTML(str) {
+    var doc = parseHTML(str);
+    return Array.from(doc.body.childNodes).some(function (node) { return node.nodeType === 1 });
+}
+
+function getTextFromHTML(str) {
+    if (isHTML(str)) {
+        var doc = parseHTML(str);
+        var txt = '';
+        var i = 0;
+
+        doc.body.childNodes.forEach(function (node) {
+            if (i > 0) {
+                txt += " ";
+            }            
+            
+            var href = node.getAttribute("href");
+            if (href !== undefined) {
+                txt += href;
+            } else {
+                txt += node.textContent;
+            }
+            i += 1;
+        });
+
+        return txt;
+    } else {
+        return str;
+    }
+}
+
+function deleteAdditionalProperties(item) {
+    var clone = Object.assign({}, item.facets);
+    Object.entries(clone).forEach(function (property) {
+        if (property[0][0] === '_') {
+            delete clone[property[0]];
+        }
+    });
+
+    return clone;
+}
 var throttle = function (type, name, obj) {
     obj = obj || window;
     var running = false;
@@ -12195,39 +12240,23 @@ TableView.prototype.createView = function (options) {
         var height = options.canvas.clientHeight - 12;
         div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
 
-        self.deleteAdditionalProperties = function(item) {
-            var clone = Object.assign({}, item.facets);
-            Object.entries(clone).forEach(function (property) {
-                if (property[0][0] === '_') {
-                    delete clone[property[0]];
-                }
-            });
-
-            return clone;
-        }
-
         var data = Object.entries(options.activeItems).map(function (item) {
             var dataObj = {};
-            Object.entries(self.deleteAdditionalProperties(item[1])).forEach(function (item1) {
+            Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
                 dataObj[item1[0]] = item1[1][0];
             });
             return dataObj;
         });
 
-        var isHTML = function(str) {
-            var doc = new DOMParser().parseFromString(str, "text/html");
-            return Array.from(doc.body.childNodes).some(function (node) { return node.nodeType === 1 });
-        }
-
         var columns = [ { headerName: "", field: "make", checkboxSelection: true, suppressSizeToFit: true, width: 30 } ];
         var item = Object.entries(options.activeItems)[0];
-        Object.entries(self.deleteAdditionalProperties(item[1])).forEach(function (item1) {
+        Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
             if (isHTML(item1[1])) {
                 columns.push({
                     headerName: item1[0],
                     field: item1[0],
                     cellRenderer: function (params) {
-                        return params.data[item1[0]]; // Array.isArray(item1[1]) ? item1[1][0] : item1[1]
+                        return params.data[item1[0]];
                     }
                 });
             } else {
@@ -12281,7 +12310,7 @@ TableView.prototype.filter = function (filterData) {
     if (self.isCreated) {
         self.gridOptions.api.setRowData(Object.entries(filterData).map(function (item) {
             var dataObj = {};
-            Object.entries(self.deleteAdditionalProperties(item[1])).forEach(function (item1) {
+            Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
                 dataObj[item1[0]] = item1[1][0];
             });
             return dataObj;
@@ -12314,10 +12343,12 @@ CSVExporter.prototype.export = function (rows) {
             return Object.values(row).map(function (r) {
                 var val = Array.isArray(r) ? r[0] : r;
 
-                if (val instanceof Date) {
+                if (val === undefined) {
+                    val = self.quote + self.quote;
+                } else if (val instanceof Date) {
                     val = val.toLocaleString(self.culture);
                 } else if (typeof val === "string") {
-                    val = self.quote + val.replace(self.fieldSeparator, "") + self.quote;
+                    val = self.quote + getTextFromHTML(val).replace(self.fieldSeparator, "") + self.quote;
                 } else if (typeof val === "number") {
                     val = val.toString().replace(self.fieldSeparator, self.decimalSeparator);
                 }
@@ -15513,7 +15544,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
 
     var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Export to CSV");
     exportButton.htmlElement.onclick = function () {
-        (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return item.facets; }));
+        (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return deleteAdditionalProperties(item); }));
     };
 
     var buttons = [

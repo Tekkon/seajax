@@ -20,10 +20,12 @@ CSVExporter.prototype.export = function (rows) {
             return Object.values(row).map(function (r) {
                 var val = Array.isArray(r) ? r[0] : r;
 
-                if (val instanceof Date) {
+                if (val === undefined) {
+                    val = self.quote + self.quote;
+                } else if (val instanceof Date) {
                     val = val.toLocaleString(self.culture);
                 } else if (typeof val === "string") {
-                    val = self.quote + val.replace(self.fieldSeparator, "") + self.quote;
+                    val = self.quote + getTextFromHTML(val).replace(self.fieldSeparator, "") + self.quote;
                 } else if (typeof val === "number") {
                     val = val.toString().replace(self.fieldSeparator, self.decimalSeparator);
                 }

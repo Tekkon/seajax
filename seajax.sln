@@ -48,6 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pivot", "pivot", "{0B3D2BCE
 		v2\app\pivot\DatePicker.js = v2\app\pivot\DatePicker.js
 		v2\app\pivot\export.png = v2\app\pivot\export.png
 		v2\app\pivot\Exporter.js = v2\app\pivot\Exporter.js
+		v2\app\pivot\Global.js = v2\app\pivot\Global.js
 		v2\app\pivot\GraphView.js = v2\app\pivot\GraphView.js
 		v2\app\pivot\GridView.js = v2\app\pivot\GridView.js
 		v2\app\pivot\Lzw.js = v2\app\pivot\Lzw.js

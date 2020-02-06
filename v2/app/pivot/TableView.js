@@ -22,33 +22,17 @@ TableView.prototype.createView = function (options) {
         var height = options.canvas.clientHeight - 12;
         div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
 
-        self.deleteAdditionalProperties = function(item) {
-            var clone = Object.assign({}, item.facets);
-            Object.entries(clone).forEach(function (property) {
-                if (property[0][0] === '_') {
-                    delete clone[property[0]];
-                }
-            });
-
-            return clone;
-        }
-
         var data = Object.entries(options.activeItems).map(function (item) {
             var dataObj = {};
-            Object.entries(self.deleteAdditionalProperties(item[1])).forEach(function (item1) {
+            Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
                 dataObj[item1[0]] = item1[1][0];
             });
             return dataObj;
         });
 
-        var isHTML = function(str) {
-            var doc = new DOMParser().parseFromString(str, "text/html");
-            return Array.from(doc.body.childNodes).some(function (node) { return node.nodeType === 1 });
-        }
-
         var columns = [ { headerName: "", field: "make", checkboxSelection: true, suppressSizeToFit: true, width: 30 } ];
         var item = Object.entries(options.activeItems)[0];
-        Object.entries(self.deleteAdditionalProperties(item[1])).forEach(function (item1) {
+        Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
             if (isHTML(item1[1])) {
                 columns.push({
                     headerName: item1[0],
@@ -108,7 +92,7 @@ TableView.prototype.filter = function (filterData) {
     if (self.isCreated) {
         self.gridOptions.api.setRowData(Object.entries(filterData).map(function (item) {
             var dataObj = {};
-            Object.entries(self.deleteAdditionalProperties(item[1])).forEach(function (item1) {
+            Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
                 dataObj[item1[0]] = item1[1][0];
             });
             return dataObj;

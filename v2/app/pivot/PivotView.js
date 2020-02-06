@@ -290,7 +290,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
 
     var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Export to CSV");
     exportButton.htmlElement.onclick = function () {
-        (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return item.facets; }));
+        (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return deleteAdditionalProperties(item); }));
     };
 
     var buttons = [
