@@ -15,7 +15,7 @@ CSVExporter.prototype.constructor = CSVExporter;
 CSVExporter.prototype.export = function (rows) {
     var self = this;
     var bom = '\ufeff';
-    var csvContent = "data:text/csv;charset=" + self.encoding + "," + bom + Object.keys(rows[0]).join(self.fieldSeparator) + self.rowSeparator +
+    var csvContent = "data:text/csv;charset=" + self.encoding + "," + bom + Object.keys(rows[0]).map(function(key) { return self.quote + key + self.quote; }).join(self.fieldSeparator) + self.rowSeparator +
         rows.map(function (row) { 
             return Object.values(row).map(function (r) {
                 var val = Array.isArray(r) ? r[0] : r;
@@ -23,11 +23,19 @@ CSVExporter.prototype.export = function (rows) {
                 if (val === undefined) {
                     val = self.quote + self.quote;
                 } else if (val instanceof Date) {
-                    val = val.toLocaleString(self.culture);
-                } else if (typeof val === "string") {
-                    val = self.quote + getTextFromHTML(val).replace(self.fieldSeparator, "") + self.quote;
+                    val = self.quote + val.toLocaleString(self.culture) + self.quote;
                 } else if (typeof val === "number") {
-                    val = val.toString().replace(self.fieldSeparator, self.decimalSeparator);
+                    val = self.quote + val.toString().replaceAll(self.fieldSeparator, self.decimalSeparator) + self.quote;
+                } else if (typeof val === "string") {
+                    var href = getHrefFromHTML(val);
+                    var text = getTextFromHTML(val);
+                    if (href != undefined) {
+                        //text = "[[hyperlink URL link =" + href + " display=" + text + "]].";
+                        text = '=HYPERLINK(""' + href + '"")'; //""' + text + '"")';
+                        val = self.quote + text + self.quote;
+                    } else {
+                        val = self.quote + text.replaceAll(self.fieldSeparator, "").replaceAll(self.quote, "").replaceAll(/(\r\n|\n|\r)/gm, "") + self.quote;
+                    }                    
                 }
 
                 return val;

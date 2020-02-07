@@ -18,18 +18,37 @@ function getTextFromHTML(str) {
                 txt += " ";
             }            
             
-            var href = node.getAttribute("href");
-            if (href !== undefined) {
-                txt += href;
-            } else {
-                txt += node.textContent;
-            }
+            txt += node.textContent;
             i += 1;
         });
 
         return txt;
     } else {
         return str;
+    }
+}
+
+function getHrefFromHTML(str) {
+    if (isHTML(str)) {
+        var doc = parseHTML(str);
+        var txt = '';
+        var i = 0;
+
+        doc.body.childNodes.forEach(function (node) {
+            if (i > 0) {
+                txt += " ";
+            }
+
+            var href = node.getAttribute("href");
+            if (href !== undefined) {
+                txt += href;
+            }
+            i += 1;
+        });
+
+        return txt;
+    } else {
+        return undefined;
     }
 }
 
@@ -42,4 +61,18 @@ function deleteAdditionalProperties(item) {
     });
 
     return clone;
+}
+
+String.prototype.replaceAll = function (search, replace) {
+    return this.split(search).join(replace);
+}
+
+function cleanUTF8String(input) {
+    var output = "";
+    for (var i = 0; i < input.length; i++) {
+        if (input.charCodeAt(i) <= 127) {
+            output += input.charAt(i);
+        }
+    }
+    return output;
 }
