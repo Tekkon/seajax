@@ -30,9 +30,7 @@ CSVExporter.prototype.export = function (rows) {
                     var href = getHrefFromHTML(val);
                     var text = getTextFromHTML(val);
                     if (href != undefined) {
-                        //text = "[[hyperlink URL link =" + href + " display=" + text + "]].";
-                        text = '=HYPERLINK(""' + href + '"")'; //""' + text + '"")';
-                        val = self.quote + text + self.quote;
+                        val = self.quote + href + self.quote;
                     } else {
                         val = self.quote + text.replaceAll(self.fieldSeparator, "").replaceAll(self.quote, "").replaceAll(/(\r\n|\n|\r)/gm, "") + self.quote;
                     }                    
@@ -42,15 +40,28 @@ CSVExporter.prototype.export = function (rows) {
             }).join(self.fieldSeparator)
         }).join(self.rowSeparator);
 
-    this.openFile(csvContent);
+    this.dataURLtoBlob(csvContent, this.callback);
 }
 
-CSVExporter.prototype.openFile = function (content) {
-    var encodedUri = encodeURI(content);
-    var link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "data.csv");
-    document.body.appendChild(link); // Required for FF
-    link.click();
-    document.body.removeChild(link);
+CSVExporter.prototype.dataURLtoBlob = function(dataurl, callback) {
+    var arr = dataurl.substring(28, dataurl.length - 1), mime = dataurl.substring(0, 27).match(/:(.*?);/)[1],
+        bstr = unescape(encodeURIComponent(arr)), n = bstr.length, u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    callback(new Blob([u8arr], { type: mime }));
 }
+
+CSVExporter.prototype.callback = function (blob) {
+    var a = document.createElement('a');
+    a.download = 'data.csv';
+    a.innerHTML = 'download';
+    a.href = URL.createObjectURL(blob);
+    a.onclick = function () {
+        requestAnimationFrame(function () {
+            URL.revokeObjectURL(decodeURI(a.href));
+            document.body.removeChild(a);
+        });
+    };
+    a.click();
+};
