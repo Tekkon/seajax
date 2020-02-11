@@ -99,3 +99,11 @@ TableView.prototype.filter = function (filterData) {
         }));
     }
 }
+
+TableView.prototype.clearFilter = function () {
+    var self = this;
+
+    if (self.gridOptions !== undefined) {
+        self.gridOptions.api.deselectAll();
+    }
+}

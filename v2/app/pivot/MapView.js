@@ -270,7 +270,7 @@ MapView.prototype.setMarkers = function (_items) {
             self.map.setView([0, 0], 2);
         }
 
-        var resetHighlightedMarkers = function () {
+        self.resetHighlightedMarkers = function () {
             for (var i = 0; i < self.highlightedMarkers.length; i++) {
                 self.setMarkerIcon(self.highlightedMarkers[i], self.markerIconURL);
             }
@@ -281,7 +281,7 @@ MapView.prototype.setMarkers = function (_items) {
         self.markerLayer.on("click", function (event) {
             var clickedMarker = event.layer;
 
-            resetHighlightedMarkers();
+            self.resetHighlightedMarkers();
             self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
             self.highlightedMarkers.push(clickedMarker);
 
@@ -297,7 +297,7 @@ MapView.prototype.setMarkers = function (_items) {
             })[0];
             if (self.detailsEnabled) {
                 self.container.trigger("showDetails", clickedItem, self.container.facets);
-                self.trigger("showInfoButton");
+                self.container.trigger("showInfoButton");
             }
             self.container.trigger("filterItem", clickedItem, self.container.facets);
         });
@@ -305,5 +305,13 @@ MapView.prototype.setMarkers = function (_items) {
         self.markerLayer.on("mouseover", function (event) {
             event.layer.openPopup();
         });
+    }
+}
+
+MapView.prototype.clearFilter = function () {
+    var self = this;
+
+    if (self.resetHighlightedMarkers !== undefined) {
+        self.resetHighlightedMarkers();
     }
 }

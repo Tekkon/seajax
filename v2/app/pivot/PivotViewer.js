@@ -1798,6 +1798,12 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         // add a listener to update stuff if the viewer size changes onscreen
         self.addListener("resize", onResize);
 
+        self.addListener("clearFilter", function () {
+            self.views.forEach(function (view) {
+                view.clearFilter();
+            });
+        });
+
         // Rather than trying to figure out when we can stop drawing
         // or change frame rate, I'll just use the global timer.
         Seadragon2.Timer.register(updateOnce);

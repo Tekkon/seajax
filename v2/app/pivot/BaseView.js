@@ -31,3 +31,7 @@ BaseView.prototype.update = function (options) {
 BaseView.prototype.filter = function (filterData) {
 
 }
+
+BaseView.prototype.clearFilter = function () {
+
+}
