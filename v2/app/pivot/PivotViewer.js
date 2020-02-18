@@ -93,6 +93,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     self.containerRect = undefined;
     self.avgHeight = undefined;
     self.activeItemsArr = [];
+    self.isAdditionalViewsCreated = false;
 
     var innerTracker;
 
@@ -230,6 +231,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     function runFilters() {
         // clear the active items
+        var prevActiveItems = activeItems;
         activeItems = {};
         self.activeItemsArr = [];
 
@@ -243,9 +245,23 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             }
         });
 
-        self.views.forEach(function (view) {
-            view.filter(activeItems);
-        });
+        var isActiveItemsChanged = Object.entries(activeItems).length !== Object.entries(prevActiveItems).length;
+
+        if (!isActiveItemsChanged) {
+            Object.entries(activeItems).forEach(function (item) {
+                var prevItem = Object.entries(prevActiveItems).filter(function (prevItem) {
+                    return prevItem.id === item.id;
+                })[0];
+
+                isActiveItemsChanged = isActiveItemsChanged || (prevItem === null || undefined);
+            });
+        }
+
+        if (isActiveItemsChanged || self.views[0].isSelected || self.views[1].isSelected) {
+            self.views.forEach(function (view) {
+                view.filter(activeItems);
+            });
+        }
 
         self.trigger('filterSet', activeItems);
     }
@@ -1102,8 +1118,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.removeListener("animationfinish", rearrangePart1);
 
         // hide the details pane before we get started
-        self.trigger("hideDetails");
-        self.trigger("hideInfoButton");
+        //self.trigger("hideDetails");
+        //self.trigger("hideInfoButton");
 
         // make sure the update function will know what's going on
         rearranging = true;
@@ -1137,10 +1153,22 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         for (var i = self.activeItemsArr.length - 1; i >= 0; i--) {
             self.activeItemsArr[i].destination = [];
         }
-
-        self.views.filter(function (elem) {
+        
+        var selectedView = self.views.filter(function (elem) {
             return elem.isSelected;
         })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
+        
+        // initial creation of additional views 
+        if (!self.isAdditionalViewsCreated) {
+            self.views.forEach(function (view, index) {
+                if (index > 1) {
+                    view.createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
+                }
+            });
+            mapLayer.style.visibility = "hidden";
+            tableLayer.style.visibility = "hidden";
+            self.isAdditionalViewsCreated = true;
+        }
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
@@ -1801,6 +1829,12 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.addListener("clearFilter", function () {
             self.views.forEach(function (view) {
                 view.clearFilter();
+            });
+        });
+
+        self.addListener("itemSelected", function (item) {
+            self.views.forEach(function (view) {
+                view.selectItem(item);
             });
         });
 

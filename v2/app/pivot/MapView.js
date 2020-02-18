@@ -18,6 +18,7 @@
     this.highlightedMarkerIconURL = PIVOT_PARAMETERS.map.highlightedMarkerIconURL;
     this.shadowURL = PIVOT_PARAMETERS.map.shadowURL;
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
+    this.filterElement = PIVOT_PARAMETERS.filterElement;
 }
 
 MapView.prototype = Object.create(BaseView.prototype);
@@ -278,6 +279,7 @@ MapView.prototype.setMarkers = function (_items) {
             self.highlightedMarkers = [];
         }
 
+        self.isExecuteSelectItem = true;
         self.markerLayer.on("click", function (event) {
             var clickedMarker = event.layer;
 
@@ -300,6 +302,9 @@ MapView.prototype.setMarkers = function (_items) {
                 self.container.trigger("showInfoButton");
             }
             self.container.trigger("filterItem", clickedItem, self.container.facets);
+            self.isExecuteSelectItem = false;
+            self.container.trigger("itemSelected", clickedItem, self.container.facets);
+            setTimeout(function () { self.isExecuteSelectItem = true; }, 500);
         });
 
         self.markerLayer.on("mouseover", function (event) {
@@ -313,5 +318,20 @@ MapView.prototype.clearFilter = function () {
 
     if (self.resetHighlightedMarkers !== undefined) {
         self.resetHighlightedMarkers();
+    }
+}
+
+MapView.prototype.selectItem = function (item) {
+    var self = this;
+
+    if (self.isExecuteSelectItem) {
+        self.resetHighlightedMarkers();
+
+        var clickedMarker = self.markers.filter(function (marker) {
+            return item.facets === marker.options.dataRow;
+        })[0];
+        self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
+        self.highlightedMarkers.push(clickedMarker);
+        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 10);
     }
 }

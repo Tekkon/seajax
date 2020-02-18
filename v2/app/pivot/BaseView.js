@@ -35,3 +35,7 @@ BaseView.prototype.filter = function (filterData) {
 BaseView.prototype.clearFilter = function () {
 
 }
+
+BaseView.prototype.selectItem = function (item) {
+
+}

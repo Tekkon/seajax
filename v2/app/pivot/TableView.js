@@ -46,7 +46,8 @@ TableView.prototype.createView = function (options) {
             }
         });
 
-        var setFilter = function () {
+        self.isExecuteSelectItem = true;
+        self.setFilter = function () {
             var selectedNodes = self.gridOptions.api.getSelectedNodes()
             var selectedData = selectedNodes.map(function (node) { return node.data })
 
@@ -66,14 +67,20 @@ TableView.prototype.createView = function (options) {
                 self.container.trigger("hideInfoButton");
             }
             self.container.trigger("filterSet", clickedItems, self.container.facets);
+            self.isExecuteSelectItem = false;
+            self.container.trigger("itemSelected", clickedItems[0], self.container.facets);
+            setTimeout(function () { self.isExecuteSelectItem = true; }, 500);
         }
 
+        self.isItemSelected = false;
         self.gridOptions = {
             columnDefs: columns,
             rowData: data,
             rowSelection: 'multiple',
             onRowSelected: function (row) {
-                setFilter();
+                if (!self.isItemSelected) {
+                    self.setFilter();
+                }
             }
         };        
 
@@ -105,5 +112,19 @@ TableView.prototype.clearFilter = function () {
 
     if (self.gridOptions !== undefined) {
         self.gridOptions.api.deselectAll();
+    }
+}
+
+TableView.prototype.selectItem = function (item) {
+    var self = this;
+
+    if (self.gridOptions !== undefined && self.isExecuteSelectItem) {
+        self.gridOptions.api.forEachNode(function (node, index) {
+            if (node.data[self.filterElement] === item.id) {
+                self.isItemSelected = true;
+                node.setSelected(true, true);
+                setTimeout(function() { self.isItemSelected = false }, 500);
+            }
+        });
     }
 }
