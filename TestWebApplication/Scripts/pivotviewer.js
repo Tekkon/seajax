@@ -12748,6 +12748,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             self.views.forEach(function (view) {
                 view.filter(activeItems);
             });
+
+            if (self.detailsEnabled) {
+                self.trigger("hideDetails");
+                self.trigger("hideInfoButton");
+            }
         }
 
         self.trigger('filterSet', activeItems);
@@ -13652,10 +13657,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     view.createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
                 }
             });
-            mapLayer.style.visibility = "hidden";
-            tableLayer.style.visibility = "hidden";
             self.isAdditionalViewsCreated = true;
         }
+
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
@@ -14018,10 +14022,10 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     // without the details pane getting in the way.
                     viewport.visibilityRatio = (containerSize.x - rightRailWidth) / containerSize.x;
                 } else {
-                    if (self.detailsEnabled) {
+                    /*if (self.detailsEnabled) {
                         self.trigger("hideDetails");
                         self.trigger("hideInfoButton");
-                    }
+                    }*/
 
                     //self.trigger("clearFilter");
                     viewport.visibilityRatio = 1;
@@ -14317,6 +14321,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             self.views.forEach(function (view) {
                 view.clearFilter();
             });
+
+            if (self.detailsEnabled) {
+                self.trigger("hideDetails");
+                self.trigger("hideInfoButton");
+            }
         });
 
         self.addListener("itemSelected", function (item) {
@@ -15694,9 +15703,22 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
 
     var tableButton = new Button("div", "pivot_sorttools pivot_table pivot_hoverable", topBar, "Table View");
-    var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_hoverable", topBar, "Map View");
+    var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_activesort", topBar, "Map View");
     var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
-    var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_activesort", topBar, "Grid View");
+    var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_hoverable", topBar, "Grid View");
+
+    graphButton.htmlElement.style.visibility = "hidden";
+    graphButton.htmlElement.style.width = 0;
+    graphButton.htmlElement.style.height = 0;
+
+    gridButton.htmlElement.style.visibility = "hidden";
+    gridButton.htmlElement.style.width = 0;
+    gridButton.htmlElement.style.height = 0;
+
+    frontLayer.style.visibility = "hidden";
+    behindLayer.style.visibility = "hidden";
+    mapLayer.style.visibility = "visible";
+    tableLayer.style.visibility = "hidden";
 
     var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Export to CSV");
     exportButton.htmlElement.onclick = function () {

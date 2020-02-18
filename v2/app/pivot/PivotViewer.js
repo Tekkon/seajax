@@ -261,6 +261,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             self.views.forEach(function (view) {
                 view.filter(activeItems);
             });
+
+            if (self.detailsEnabled) {
+                self.trigger("hideDetails");
+                self.trigger("hideInfoButton");
+            }
         }
 
         self.trigger('filterSet', activeItems);
@@ -1165,10 +1170,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     view.createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
                 }
             });
-            mapLayer.style.visibility = "hidden";
-            tableLayer.style.visibility = "hidden";
             self.isAdditionalViewsCreated = true;
         }
+
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
@@ -1531,10 +1535,10 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     // without the details pane getting in the way.
                     viewport.visibilityRatio = (containerSize.x - rightRailWidth) / containerSize.x;
                 } else {
-                    if (self.detailsEnabled) {
+                    /*if (self.detailsEnabled) {
                         self.trigger("hideDetails");
                         self.trigger("hideInfoButton");
-                    }
+                    }*/
 
                     //self.trigger("clearFilter");
                     viewport.visibilityRatio = 1;
@@ -1830,6 +1834,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             self.views.forEach(function (view) {
                 view.clearFilter();
             });
+
+            if (self.detailsEnabled) {
+                self.trigger("hideDetails");
+                self.trigger("hideInfoButton");
+            }
         });
 
         self.addListener("itemSelected", function (item) {

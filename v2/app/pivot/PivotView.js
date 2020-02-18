@@ -284,9 +284,22 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
 
     var tableButton = new Button("div", "pivot_sorttools pivot_table pivot_hoverable", topBar, "Table View");
-    var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_hoverable", topBar, "Map View");
+    var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_activesort", topBar, "Map View");
     var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
-    var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_activesort", topBar, "Grid View");
+    var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_hoverable", topBar, "Grid View");
+
+    graphButton.htmlElement.style.visibility = "hidden";
+    graphButton.htmlElement.style.width = 0;
+    graphButton.htmlElement.style.height = 0;
+
+    gridButton.htmlElement.style.visibility = "hidden";
+    gridButton.htmlElement.style.width = 0;
+    gridButton.htmlElement.style.height = 0;
+
+    frontLayer.style.visibility = "hidden";
+    behindLayer.style.visibility = "hidden";
+    mapLayer.style.visibility = "visible";
+    tableLayer.style.visibility = "hidden";
 
     var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Export to CSV");
     exportButton.htmlElement.onclick = function () {
