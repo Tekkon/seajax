@@ -30,7 +30,7 @@ TableView.prototype.createView = function (options) {
             return dataObj;
         });
 
-        var columns = [ { headerName: "", field: "make", checkboxSelection: true, suppressSizeToFit: true, width: 30 } ];
+        var columns = []; // [ { headerName: "", field: "make", checkboxSelection: true, suppressSizeToFit: true, width: 30 } ];
         var item = Object.entries(options.activeItems)[0];
         Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
             if (isHTML(item1[1])) {
@@ -76,7 +76,7 @@ TableView.prototype.createView = function (options) {
         self.gridOptions = {
             columnDefs: columns,
             rowData: data,
-            rowSelection: 'multiple',
+            rowSelection: 'single',
             onRowSelected: function (row) {
                 if (!self.isItemSelected) {
                     self.setFilter();
