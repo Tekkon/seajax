@@ -1154,7 +1154,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             self.activeItemsArr[i].destination = [];
         }
         
-        var selectedView = self.views.filter(function (elem) {
+        self.views.filter(function (elem) {
             return elem.isSelected;
         })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
         

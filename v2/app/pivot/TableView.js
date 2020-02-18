@@ -76,7 +76,7 @@ TableView.prototype.createView = function (options) {
         self.gridOptions = {
             columnDefs: columns,
             rowData: data,
-            rowSelection: 'single',
+            rowSelection: 'single', //'multiple',
             onRowSelected: function (row) {
                 if (!self.isItemSelected) {
                     self.setFilter();
