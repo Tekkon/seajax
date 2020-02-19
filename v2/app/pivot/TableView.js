@@ -118,13 +118,17 @@ TableView.prototype.clearFilter = function () {
 TableView.prototype.selectItem = function (item) {
     var self = this;
 
+    var selectedNodeIndex = 0;
     if (self.gridOptions !== undefined && self.isExecuteSelectItem) {
         self.gridOptions.api.forEachNode(function (node, index) {
-            if (node.data[self.filterElement] === item.id) {
+            if (node.data[self.filterElement] === (Array.isArray(item.id) ? item.id[0] : item.id)) {
                 self.isItemSelected = true;
                 node.setSelected(true, true);
+                selectedNodeIndex = index;
                 setTimeout(function() { self.isItemSelected = false }, 500);
             }
         });
+
+        self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
     }
 }

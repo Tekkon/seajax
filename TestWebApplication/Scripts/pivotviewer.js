@@ -12281,7 +12281,7 @@ MapView.prototype.selectItem = function (item) {
         })[0];
         self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
         self.highlightedMarkers.push(clickedMarker);
-        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 10);
+        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
     }
 }
 var TableView = function (container, isSelected) {
@@ -12404,14 +12404,18 @@ TableView.prototype.clearFilter = function () {
 TableView.prototype.selectItem = function (item) {
     var self = this;
 
+    var selectedNodeIndex = 0;
     if (self.gridOptions !== undefined && self.isExecuteSelectItem) {
         self.gridOptions.api.forEachNode(function (node, index) {
-            if (node.data[self.filterElement] === item.id) {
+            if (node.data[self.filterElement] === (Array.isArray(item.id) ? item.id[0] : item.id)) {
                 self.isItemSelected = true;
                 node.setSelected(true, true);
+                selectedNodeIndex = index;
                 setTimeout(function() { self.isItemSelected = false }, 500);
             }
         });
+
+        self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
     }
 }
 
@@ -12734,7 +12738,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
         var isActiveItemsChanged = Object.entries(activeItems).length !== Object.entries(prevActiveItems).length;
 
-        if (!isActiveItemsChanged) {
+        /*if (!isActiveItemsChanged) {
             Object.entries(activeItems).forEach(function (item) {
                 var prevItem = Object.entries(prevActiveItems).filter(function (prevItem) {
                     return prevItem.id === item.id;
@@ -12742,7 +12746,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 isActiveItemsChanged = isActiveItemsChanged || (prevItem === null || undefined);
             });
-        }
+        }*/
 
         if (isActiveItemsChanged || self.views[0].isSelected || self.views[1].isSelected) {
             self.views.forEach(function (view) {
@@ -12753,9 +12757,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 self.trigger("hideDetails");
                 self.trigger("hideInfoButton");
             }
-        }
-
-        self.trigger('filterSet', activeItems);
+            self.trigger('filterSet', activeItems);
+        }        
     }
 
     // Helpers -- ARRANGEMENT

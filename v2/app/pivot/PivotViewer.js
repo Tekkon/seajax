@@ -247,7 +247,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
         var isActiveItemsChanged = Object.entries(activeItems).length !== Object.entries(prevActiveItems).length;
 
-        if (!isActiveItemsChanged) {
+        /*if (!isActiveItemsChanged) {
             Object.entries(activeItems).forEach(function (item) {
                 var prevItem = Object.entries(prevActiveItems).filter(function (prevItem) {
                     return prevItem.id === item.id;
@@ -255,7 +255,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 isActiveItemsChanged = isActiveItemsChanged || (prevItem === null || undefined);
             });
-        }
+        }*/
 
         if (isActiveItemsChanged || self.views[0].isSelected || self.views[1].isSelected) {
             self.views.forEach(function (view) {
@@ -266,9 +266,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 self.trigger("hideDetails");
                 self.trigger("hideInfoButton");
             }
-        }
-
-        self.trigger('filterSet', activeItems);
+            self.trigger('filterSet', activeItems);
+        }        
     }
 
     // Helpers -- ARRANGEMENT

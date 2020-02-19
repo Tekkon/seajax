@@ -332,6 +332,6 @@ MapView.prototype.selectItem = function (item) {
         })[0];
         self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
         self.highlightedMarkers.push(clickedMarker);
-        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 10);
+        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
     }
 }
