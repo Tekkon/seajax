@@ -11613,11 +11613,11 @@ var Button = function (element, classes, container, title) {
 }
 
 Button.prototype.select = function () {
-    this.htmlElement.className = this.htmlElement.className.replace(" pivot_hoverable", "") + " pivot_activesort";
+    this.htmlElement.className = this.htmlElement.className.replace("pivot_hoverable", "pivot_activesort");
 }
 
 Button.prototype.deselect = function () {
-    this.htmlElement.className = this.htmlElement.className.replace(" pivot_activesort", "") + " pivot_hoverable";
+    this.htmlElement.className = this.htmlElement.className.replace("pivot_activesort", "pivot_hoverable");
 }
 var BaseView = function (container, isSelected) {
     this.isSelected = isSelected;
@@ -11657,8 +11657,11 @@ BaseView.prototype.clearFilter = function () {
 
 }
 
-BaseView.prototype.selectItem = function (item) {
+BaseView.prototype.rearrange = function (filterData) {
 
+}
+
+BaseView.prototype.showSelectedItems = function () {
 }
 var GridView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
@@ -11968,6 +11971,7 @@ var MapView = function (container, isSelected) {
     this.shadowURL = PIVOT_PARAMETERS.map.shadowURL;
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
     this.filterElement = PIVOT_PARAMETERS.filterElement;
+    this.activeItems = {};
 }
 
 MapView.prototype = Object.create(BaseView.prototype);
@@ -12081,19 +12085,47 @@ MapView.prototype.createView = function (options) {
         } else {
             loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
         }
+    }
 
-        if (options.activeItems !== {}) {
-            this.setMarkers(options.activeItems);
-        } else {
-            this.setMarkers(options.items);
-        }
-
-        self.items = options.items;
+    if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
+        self.rearrange(options.activeItems);
+        self.activeItems = options.activeItems;
+    } else {
+        self.showSelectedItems();
     }
 }
 
 MapView.prototype.filter = function (filterData) {
+    this.container.selectedItems = [];
+    this.rearrange(filterData);
+}
+
+MapView.prototype.rearrange = function (filterData) {
     this.setMarkers(filterData);
+}
+
+MapView.prototype.showSelectedItems = function () {
+    var self = this;
+
+    self.resetHighlightedMarkers();
+    self.container.selectedItems.forEach(function (item, index) {
+        var clickedMarker = self.markers.filter(function (marker) {
+            return item.facets === marker.options.dataRow;
+        })[0];
+        self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
+        self.highlightedMarkers.push(clickedMarker);
+        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
+    });
+}
+
+MapView.prototype.resetHighlightedMarkers = function () {
+    var self = this;
+
+    for (var i = 0; i < self.highlightedMarkers.length; i++) {
+        self.setMarkerIcon(self.highlightedMarkers[i], self.markerIconURL);
+    }
+
+    self.highlightedMarkers = [];
 }
 
 MapView.prototype.substituteValues = function (s, params) {
@@ -12213,19 +12245,11 @@ MapView.prototype.setMarkers = function (_items) {
         self.map.addLayer(self.markerLayer);
 
         if (self.markers.length > 0) {
-            setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); }.bind(self), 100);
+            setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
         }
 
         if (self.markers.length == 0) {
             self.map.setView([0, 0], 2);
-        }
-
-        self.resetHighlightedMarkers = function () {
-            for (var i = 0; i < self.highlightedMarkers.length; i++) {
-                self.setMarkerIcon(self.highlightedMarkers[i], self.markerIconURL);
-            }
-
-            self.highlightedMarkers = [];
         }
 
         self.isExecuteSelectItem = true;
@@ -12251,9 +12275,9 @@ MapView.prototype.setMarkers = function (_items) {
                 self.container.trigger("showInfoButton");
             }
             self.container.trigger("filterItem", clickedItem, self.container.facets);
-            self.isExecuteSelectItem = false;
-            self.container.trigger("itemSelected", clickedItem, self.container.facets);
-            setTimeout(function () { self.isExecuteSelectItem = true; }, 500);
+
+            self.container.selectedItems = [];
+            self.container.selectedItems.push(clickedItem);
         });
 
         self.markerLayer.on("mouseover", function (event) {
@@ -12269,27 +12293,13 @@ MapView.prototype.clearFilter = function () {
         self.resetHighlightedMarkers();
     }
 }
-
-MapView.prototype.selectItem = function (item) {
-    var self = this;
-
-    if (self.isExecuteSelectItem) {
-        self.resetHighlightedMarkers();
-
-        var clickedMarker = self.markers.filter(function (marker) {
-            return item.facets === marker.options.dataRow;
-        })[0];
-        self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
-        self.highlightedMarkers.push(clickedMarker);
-        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
-    }
-}
 var TableView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
 
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
     this.filterElement = PIVOT_PARAMETERS.filterElement;
     this.isCreated = false;
+    this.activeItems = {};
 }
 
 TableView.prototype = Object.create(BaseView.prototype);
@@ -12315,6 +12325,7 @@ TableView.prototype.createView = function (options) {
             });
             return dataObj;
         });
+        self.activeItems = options.activeItems;
 
         var columns = []; // [ { headerName: "", field: "make", checkboxSelection: true, suppressSizeToFit: true, width: 30 } ];
         var item = Object.entries(options.activeItems)[0];
@@ -12353,22 +12364,21 @@ TableView.prototype.createView = function (options) {
                 self.container.trigger("hideInfoButton");
             }
             self.container.trigger("filterSet", clickedItems, self.container.facets);
-            self.isExecuteSelectItem = false;
-            self.container.trigger("itemSelected", clickedItems[0], self.container.facets);
-            setTimeout(function () { self.isExecuteSelectItem = true; }, 500);
+
+            self.container.selectedItems = [];
+            if (clickedItems.length > 0) {
+                self.container.selectedItems.push(clickedItems[0]);
+            }
         }
 
-        self.isItemSelected = false;
         self.gridOptions = {
             columnDefs: columns,
             rowData: data,
             rowSelection: 'single', //'multiple',
             onRowSelected: function (row) {
-                if (!self.isItemSelected) {
-                    self.setFilter();
-                }
+               self.setFilter();
             }
-        };        
+        };
 
         new agGrid.Grid(document.querySelector('.tableView'), self.gridOptions);
         var allColumnIds = self.gridOptions.columnApi.getAllColumns().map(function (column) {
@@ -12377,11 +12387,23 @@ TableView.prototype.createView = function (options) {
         var skeepHeader = false;
         self.gridOptions.columnApi.autoSizeColumns(allColumnIds, skeepHeader);
     }
+
+    if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
+        self.rearrange(options.activeItems);
+        self.activeItems = options.activeItems;
+    } 
+       
+    self.showSelectedItems();    
 }
 
 TableView.prototype.filter = function (filterData) {
     var self = this;
+    self.container.selectedItems = [];
+    self.rearrange(filterData);
+}
 
+TableView.prototype.rearrange = function (filterData) {
+    var self = this;
     if (self.isCreated) {
         self.gridOptions.api.setRowData(Object.entries(filterData).map(function (item) {
             var dataObj = {};
@@ -12393,29 +12415,30 @@ TableView.prototype.filter = function (filterData) {
     }
 }
 
+TableView.prototype.showSelectedItems = function () {
+    var self = this;
+
+    self.gridOptions.api.deselectAll();
+    self.container.selectedItems.forEach(function (item, index) {
+        var selectedNodeIndex = 0;
+        if (self.gridOptions !== undefined) {
+            self.gridOptions.api.forEachNode(function (node, index) {
+                if (node.data[self.filterElement] === (Array.isArray(item.id) ? item.id[0] : item.id)) {
+                    node.setSelected(true, true);
+                    selectedNodeIndex = index;
+                }
+            });
+
+            self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
+        }
+    });
+}
+
 TableView.prototype.clearFilter = function () {
     var self = this;
 
     if (self.gridOptions !== undefined) {
         self.gridOptions.api.deselectAll();
-    }
-}
-
-TableView.prototype.selectItem = function (item) {
-    var self = this;
-
-    var selectedNodeIndex = 0;
-    if (self.gridOptions !== undefined && self.isExecuteSelectItem) {
-        self.gridOptions.api.forEachNode(function (node, index) {
-            if (node.data[self.filterElement] === (Array.isArray(item.id) ? item.id[0] : item.id)) {
-                self.isItemSelected = true;
-                node.setSelected(true, true);
-                selectedNodeIndex = index;
-                setTimeout(function() { self.isItemSelected = false }, 500);
-            }
-        });
-
-        self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
     }
 }
 
@@ -12584,6 +12607,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     self.containerRect = undefined;
     self.avgHeight = undefined;
     self.activeItemsArr = [];
+    self.selectedItems = [];
     self.isAdditionalViewsCreated = false;
 
     var innerTracker;
@@ -12749,9 +12773,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }*/
 
         if (isActiveItemsChanged || self.views[0].isSelected || self.views[1].isSelected) {
-            self.views.forEach(function (view) {
-                view.filter(activeItems);
-            });
+            self.views.filter(function (view) {
+                return view.isSelected;
+            })[0].filter(activeItems);
 
             if (self.detailsEnabled) {
                 self.trigger("hideDetails");
@@ -12916,12 +12940,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     }
 
     function setTransform(html, position) {
-        transform(
-            html,
-            templateScale * position.x,
-            templateScale * position.y,
-            position.width / currentTemplateWidth * templateScale
-        );
+        if (position != undefined) {
+            transform(
+                html,
+                templateScale * position.x,
+                templateScale * position.y,
+                position.width / currentTemplateWidth * templateScale
+            );
+        }        
     }
 
     // this step reenables mouse tracking, among other things
@@ -13654,15 +13680,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
         
         // initial creation of additional views 
-        if (!self.isAdditionalViewsCreated) {
+        /*if (!self.isAdditionalViewsCreated) {
             self.views.forEach(function (view, index) {
                 if (index > 1) {
                     view.createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
                 }
             });
             self.isAdditionalViewsCreated = true;
-        }
-
+        }*/
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
@@ -13704,7 +13729,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.clearListeners("animationfinish");
 
         // once it gets there, we'll start the rearrange.
-        self.addListener("animationfinish", rearrangePart1);
+        //self.addListener("animationfinish", rearrangePart1);
+        rearrangePart1();
     }
 
     // Helpers -- CORE
@@ -14321,20 +14347,16 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.addListener("resize", onResize);
 
         self.addListener("clearFilter", function () {
-            self.views.forEach(function (view) {
-                view.clearFilter();
-            });
+            self.views.filter(function (view) {
+                return view.isSelected;
+            })[0].clearFilter();
 
             if (self.detailsEnabled) {
                 self.trigger("hideDetails");
                 self.trigger("hideInfoButton");
             }
-        });
 
-        self.addListener("itemSelected", function (item) {
-            self.views.forEach(function (view) {
-                view.selectItem(item);
-            });
+            self.selectedItems = [];
         });
 
         // Rather than trying to figure out when we can stop drawing
@@ -15770,6 +15792,8 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             }
         };
     });
+
+    viewer.views[2].select();
 
     // functions for making one view button look clickable and the other not
     function makeViewClickable(button) {

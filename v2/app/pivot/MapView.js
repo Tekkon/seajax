@@ -19,6 +19,7 @@
     this.shadowURL = PIVOT_PARAMETERS.map.shadowURL;
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
     this.filterElement = PIVOT_PARAMETERS.filterElement;
+    this.activeItems = {};
 }
 
 MapView.prototype = Object.create(BaseView.prototype);
@@ -132,19 +133,47 @@ MapView.prototype.createView = function (options) {
         } else {
             loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
         }
+    }
 
-        if (options.activeItems !== {}) {
-            this.setMarkers(options.activeItems);
-        } else {
-            this.setMarkers(options.items);
-        }
-
-        self.items = options.items;
+    if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
+        self.rearrange(options.activeItems);
+        self.activeItems = options.activeItems;
+    } else {
+        self.showSelectedItems();
     }
 }
 
 MapView.prototype.filter = function (filterData) {
+    this.container.selectedItems = [];
+    this.rearrange(filterData);
+}
+
+MapView.prototype.rearrange = function (filterData) {
     this.setMarkers(filterData);
+}
+
+MapView.prototype.showSelectedItems = function () {
+    var self = this;
+
+    self.resetHighlightedMarkers();
+    self.container.selectedItems.forEach(function (item, index) {
+        var clickedMarker = self.markers.filter(function (marker) {
+            return item.facets === marker.options.dataRow;
+        })[0];
+        self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
+        self.highlightedMarkers.push(clickedMarker);
+        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
+    });
+}
+
+MapView.prototype.resetHighlightedMarkers = function () {
+    var self = this;
+
+    for (var i = 0; i < self.highlightedMarkers.length; i++) {
+        self.setMarkerIcon(self.highlightedMarkers[i], self.markerIconURL);
+    }
+
+    self.highlightedMarkers = [];
 }
 
 MapView.prototype.substituteValues = function (s, params) {
@@ -264,19 +293,11 @@ MapView.prototype.setMarkers = function (_items) {
         self.map.addLayer(self.markerLayer);
 
         if (self.markers.length > 0) {
-            setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); }.bind(self), 100);
+            setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
         }
 
         if (self.markers.length == 0) {
             self.map.setView([0, 0], 2);
-        }
-
-        self.resetHighlightedMarkers = function () {
-            for (var i = 0; i < self.highlightedMarkers.length; i++) {
-                self.setMarkerIcon(self.highlightedMarkers[i], self.markerIconURL);
-            }
-
-            self.highlightedMarkers = [];
         }
 
         self.isExecuteSelectItem = true;
@@ -302,9 +323,9 @@ MapView.prototype.setMarkers = function (_items) {
                 self.container.trigger("showInfoButton");
             }
             self.container.trigger("filterItem", clickedItem, self.container.facets);
-            self.isExecuteSelectItem = false;
-            self.container.trigger("itemSelected", clickedItem, self.container.facets);
-            setTimeout(function () { self.isExecuteSelectItem = true; }, 500);
+
+            self.container.selectedItems = [];
+            self.container.selectedItems.push(clickedItem);
         });
 
         self.markerLayer.on("mouseover", function (event) {
@@ -318,20 +339,5 @@ MapView.prototype.clearFilter = function () {
 
     if (self.resetHighlightedMarkers !== undefined) {
         self.resetHighlightedMarkers();
-    }
-}
-
-MapView.prototype.selectItem = function (item) {
-    var self = this;
-
-    if (self.isExecuteSelectItem) {
-        self.resetHighlightedMarkers();
-
-        var clickedMarker = self.markers.filter(function (marker) {
-            return item.facets === marker.options.dataRow;
-        })[0];
-        self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
-        self.highlightedMarkers.push(clickedMarker);
-        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
     }
 }

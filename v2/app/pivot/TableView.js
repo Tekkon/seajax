@@ -4,6 +4,7 @@ var TableView = function (container, isSelected) {
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
     this.filterElement = PIVOT_PARAMETERS.filterElement;
     this.isCreated = false;
+    this.activeItems = {};
 }
 
 TableView.prototype = Object.create(BaseView.prototype);
@@ -29,6 +30,7 @@ TableView.prototype.createView = function (options) {
             });
             return dataObj;
         });
+        self.activeItems = options.activeItems;
 
         var columns = []; // [ { headerName: "", field: "make", checkboxSelection: true, suppressSizeToFit: true, width: 30 } ];
         var item = Object.entries(options.activeItems)[0];
@@ -67,22 +69,21 @@ TableView.prototype.createView = function (options) {
                 self.container.trigger("hideInfoButton");
             }
             self.container.trigger("filterSet", clickedItems, self.container.facets);
-            self.isExecuteSelectItem = false;
-            self.container.trigger("itemSelected", clickedItems[0], self.container.facets);
-            setTimeout(function () { self.isExecuteSelectItem = true; }, 500);
+
+            self.container.selectedItems = [];
+            if (clickedItems.length > 0) {
+                self.container.selectedItems.push(clickedItems[0]);
+            }
         }
 
-        self.isItemSelected = false;
         self.gridOptions = {
             columnDefs: columns,
             rowData: data,
             rowSelection: 'single', //'multiple',
             onRowSelected: function (row) {
-                if (!self.isItemSelected) {
-                    self.setFilter();
-                }
+               self.setFilter();
             }
-        };        
+        };
 
         new agGrid.Grid(document.querySelector('.tableView'), self.gridOptions);
         var allColumnIds = self.gridOptions.columnApi.getAllColumns().map(function (column) {
@@ -91,11 +92,23 @@ TableView.prototype.createView = function (options) {
         var skeepHeader = false;
         self.gridOptions.columnApi.autoSizeColumns(allColumnIds, skeepHeader);
     }
+
+    if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
+        self.rearrange(options.activeItems);
+        self.activeItems = options.activeItems;
+    } 
+       
+    self.showSelectedItems();    
 }
 
 TableView.prototype.filter = function (filterData) {
     var self = this;
+    self.container.selectedItems = [];
+    self.rearrange(filterData);
+}
 
+TableView.prototype.rearrange = function (filterData) {
+    var self = this;
     if (self.isCreated) {
         self.gridOptions.api.setRowData(Object.entries(filterData).map(function (item) {
             var dataObj = {};
@@ -107,28 +120,29 @@ TableView.prototype.filter = function (filterData) {
     }
 }
 
+TableView.prototype.showSelectedItems = function () {
+    var self = this;
+
+    self.gridOptions.api.deselectAll();
+    self.container.selectedItems.forEach(function (item, index) {
+        var selectedNodeIndex = 0;
+        if (self.gridOptions !== undefined) {
+            self.gridOptions.api.forEachNode(function (node, index) {
+                if (node.data[self.filterElement] === (Array.isArray(item.id) ? item.id[0] : item.id)) {
+                    node.setSelected(true, true);
+                    selectedNodeIndex = index;
+                }
+            });
+
+            self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
+        }
+    });
+}
+
 TableView.prototype.clearFilter = function () {
     var self = this;
 
     if (self.gridOptions !== undefined) {
         self.gridOptions.api.deselectAll();
-    }
-}
-
-TableView.prototype.selectItem = function (item) {
-    var self = this;
-
-    var selectedNodeIndex = 0;
-    if (self.gridOptions !== undefined && self.isExecuteSelectItem) {
-        self.gridOptions.api.forEachNode(function (node, index) {
-            if (node.data[self.filterElement] === (Array.isArray(item.id) ? item.id[0] : item.id)) {
-                self.isItemSelected = true;
-                node.setSelected(true, true);
-                selectedNodeIndex = index;
-                setTimeout(function() { self.isItemSelected = false }, 500);
-            }
-        });
-
-        self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
     }
 }

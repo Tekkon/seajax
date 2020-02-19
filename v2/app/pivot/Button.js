@@ -4,9 +4,9 @@
 }
 
 Button.prototype.select = function () {
-    this.htmlElement.className = this.htmlElement.className.replace(" pivot_hoverable", "") + " pivot_activesort";
+    this.htmlElement.className = this.htmlElement.className.replace("pivot_hoverable", "pivot_activesort");
 }
 
 Button.prototype.deselect = function () {
-    this.htmlElement.className = this.htmlElement.className.replace(" pivot_activesort", "") + " pivot_hoverable";
+    this.htmlElement.className = this.htmlElement.className.replace("pivot_activesort", "pivot_hoverable");
 }

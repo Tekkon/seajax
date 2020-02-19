@@ -349,6 +349,8 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         };
     });
 
+    viewer.views[2].select();
+
     // functions for making one view button look clickable and the other not
     function makeViewClickable(button) {
         button.className = button.className.replace(" pivot_activesort", "") + " pivot_hoverable";

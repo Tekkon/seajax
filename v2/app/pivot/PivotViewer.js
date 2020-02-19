@@ -93,6 +93,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     self.containerRect = undefined;
     self.avgHeight = undefined;
     self.activeItemsArr = [];
+    self.selectedItems = [];
     self.isAdditionalViewsCreated = false;
 
     var innerTracker;
@@ -258,9 +259,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }*/
 
         if (isActiveItemsChanged || self.views[0].isSelected || self.views[1].isSelected) {
-            self.views.forEach(function (view) {
-                view.filter(activeItems);
-            });
+            self.views.filter(function (view) {
+                return view.isSelected;
+            })[0].filter(activeItems);
 
             if (self.detailsEnabled) {
                 self.trigger("hideDetails");
@@ -425,12 +426,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     }
 
     function setTransform(html, position) {
-        transform(
-            html,
-            templateScale * position.x,
-            templateScale * position.y,
-            position.width / currentTemplateWidth * templateScale
-        );
+        if (position != undefined) {
+            transform(
+                html,
+                templateScale * position.x,
+                templateScale * position.y,
+                position.width / currentTemplateWidth * templateScale
+            );
+        }        
     }
 
     // this step reenables mouse tracking, among other things
@@ -1163,15 +1166,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
         
         // initial creation of additional views 
-        if (!self.isAdditionalViewsCreated) {
+        /*if (!self.isAdditionalViewsCreated) {
             self.views.forEach(function (view, index) {
                 if (index > 1) {
                     view.createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
                 }
             });
             self.isAdditionalViewsCreated = true;
-        }
-
+        }*/
         
         // recalculate template sizes and scaling for the front layer
         if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
@@ -1213,7 +1215,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.clearListeners("animationfinish");
 
         // once it gets there, we'll start the rearrange.
-        self.addListener("animationfinish", rearrangePart1);
+        //self.addListener("animationfinish", rearrangePart1);
+        rearrangePart1();
     }
 
     // Helpers -- CORE
@@ -1830,20 +1833,16 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.addListener("resize", onResize);
 
         self.addListener("clearFilter", function () {
-            self.views.forEach(function (view) {
-                view.clearFilter();
-            });
+            self.views.filter(function (view) {
+                return view.isSelected;
+            })[0].clearFilter();
 
             if (self.detailsEnabled) {
                 self.trigger("hideDetails");
                 self.trigger("hideInfoButton");
             }
-        });
 
-        self.addListener("itemSelected", function (item) {
-            self.views.forEach(function (view) {
-                view.selectItem(item);
-            });
+            self.selectedItems = [];
         });
 
         // Rather than trying to figure out when we can stop drawing

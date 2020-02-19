@@ -36,6 +36,9 @@ BaseView.prototype.clearFilter = function () {
 
 }
 
-BaseView.prototype.selectItem = function (item) {
+BaseView.prototype.rearrange = function (filterData) {
 
+}
+
+BaseView.prototype.showSelectedItems = function () {
 }
