@@ -344,7 +344,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                 frontLayer.style.visibility = "hidden";
                 behindLayer.style.visibility = "hidden";
                 mapLayer.style.visibility = "hidden";
-                tableLayer.style.visibility = "visible";
+                tableLayer.style.visibility = "visible";     
             }
         };
     });

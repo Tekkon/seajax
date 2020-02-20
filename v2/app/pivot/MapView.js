@@ -30,13 +30,9 @@ MapView.prototype.createView = function (options) {
 
     if (this.map == null) {
         var div = makeElement("div", "", options.mapLayer);
-        
-        var setMapLayerStyle = function () {
-            var width = options.canvas.clientWidth - options.leftRailWidth - 11;
-            var height = options.canvas.clientHeight - 12;
-            div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
-        }
-        setMapLayerStyle();
+        var width = options.canvas.clientWidth - options.leftRailWidth - 11;
+        var height = options.canvas.clientHeight - 12;
+        div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";    
 
         //window.addEventListener('optimizedResize', setMapLayerStyle);
 
@@ -135,9 +131,16 @@ MapView.prototype.createView = function (options) {
         }
     }
 
-    if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
-        self.rearrange(options.activeItems);
-        self.activeItems = options.activeItems;
+    var _items = {};
+    if (options.activeItems !== {}) {
+        _items = options.activeItems;
+    } else {
+        _items = options.items;
+    }
+
+    if (Object.entries(self.activeItems).length !== Object.entries(_items).length) {
+        self.rearrange(_items);
+        self.activeItems = _items;
     } else {
         self.showSelectedItems();
     }

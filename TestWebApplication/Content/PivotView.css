@@ -221,17 +221,21 @@ canvas.pivot {
 .pivot_sorttools {
     display:block;
     float:right;
-    font-size:12px;
+    font-size:12px;    
 }
 
 select.pivot_sorttools {
     margin-top:4px;
     border:solid 1px transparent;
     background:#f2f2f2;
+    visibility: hidden;
+    display: none;
 }
 
 .pivot_subtle {
     color:gray;
+    visibility: hidden;
+    display: none;
 }
 
 .pivot_sortlabel {
@@ -365,11 +369,12 @@ div.pivot_facetvalues li {
 }
 
 div.pivot_zoomslider {
-    width:140px;
+    width: 60px; /* 140px; */
     height:20px;
     border:1px solid #ccc;
     position:relative;
     background:#f2f2f2;
+    visibility: hidden;
 }
 
 .pivot_zoomout,

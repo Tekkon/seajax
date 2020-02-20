@@ -11982,13 +11982,9 @@ MapView.prototype.createView = function (options) {
 
     if (this.map == null) {
         var div = makeElement("div", "", options.mapLayer);
-        
-        var setMapLayerStyle = function () {
-            var width = options.canvas.clientWidth - options.leftRailWidth - 11;
-            var height = options.canvas.clientHeight - 12;
-            div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
-        }
-        setMapLayerStyle();
+        var width = options.canvas.clientWidth - options.leftRailWidth - 11;
+        var height = options.canvas.clientHeight - 12;
+        div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";    
 
         //window.addEventListener('optimizedResize', setMapLayerStyle);
 
@@ -12087,9 +12083,16 @@ MapView.prototype.createView = function (options) {
         }
     }
 
-    if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
-        self.rearrange(options.activeItems);
-        self.activeItems = options.activeItems;
+    var _items = {};
+    if (options.activeItems !== {}) {
+        _items = options.activeItems;
+    } else {
+        _items = options.items;
+    }
+
+    if (Object.entries(self.activeItems).length !== Object.entries(_items).length) {
+        self.rearrange(_items);
+        self.activeItems = _items;
     } else {
         self.showSelectedItems();
     }
@@ -12312,7 +12315,7 @@ TableView.prototype.createView = function (options) {
         self.isCreated = true;
 
         var div = makeElement("div", "tableView ag-theme-balham", options.tableLayer);
-
+        self.div = div;
         div.innerHtml = '';
         var width = options.canvas.clientWidth - options.leftRailWidth - 11;
         var height = options.canvas.clientHeight - 12;
@@ -12335,7 +12338,7 @@ TableView.prototype.createView = function (options) {
                     headerName: item1[0],
                     field: item1[0],
                     cellRenderer: function (params) {
-                        return params.data[item1[0]];
+                        return params.data !== undefined ? params.data[item1[0]] : '';
                     }
                 });
             } else {
@@ -12373,11 +12376,14 @@ TableView.prototype.createView = function (options) {
 
         self.gridOptions = {
             columnDefs: columns,
-            rowData: data,
+            //rowData: data,
             rowSelection: 'single', //'multiple',
+            //rowDeselection: true,
             onRowSelected: function (row) {
                self.setFilter();
-            }
+            },
+            rowModelType: 'infinite',
+            datasource: self.getDataSource(data)
         };
 
         new agGrid.Grid(document.querySelector('.tableView'), self.gridOptions);
@@ -12388,12 +12394,36 @@ TableView.prototype.createView = function (options) {
         self.gridOptions.columnApi.autoSizeColumns(allColumnIds, skeepHeader);
     }
 
+    //self.div.childNodes[0].childNodes[1].focus();
+
     if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
         self.rearrange(options.activeItems);
         self.activeItems = options.activeItems;
     } 
        
     self.showSelectedItems();    
+}
+
+TableView.prototype.getDataSource = function (data) {
+    return {
+        rowCount: null, // behave as infinite scroll
+        getRows: function (params) {
+            console.log('asking for ' + params.startRow + ' to ' + params.endRow);
+            // At this point in your code, you would call the server, using $http if in AngularJS 1.x.
+            // To make the demo look real, wait for 500ms before returning
+            setTimeout(function () {
+                // take a slice of the total rows
+                var rowsThisPage = data.slice(params.startRow, params.endRow);
+                // if on or after the last page, work out the last row.
+                var lastRow = -1;
+                if (data.length <= params.endRow) {
+                    lastRow = data.length;
+                }
+                // call the success callback
+                params.successCallback(rowsThisPage, lastRow);
+            }, 500);
+        }
+    }
 }
 
 TableView.prototype.filter = function (filterData) {
@@ -12405,13 +12435,22 @@ TableView.prototype.filter = function (filterData) {
 TableView.prototype.rearrange = function (filterData) {
     var self = this;
     if (self.isCreated) {
-        self.gridOptions.api.setRowData(Object.entries(filterData).map(function (item) {
+        var data = Object.entries(filterData).map(function (item) {
             var dataObj = {};
             Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
                 dataObj[item1[0]] = item1[1][0];
             });
             return dataObj;
-        }));
+        });
+        self.gridOptions.api.setDatasource(self.getDataSource(data));
+
+        /*self.gridOptions.api.setRowData(Object.entries(filterData).map(function (item) {
+            var dataObj = {};
+            Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
+                dataObj[item1[0]] = item1[1][0];
+            });
+            return dataObj;
+        }));*/
     }
 }
 
@@ -12419,6 +12458,7 @@ TableView.prototype.showSelectedItems = function () {
     var self = this;
 
     self.gridOptions.api.deselectAll();
+
     self.container.selectedItems.forEach(function (item, index) {
         var selectedNodeIndex = 0;
         if (self.gridOptions !== undefined) {
@@ -12431,7 +12471,7 @@ TableView.prototype.showSelectedItems = function () {
 
             self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
         }
-    });
+    }); 
 }
 
 TableView.prototype.clearFilter = function () {
@@ -13675,9 +13715,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             self.activeItemsArr[i].destination = [];
         }
         
-        self.views.filter(function (elem) {
-            return elem.isSelected;
-        })[0].createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
+        setTimeout(function () {
+            self.views.filter(function (elem) {
+                return elem.isSelected;
+            })[0].createView({
+                canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer,
+                leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems
+            });
+        });
         
         // initial creation of additional views 
         /*if (!self.isAdditionalViewsCreated) {
@@ -15788,7 +15833,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                 frontLayer.style.visibility = "hidden";
                 behindLayer.style.visibility = "hidden";
                 mapLayer.style.visibility = "hidden";
-                tableLayer.style.visibility = "visible";
+                tableLayer.style.visibility = "visible";     
             }
         };
     });
