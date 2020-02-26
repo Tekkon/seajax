@@ -503,6 +503,7 @@ div.pivot_facetlabel {
     border:1px solid #ccc;
     border-right-width:0px;
     margin-right:0;
+    display: none;
 }
 
 .pivot_graph {
@@ -513,10 +514,12 @@ div.pivot_facetlabel {
     margin-left:0;
     margin-right:0;
     border-right-width:0px;
+    display: none;
 }
 
 .pivot_map {
-    background:url('images/map1-16.png') no-repeat 6px 2px;
+    background: url('images/map.png') no-repeat 6px 2px;
+    background-size: 14px 14px;
     width:29px;
     height:20px;
     border:1px solid #ccc;
@@ -526,7 +529,8 @@ div.pivot_facetlabel {
 }
 
 .pivot_table {
-    background:url('images/spreadsheet.png') no-repeat 6px 2px;
+    background: url('images/table.png') no-repeat 4px 2px;
+    background-size: 20px 16px;
     width:29px;
     height:20px;
     border:1px solid #ccc;
@@ -535,7 +539,8 @@ div.pivot_facetlabel {
 }
 
 .pivot_export_csv {
-    background:url('images/download.png') no-repeat 6px 2px;
+    background: url('images/download.png') no-repeat 6px 3px;
+    background-size: 16px 14px;
     width:29px;
     height:20px;
     border:1px solid #ccc;
