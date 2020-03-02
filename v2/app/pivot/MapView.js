@@ -5,18 +5,11 @@
     this.mLayers = [];
     this.highlightedMarkers = [];
 
-    this.iconHTML = PIVOT_PARAMETERS.map.iconHTML;
-    this.higligtedIconHTML = PIVOT_PARAMETERS.map.higligtedIconHTML;
-    this.popupHTML = PIVOT_PARAMETERS.map.popupHTML;
-    this.popupURL = PIVOT_PARAMETERS.map.popupURL;
     this.enableClustering = PIVOT_PARAMETERS.map.enableClustering;
     this.multipleClusterColors = PIVOT_PARAMETERS.map.multipleClusterColors;
     this.clusterRadius = PIVOT_PARAMETERS.map.clusterRadius;
     this.startClusterLimit = PIVOT_PARAMETERS.map.startClusterLimit;
     this.sourceURL = PIVOT_PARAMETERS.map.sourceURL;
-    this.markerIconURL = PIVOT_PARAMETERS.map.markerIconURL;
-    this.highlightedMarkerIconURL = PIVOT_PARAMETERS.map.highlightedMarkerIconURL;
-    this.shadowURL = PIVOT_PARAMETERS.map.shadowURL;
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
     this.filterElement = PIVOT_PARAMETERS.filterElement;
     this.activeItems = {};
@@ -163,7 +156,7 @@ MapView.prototype.showSelectedItems = function () {
         var clickedMarker = self.markers.filter(function (marker) {
             return item.facets === marker.options.dataRow;
         })[0];
-        self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
+        self.setMarkerIcon(clickedMarker, 'highlightedMarker');
         self.highlightedMarkers.push(clickedMarker);
         self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
     });
@@ -173,7 +166,7 @@ MapView.prototype.resetHighlightedMarkers = function () {
     var self = this;
 
     for (var i = 0; i < self.highlightedMarkers.length; i++) {
-        self.setMarkerIcon(self.highlightedMarkers[i], self.markerIconURL);
+        self.setMarkerIcon(self.highlightedMarkers[i], 'mapMarker');
     }
 
     self.highlightedMarkers = [];
@@ -205,9 +198,10 @@ MapView.prototype.substituteValues = function (s, params) {
     return ret;
 }
 
-MapView.prototype.setMarkerIcon = function (marker, iconURL) {
+MapView.prototype.setMarkerIcon = function (marker, className) {
     marker.setIcon(new L.Icon({
-        iconUrl: iconURL,
+        iconUrl: 'images/dummy.png',
+        className: className,
         iconAnchor: [12, 41],
         popupAnchor: [0, -41]
     }));
@@ -242,16 +236,16 @@ MapView.prototype.setMarkers = function (_items) {
 
                 var marker = new L.marker([latitude, longitude]);
 
-                if (self.popupHTML != "") {
+                if (self.popupHTML != undefined && self.popupHTML != "") {
                     marker.bindPopup(self.substituteValues(self.popupHTML, [label, hint]));
-                } else if (self.popupURL != "") {
+                } else if (self.popupURL != undefined && self.popupURL != "") {
                     var template = '<iframe style="width:300px;height:300px;" src="' + self.popupURL + '" />"';
                     marker.bindPopup(self.substituteValues(template, [label, hint]));
                 } else {
                     marker.bindPopup(hint);
                 }
 
-                self.setMarkerIcon(marker, self.markerIconURL);
+                self.setMarkerIcon(marker, 'mapMarker');
                 marker.options.dataRow = dataRow.facets;
 
                 self.markers.push(marker);
@@ -270,7 +264,7 @@ MapView.prototype.setMarkers = function (_items) {
         }
 
         for (var i = 0; i < self.markers.length; ++i) {
-            if (self.iconHTML != "") {
+            if (self.iconHTML != undefined && self.iconHTML != "") {
                 var popup = undefined;
 
                 if (self.markers[i]._popup != undefined) {
@@ -283,7 +277,7 @@ MapView.prototype.setMarkers = function (_items) {
                     m.bindPopup(popup);
                 }
 
-                self.setMarkerIcon(m, self.markerIconURL);
+                self.setMarkerIcon(m, 'mapMarker');
 
                 self.markerLayer.addLayer(m);
 
@@ -308,7 +302,7 @@ MapView.prototype.setMarkers = function (_items) {
             var clickedMarker = event.layer;
 
             self.resetHighlightedMarkers();
-            self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
+            self.setMarkerIcon(clickedMarker, 'highlightedMarker');
             self.highlightedMarkers.push(clickedMarker);
 
             var itemsArr;

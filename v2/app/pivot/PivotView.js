@@ -58,13 +58,13 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var title = makeElement("div", "pivot pivot_title", topBar);
     var canvasBox = makeElement("div", "pivot pivot_canvas", mainView);
     var mouseBox = makeElement("div", "pivot pivot_layer", canvasBox);
-    var behindLayer = makeElement("div", "pivot pivot_layer", mouseBox);
+    var behindLayer = makeElement("div", "pivot pivot_layer behindLayer", mouseBox);
     var canvas = makeElement("canvas", "pivot", mouseBox);
     canvas.height = canvas.offsetHeight;
     canvas.width = canvas.offsetWidth;
-    var frontLayer = makeElement("div", "pivot pivot_layer", mouseBox);
-    var mapLayer = makeElement("div", "pivot pivot_layer map_layer", mouseBox);
-    var tableLayer = makeElement("div", "pivot pivot_layer table_layer", mouseBox);
+    var frontLayer = makeElement("div", "pivot pivot_layer frontLayer ", mouseBox);
+    var mapLayer = makeElement("div", "pivot pivot_layer mapLayer", mouseBox);
+    var tableLayer = makeElement("div", "pivot pivot_layer tableLayer", mouseBox);
     var filterPane = makeElement("div", "pivot pivot_pane pivot_filterpane", canvasBox);
 
     var railWidth = filterPane.offsetLeft + filterPane.offsetWidth;
@@ -283,15 +283,10 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
 
-    var tableButton = new Button("div", "pivot_sorttools pivot_table pivot_hoverable", topBar, "Table View");
-    var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_activesort", topBar, "Map View");
-    var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
-    var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_hoverable", topBar, "Grid View");
-
-    frontLayer.style.visibility = "hidden";
-    behindLayer.style.visibility = "hidden";
-    mapLayer.style.visibility = "visible";
-    tableLayer.style.visibility = "hidden";
+    var tableButton = new Button("div", "pivot_sorttools tableButton tableButton pivot_hoverable", topBar, "Table View");
+    var mapButton = new Button("div", "pivot_sorttools mapButton mapButton pivot_activesort", topBar, "Map View");
+    var graphButton = new Button("div", "pivot_sorttools graphButton graphButton pivot_hoverable", topBar, "Graph View");
+    var gridButton = new Button("div", "pivot_sorttools gridButton gridButton pivot_hoverable", topBar, "Grid View");
 
     var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Export to CSV");
     exportButton.htmlElement.onclick = function () {

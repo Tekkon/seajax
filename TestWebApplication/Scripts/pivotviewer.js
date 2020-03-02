@@ -10234,19 +10234,12 @@ function debounce(func, wait, immediate) {
 /* init - you can init any event */
 throttle("resize", "optimizedResize");
 var PIVOT_PARAMETERS = {
-    map: {
-        iconHTML: "",
-        higligtedIconHTML: "",
-        popupHTML: "",
-        popupURL: "",
+    map: {        
         enableClustering: true,
         multipleClusterColors: false,
         clusterRadius: 50,
         startClusterLimit: 10,
-        sourceURL: "",
-        markerIconURL: "Content/images/icon-point-gas.png",
-        highlightedMarkerIconURL: "Content/images/icon-point-gas-inverted.png",
-        shadowURL: "Content/images/marker-shadow.png"        
+        sourceURL: ""              
     },
     detailsEnabled: true,
     filterElement: "ID"
@@ -11957,18 +11950,11 @@ var MapView = function (container, isSelected) {
     this.mLayers = [];
     this.highlightedMarkers = [];
 
-    this.iconHTML = PIVOT_PARAMETERS.map.iconHTML;
-    this.higligtedIconHTML = PIVOT_PARAMETERS.map.higligtedIconHTML;
-    this.popupHTML = PIVOT_PARAMETERS.map.popupHTML;
-    this.popupURL = PIVOT_PARAMETERS.map.popupURL;
     this.enableClustering = PIVOT_PARAMETERS.map.enableClustering;
     this.multipleClusterColors = PIVOT_PARAMETERS.map.multipleClusterColors;
     this.clusterRadius = PIVOT_PARAMETERS.map.clusterRadius;
     this.startClusterLimit = PIVOT_PARAMETERS.map.startClusterLimit;
     this.sourceURL = PIVOT_PARAMETERS.map.sourceURL;
-    this.markerIconURL = PIVOT_PARAMETERS.map.markerIconURL;
-    this.highlightedMarkerIconURL = PIVOT_PARAMETERS.map.highlightedMarkerIconURL;
-    this.shadowURL = PIVOT_PARAMETERS.map.shadowURL;
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
     this.filterElement = PIVOT_PARAMETERS.filterElement;
     this.activeItems = {};
@@ -12115,7 +12101,7 @@ MapView.prototype.showSelectedItems = function () {
         var clickedMarker = self.markers.filter(function (marker) {
             return item.facets === marker.options.dataRow;
         })[0];
-        self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
+        self.setMarkerIcon(clickedMarker, 'highlightedMarker');
         self.highlightedMarkers.push(clickedMarker);
         self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
     });
@@ -12125,7 +12111,7 @@ MapView.prototype.resetHighlightedMarkers = function () {
     var self = this;
 
     for (var i = 0; i < self.highlightedMarkers.length; i++) {
-        self.setMarkerIcon(self.highlightedMarkers[i], self.markerIconURL);
+        self.setMarkerIcon(self.highlightedMarkers[i], 'mapMarker');
     }
 
     self.highlightedMarkers = [];
@@ -12157,9 +12143,10 @@ MapView.prototype.substituteValues = function (s, params) {
     return ret;
 }
 
-MapView.prototype.setMarkerIcon = function (marker, iconURL) {
+MapView.prototype.setMarkerIcon = function (marker, className) {
     marker.setIcon(new L.Icon({
-        iconUrl: iconURL,
+        iconUrl: 'images/dummy.png',
+        className: className,
         iconAnchor: [12, 41],
         popupAnchor: [0, -41]
     }));
@@ -12194,16 +12181,16 @@ MapView.prototype.setMarkers = function (_items) {
 
                 var marker = new L.marker([latitude, longitude]);
 
-                if (self.popupHTML != "") {
+                if (self.popupHTML != undefined && self.popupHTML != "") {
                     marker.bindPopup(self.substituteValues(self.popupHTML, [label, hint]));
-                } else if (self.popupURL != "") {
+                } else if (self.popupURL != undefined && self.popupURL != "") {
                     var template = '<iframe style="width:300px;height:300px;" src="' + self.popupURL + '" />"';
                     marker.bindPopup(self.substituteValues(template, [label, hint]));
                 } else {
                     marker.bindPopup(hint);
                 }
 
-                self.setMarkerIcon(marker, self.markerIconURL);
+                self.setMarkerIcon(marker, 'mapMarker');
                 marker.options.dataRow = dataRow.facets;
 
                 self.markers.push(marker);
@@ -12222,7 +12209,7 @@ MapView.prototype.setMarkers = function (_items) {
         }
 
         for (var i = 0; i < self.markers.length; ++i) {
-            if (self.iconHTML != "") {
+            if (self.iconHTML != undefined && self.iconHTML != "") {
                 var popup = undefined;
 
                 if (self.markers[i]._popup != undefined) {
@@ -12235,7 +12222,7 @@ MapView.prototype.setMarkers = function (_items) {
                     m.bindPopup(popup);
                 }
 
-                self.setMarkerIcon(m, self.markerIconURL);
+                self.setMarkerIcon(m, 'mapMarker');
 
                 self.markerLayer.addLayer(m);
 
@@ -12260,7 +12247,7 @@ MapView.prototype.setMarkers = function (_items) {
             var clickedMarker = event.layer;
 
             self.resetHighlightedMarkers();
-            self.setMarkerIcon(clickedMarker, self.highlightedMarkerIconURL);
+            self.setMarkerIcon(clickedMarker, 'highlightedMarker');
             self.highlightedMarkers.push(clickedMarker);
 
             var itemsArr;
@@ -15547,13 +15534,13 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var title = makeElement("div", "pivot pivot_title", topBar);
     var canvasBox = makeElement("div", "pivot pivot_canvas", mainView);
     var mouseBox = makeElement("div", "pivot pivot_layer", canvasBox);
-    var behindLayer = makeElement("div", "pivot pivot_layer", mouseBox);
+    var behindLayer = makeElement("div", "pivot pivot_layer behindLayer", mouseBox);
     var canvas = makeElement("canvas", "pivot", mouseBox);
     canvas.height = canvas.offsetHeight;
     canvas.width = canvas.offsetWidth;
-    var frontLayer = makeElement("div", "pivot pivot_layer", mouseBox);
-    var mapLayer = makeElement("div", "pivot pivot_layer map_layer", mouseBox);
-    var tableLayer = makeElement("div", "pivot pivot_layer table_layer", mouseBox);
+    var frontLayer = makeElement("div", "pivot pivot_layer frontLayer ", mouseBox);
+    var mapLayer = makeElement("div", "pivot pivot_layer mapLayer", mouseBox);
+    var tableLayer = makeElement("div", "pivot pivot_layer tableLayer", mouseBox);
     var filterPane = makeElement("div", "pivot pivot_pane pivot_filterpane", canvasBox);
 
     var railWidth = filterPane.offsetLeft + filterPane.offsetWidth;
@@ -15772,23 +15759,10 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
 
-    var tableButton = new Button("div", "pivot_sorttools pivot_table pivot_hoverable", topBar, "Table View");
-    var mapButton = new Button("div", "pivot_sorttools pivot_map pivot_activesort", topBar, "Map View");
-    var graphButton = new Button("div", "pivot_sorttools pivot_graph pivot_hoverable", topBar, "Graph View");
-    var gridButton = new Button("div", "pivot_sorttools pivot_grid pivot_hoverable", topBar, "Grid View");
-
-    /*graphButton.htmlElement.style.visibility = "hidden";
-    graphButton.htmlElement.style.width = 0;
-    graphButton.htmlElement.style.height = 0;
-
-    gridButton.htmlElement.style.visibility = "hidden";
-    gridButton.htmlElement.style.width = 0;
-    gridButton.htmlElement.style.height = 0;*/
-
-    frontLayer.style.visibility = "hidden";
-    behindLayer.style.visibility = "hidden";
-    mapLayer.style.visibility = "visible";
-    tableLayer.style.visibility = "hidden";
+    var tableButton = new Button("div", "pivot_sorttools tableButton tableButton pivot_hoverable", topBar, "Table View");
+    var mapButton = new Button("div", "pivot_sorttools mapButton mapButton pivot_activesort", topBar, "Map View");
+    var graphButton = new Button("div", "pivot_sorttools graphButton graphButton pivot_hoverable", topBar, "Graph View");
+    var gridButton = new Button("div", "pivot_sorttools gridButton gridButton pivot_hoverable", topBar, "Grid View");
 
     var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Export to CSV");
     exportButton.htmlElement.onclick = function () {

@@ -496,7 +496,7 @@ div.pivot_facetlabel {
     font-weight:bold;
 }
 
-.pivot_grid {
+.gridButton {
     background:url('images/search.gif') no-repeat -15px 0;
     width:29px;
     height:20px;
@@ -506,7 +506,7 @@ div.pivot_facetlabel {
     display: none;
 }
 
-.pivot_graph {
+.graphButton {
     background:url('images/search.gif') no-repeat -44px 0;
     width:29px;
     height:20px;
@@ -517,7 +517,7 @@ div.pivot_facetlabel {
     display: none;
 }
 
-.pivot_map {
+.mapButton {
     background: url('images/map.png') no-repeat 6px 2px;
     background-size: 14px 14px;
     width:29px;
@@ -528,7 +528,7 @@ div.pivot_facetlabel {
     border-right-width:0px;
 }
 
-.pivot_table {
+.tableButton {
     background: url('images/table.png') no-repeat 4px 2px;
     background-size: 20px 16px;
     width:29px;
@@ -536,6 +536,30 @@ div.pivot_facetlabel {
     border:1px solid #ccc;
     margin-left:0;
     margin-right:0;
+}
+
+.frontLayer {
+    visibility: hidden;
+}
+
+.behindLayer {
+    visibility: hidden;
+}
+
+.mapLayer {
+    visibility: visible;
+}
+
+.tableLayer {
+    visibility: hidden;
+}
+
+.mapMarker {
+    content:url("images/icon-point-gas.png");
+}
+
+.highlightedMarker {
+    content:url("images/icon-point-gas-inverted.png");
 }
 
 .pivot_export_csv {

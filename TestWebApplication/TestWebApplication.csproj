@@ -111,15 +111,7 @@
     <Content Include="Content\images\layout_arrows.png" />
     <Content Include="Content\images\linkbutton_bg.png" />
     <Content Include="Content\images\loading.gif" />
-    <Content Include="Content\images\map %281%29.png" />
-    <Content Include="Content\images\map %2810%29.png" />
-    <Content Include="Content\images\map %286%29.png" />
-    <Content Include="Content\images\map %288%29.png" />
-    <Content Include="Content\images\map 0.png" />
-    <Content Include="Content\images\map-16-resized.png" />
-    <Content Include="Content\images\map-resized.png" />
     <Content Include="Content\images\map.png" />
-    <Content Include="Content\images\map.svg" />
     <Content Include="Content\images\map1-16.png" />
     <Content Include="Content\images\map2-16.png" />
     <Content Include="Content\images\map3-16.png" />
@@ -133,7 +125,7 @@
     <Content Include="Content\images\slider_handle.png" />
     <Content Include="Content\images\spinner_arrows.png" />
     <Content Include="Content\images\spreadsheet.png" />
-    <Content Include="Content\images\table 0.png" />
+    <Content Include="Content\images\table.png" />
     <Content Include="Content\images\tabs_icons.png" />
     <Content Include="Content\images\tagbox_icons.png" />
     <Content Include="Content\images\tree_icons.png" />
