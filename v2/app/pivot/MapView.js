@@ -1,9 +1,19 @@
 ﻿var MapView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
+    var self = this;    
 
-    this.markers = [];
-    this.mLayers = [];
-    this.highlightedMarkers = [];
+    self.markers = [];
+    self.mLayers = [];
+    self.highlightedMarkers = [];
+    self.button = new Button("div", "pivot_sorttools mapButton pivot_activesort", $('.pivot_topbar')[0], "Карта");
+    self.button.htmlElement.onclick = function () {
+        self.select();
+
+        $('.frontLayer')[0].style.visibility = "hidden";
+        $('.behindLayer')[0].style.visibility = "hidden";
+        $('.mapLayer')[0].style.visibility = "visible";
+        $('.tableLayer')[0].style.visibility = "hidden";
+    }
 
     this.enableClustering = PIVOT_PARAMETERS.map.enableClustering;
     this.multipleClusterColors = PIVOT_PARAMETERS.map.multipleClusterColors;
@@ -25,7 +35,7 @@ MapView.prototype.createView = function (options) {
         var div = makeElement("div", "", options.mapLayer);
         var width = options.canvas.clientWidth - options.leftRailWidth - 11;
         var height = options.canvas.clientHeight - 12;
-        div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";    
+        div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
 
         //window.addEventListener('optimizedResize', setMapLayerStyle);
 
@@ -334,7 +344,5 @@ MapView.prototype.setMarkers = function (_items) {
 MapView.prototype.clearFilter = function () {
     var self = this;
 
-    if (self.resetHighlightedMarkers !== undefined) {
-        self.resetHighlightedMarkers();
-    }
+    self.rearrange(self.activeItems);
 }

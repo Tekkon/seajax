@@ -1,10 +1,21 @@
 var TableView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
+    var self = this;
 
-    this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
-    this.filterElement = PIVOT_PARAMETERS.filterElement;
-    this.isCreated = false;
-    this.activeItems = {};
+    self.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
+    self.filterElement = PIVOT_PARAMETERS.filterElement;
+    self.isCreated = false;
+    self.activeItems = {};
+
+    self.button = new Button("div", "pivot_sorttools tableButton pivot_hoverable", $('.pivot_topbar')[0], "Таблица");
+    self.button.htmlElement.onclick = function () {
+        self.select();
+
+        $('.frontLayer')[0].style.visibility = "hidden";
+        $('.behindLayer')[0].style.visibility = "hidden";
+        $('.mapLayer')[0].style.visibility = "hidden";
+        $('.tableLayer')[0].style.visibility = "visible";
+    }
 }
 
 TableView.prototype = Object.create(BaseView.prototype);

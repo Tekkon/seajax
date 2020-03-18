@@ -11615,6 +11615,7 @@ Button.prototype.deselect = function () {
 var BaseView = function (container, isSelected) {
     this.isSelected = isSelected;
     this.container = container;
+    this.button = {};
 }
 
 BaseView.prototype.createView = function (options) {
@@ -11623,16 +11624,18 @@ BaseView.prototype.createView = function (options) {
 
 BaseView.prototype.select = function () {
     this.isSelected = true;
+    this.button.select();
     this.onSelected();
 }
 
 BaseView.prototype.deselect = function () {
     this.isSelected = false;
+    this.button.deselect();
 }
 
 BaseView.prototype.onSelected = function () {
     
-}
+};
 
 BaseView.prototype.onClick = function (options) {
 
@@ -11655,9 +11658,25 @@ BaseView.prototype.rearrange = function (filterData) {
 }
 
 BaseView.prototype.showSelectedItems = function () {
+
+}
+
+BaseView.prototype.button = function () {
+    return this.button;
 }
 var GridView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
+    var self = this;
+
+    self.button = new Button("div", "pivot_sorttools gridButton pivot_hoverable", $('.pivot_topbar')[0], "Сетка");
+    self.button.htmlElement.onclick = function () {
+        self.select();
+
+        $('.frontLayer')[0].style.visibility = "visible";
+        $('.behindLayer')[0].style.visibility = "visible";
+        $('.mapLayer')[0].style.visibility = "hidden";
+        $('.tableLayer')[0].style.visibility = "hidden";
+    }
 }
 
 GridView.prototype = Object.create(BaseView.prototype);
@@ -11721,6 +11740,17 @@ GridView.prototype.createView = function (options) {
 }
 var GraphView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
+    var self = this;
+
+    self.button = new Button("div", "pivot_sorttools graphButton pivot_hoverable", $('.pivot_topbar')[0], "Графическое представление");
+    self.button.htmlElement.onclick = function () {
+        self.select();
+
+        $('.frontLayer')[0].style.visibility = "visible";
+        $('.behindLayer')[0].style.visibility = "visible";
+        $('.mapLayer')[0].style.visibility = "hidden";
+        $('.tableLayer')[0].style.visibility = "hidden";
+    }
 }
 
 GraphView.prototype = Object.create(BaseView.prototype);
@@ -11945,10 +11975,20 @@ GraphView.prototype.onClick = function (options) {
 }
 var MapView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
+    var self = this;    
 
-    this.markers = [];
-    this.mLayers = [];
-    this.highlightedMarkers = [];
+    self.markers = [];
+    self.mLayers = [];
+    self.highlightedMarkers = [];
+    self.button = new Button("div", "pivot_sorttools mapButton pivot_activesort", $('.pivot_topbar')[0], "Карта");
+    self.button.htmlElement.onclick = function () {
+        self.select();
+
+        $('.frontLayer')[0].style.visibility = "hidden";
+        $('.behindLayer')[0].style.visibility = "hidden";
+        $('.mapLayer')[0].style.visibility = "visible";
+        $('.tableLayer')[0].style.visibility = "hidden";
+    }
 
     this.enableClustering = PIVOT_PARAMETERS.map.enableClustering;
     this.multipleClusterColors = PIVOT_PARAMETERS.map.multipleClusterColors;
@@ -11970,7 +12010,7 @@ MapView.prototype.createView = function (options) {
         var div = makeElement("div", "", options.mapLayer);
         var width = options.canvas.clientWidth - options.leftRailWidth - 11;
         var height = options.canvas.clientHeight - 12;
-        div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";    
+        div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
 
         //window.addEventListener('optimizedResize', setMapLayerStyle);
 
@@ -12279,17 +12319,26 @@ MapView.prototype.setMarkers = function (_items) {
 MapView.prototype.clearFilter = function () {
     var self = this;
 
-    if (self.resetHighlightedMarkers !== undefined) {
-        self.resetHighlightedMarkers();
-    }
+    self.rearrange(self.activeItems);
 }
 var TableView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
+    var self = this;
 
-    this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
-    this.filterElement = PIVOT_PARAMETERS.filterElement;
-    this.isCreated = false;
-    this.activeItems = {};
+    self.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
+    self.filterElement = PIVOT_PARAMETERS.filterElement;
+    self.isCreated = false;
+    self.activeItems = {};
+
+    self.button = new Button("div", "pivot_sorttools tableButton pivot_hoverable", $('.pivot_topbar')[0], "�������");
+    self.button.htmlElement.onclick = function () {
+        self.select();
+
+        $('.frontLayer')[0].style.visibility = "hidden";
+        $('.behindLayer')[0].style.visibility = "hidden";
+        $('.mapLayer')[0].style.visibility = "hidden";
+        $('.tableLayer')[0].style.visibility = "visible";
+    }
 }
 
 TableView.prototype = Object.create(BaseView.prototype);
@@ -12758,10 +12807,10 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     // Helpers -- FILTERING
 
-    self.GridView = new GridView(self, true);
-    self.GraphView = new GraphView(self, false);
-    self.MapView = new MapView(self, false);
     self.TableView = new TableView(self, false);
+    self.MapView = new MapView(self, true);
+    self.GraphView = new GraphView(self, false);
+    self.GridView = new GridView(self, false);
 
     // VIEWS
     self.views = [
@@ -15759,28 +15808,19 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
 
-    var tableButton = new Button("div", "pivot_sorttools tableButton tableButton pivot_hoverable", topBar, "Table View");
-    var mapButton = new Button("div", "pivot_sorttools mapButton mapButton pivot_activesort", topBar, "Map View");
-    var graphButton = new Button("div", "pivot_sorttools graphButton graphButton pivot_hoverable", topBar, "Graph View");
-    var gridButton = new Button("div", "pivot_sorttools gridButton gridButton pivot_hoverable", topBar, "Grid View");
-
-    var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Export to CSV");
+    var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Экспорт в CSV");
     exportButton.htmlElement.onclick = function () {
         (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return deleteAdditionalProperties(item); }));
     };
 
-    var buttons = [
-        gridButton,
-        graphButton,
-        mapButton,
-        tableButton
-    ];
+    var clearFilterButton = new Button("div", "pivot_sorttools pivot_clear_filter pivot_hoverable", topBar, "Очистить фильтры");
+    clearFilterButton.htmlElement.onclick = onClearAll;
 
     viewer.views.forEach(function (view, index, array) {
         view.onSelected = function () {
             array.forEach(function (v, i, a) {
                 if (v != view) {
-                    buttons[i].deselect();
+                    v.button.deselect();
                     v.deselect();
                 }
             });
@@ -15788,31 +15828,10 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         };
     });
 
-    buttons.forEach(function (button, index, array) {
-        button.htmlElement.onclick = function () {
-            button.select();
-            viewer.views[index].select();
-
-            if (index < 2) {
-                frontLayer.style.visibility = "visible";
-                behindLayer.style.visibility = "visible";
-                mapLayer.style.visibility = "hidden";
-                tableLayer.style.visibility = "hidden";
-            } else if (index === 2) {
-                frontLayer.style.visibility = "hidden";
-                behindLayer.style.visibility = "hidden";
-                mapLayer.style.visibility = "visible";
-                tableLayer.style.visibility = "hidden";
-            } else if (index === 3) {
-                frontLayer.style.visibility = "hidden";
-                behindLayer.style.visibility = "hidden";
-                mapLayer.style.visibility = "hidden";
-                tableLayer.style.visibility = "visible";     
-            }
-        };
+    //viewer.views[2].select();
+    viewer.views.filter(function (view) { return view.isSelected; }).forEach(function (view) {
+        view.select();
     });
-
-    viewer.views[2].select();
 
     // functions for making one view button look clickable and the other not
     function makeViewClickable(button) {
@@ -16294,12 +16313,11 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         resetFilter(newFilter.facet, filterValues, facetType);
         if ((facetType === "String" || facetType === "Link" || facetType === "LongString") &&
                 filterValues.length === 1) {
-            viewer.views[0].select();
-            buttons[0].select();
+            viewer.views[0].select();            
             viewer.views.forEach(function (view, index, array) {
                 if (index !== 0) {
                     view.deselect();
-                    buttons[index].deselect();
+                    view.button.deselect();
                 }
             });
             viewer.showView();

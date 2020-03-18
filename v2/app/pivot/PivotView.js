@@ -283,28 +283,19 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
     zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
 
-    var tableButton = new Button("div", "pivot_sorttools tableButton tableButton pivot_hoverable", topBar, "Table View");
-    var mapButton = new Button("div", "pivot_sorttools mapButton mapButton pivot_activesort", topBar, "Map View");
-    var graphButton = new Button("div", "pivot_sorttools graphButton graphButton pivot_hoverable", topBar, "Graph View");
-    var gridButton = new Button("div", "pivot_sorttools gridButton gridButton pivot_hoverable", topBar, "Grid View");
-
-    var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Export to CSV");
+    var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Экспорт в CSV");
     exportButton.htmlElement.onclick = function () {
         (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return deleteAdditionalProperties(item); }));
     };
 
-    var buttons = [
-        gridButton,
-        graphButton,
-        mapButton,
-        tableButton
-    ];
+    var clearFilterButton = new Button("div", "pivot_sorttools pivot_clear_filter pivot_hoverable", topBar, "Очистить фильтры");
+    clearFilterButton.htmlElement.onclick = onClearAll;
 
     viewer.views.forEach(function (view, index, array) {
         view.onSelected = function () {
             array.forEach(function (v, i, a) {
                 if (v != view) {
-                    buttons[i].deselect();
+                    v.button.deselect();
                     v.deselect();
                 }
             });
@@ -312,31 +303,9 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         };
     });
 
-    buttons.forEach(function (button, index, array) {
-        button.htmlElement.onclick = function () {
-            button.select();
-            viewer.views[index].select();
-
-            if (index < 2) {
-                frontLayer.style.visibility = "visible";
-                behindLayer.style.visibility = "visible";
-                mapLayer.style.visibility = "hidden";
-                tableLayer.style.visibility = "hidden";
-            } else if (index === 2) {
-                frontLayer.style.visibility = "hidden";
-                behindLayer.style.visibility = "hidden";
-                mapLayer.style.visibility = "visible";
-                tableLayer.style.visibility = "hidden";
-            } else if (index === 3) {
-                frontLayer.style.visibility = "hidden";
-                behindLayer.style.visibility = "hidden";
-                mapLayer.style.visibility = "hidden";
-                tableLayer.style.visibility = "visible";     
-            }
-        };
+    viewer.views.filter(function (view) { return view.isSelected; }).forEach(function (view) {
+        view.select();
     });
-
-    viewer.views[2].select();
 
     // functions for making one view button look clickable and the other not
     function makeViewClickable(button) {
@@ -818,12 +787,11 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         resetFilter(newFilter.facet, filterValues, facetType);
         if ((facetType === "String" || facetType === "Link" || facetType === "LongString") &&
                 filterValues.length === 1) {
-            viewer.views[0].select();
-            buttons[0].select();
+            viewer.views[0].select();            
             viewer.views.forEach(function (view, index, array) {
                 if (index !== 0) {
                     view.deselect();
-                    buttons[index].deselect();
+                    view.button.deselect();
                 }
             });
             viewer.showView();

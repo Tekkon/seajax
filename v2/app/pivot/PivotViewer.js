@@ -217,10 +217,10 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     // Helpers -- FILTERING
 
-    self.GridView = new GridView(self, true);
-    self.GraphView = new GraphView(self, false);
-    self.MapView = new MapView(self, false);
     self.TableView = new TableView(self, false);
+    self.MapView = new MapView(self, true);
+    self.GraphView = new GraphView(self, false);
+    self.GridView = new GridView(self, false);
 
     // VIEWS
     self.views = [

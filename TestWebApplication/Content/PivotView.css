@@ -375,6 +375,7 @@ div.pivot_zoomslider {
     position:relative;
     background:#f2f2f2;
     visibility: hidden;
+    display: none;
 }
 
 .pivot_zoomout,
@@ -535,7 +536,7 @@ div.pivot_facetlabel {
     height:20px;
     border:1px solid #ccc;
     margin-left:0;
-    margin-right:0;
+    margin-right:5px;
 }
 
 .frontLayer {
@@ -568,6 +569,18 @@ div.pivot_facetlabel {
     width:29px;
     height:20px;
     border:1px solid #ccc;
+    margin-left:0;
+    margin-right:10px;
+}
+
+.pivot_clear_filter {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAk0lEQVRIx+3VQQqAIBAF0LnAXCnwTrYuukWnNYVJJlNzZNyEiw8q+B+oIDjnYGRgAiJgtXb3cZ0Je0NHFehFYnkLIEUe5a1AK/IqlwBfSLZcCpSQYnkPkCLV8l4AGAC/ARYfZHOkNRXA+Jw+GxUjjcOa0QB44UGJoNYRISu+IdS8A3UAknL1I+IZcslp5M90/sm5XD5EJwYw46IyAAAAAElFTkSuQmCC) no-repeat 4px 0px;
+    background-size: 20px 20px;
+    width:29px;
+    height:20px;
+    border:1px solid #ccc;
+    margin-right:0;
+    border-right-width:0px;
 }
 
 .pivot_activesort {

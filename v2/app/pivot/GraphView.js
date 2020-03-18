@@ -1,5 +1,16 @@
 ﻿var GraphView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
+    var self = this;
+
+    self.button = new Button("div", "pivot_sorttools graphButton pivot_hoverable", $('.pivot_topbar')[0], "Графическое представление");
+    self.button.htmlElement.onclick = function () {
+        self.select();
+
+        $('.frontLayer')[0].style.visibility = "visible";
+        $('.behindLayer')[0].style.visibility = "visible";
+        $('.mapLayer')[0].style.visibility = "hidden";
+        $('.tableLayer')[0].style.visibility = "hidden";
+    }
 }
 
 GraphView.prototype = Object.create(BaseView.prototype);
