@@ -210,7 +210,7 @@ MapView.prototype.substituteValues = function (s, params) {
 
 MapView.prototype.setMarkerIcon = function (marker, className) {
     marker.setIcon(new L.Icon({
-        iconUrl: 'images/dummy.png',
+        iconUrl: 'images/icon-point-gas.png',
         className: className,
         iconAnchor: [12, 41],
         popupAnchor: [0, -41]
