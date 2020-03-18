@@ -10083,7 +10083,15 @@ TRANSLATION.en = {
     under: "Under ",
     over: "Over ",
     exactly: "Exactly ",
-    clearAll: "Clear All"
+    clearAll: "Clear All",
+    zoomIn: "Zoom In",
+    zoomOut: "Zoom Out",
+    exportCSV: "Export to CSV",
+    clearFilters: "Clear Filters",
+    graphView: "Graph View",
+    gridView: "Grid View",
+    mapView: "Map View",
+    tableView: "Table View"
 }
 TRANSLATION.ru = {
     sort: "Сортировка:",
@@ -10115,7 +10123,15 @@ TRANSLATION.ru = {
     under: "Менее ",
     over: "Более ",
     exactly: "Ровно ",
-    clearAll: "Очистить все"
+    clearAll: "Очистить все",
+    zoomIn: "Увеличить",
+    zoomOut: "Уменьшить",
+    exportCSV: "Экспорт в CSV",
+    clearFilters: "Очистить фильтры",
+    graphView: "Графическое представление",
+    gridView: "Сетка",
+    mapView: "Карта",
+    tableView: "Таблица"
 }
 function parseHTML(str) {
     return new DOMParser().parseFromString(str, "text/html");
@@ -11668,7 +11684,7 @@ var GridView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
     var self = this;
 
-    self.button = new Button("div", "pivot_sorttools gridButton pivot_hoverable", $('.pivot_topbar')[0], "Сетка");
+    self.button = new Button("div", "pivot_sorttools gridButton pivot_hoverable", $('.pivot_topbar')[0], i18n.t("gridView"));
     self.button.htmlElement.onclick = function () {
         self.select();
 
@@ -11742,7 +11758,7 @@ var GraphView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
     var self = this;
 
-    self.button = new Button("div", "pivot_sorttools graphButton pivot_hoverable", $('.pivot_topbar')[0], "Графическое представление");
+    self.button = new Button("div", "pivot_sorttools graphButton pivot_hoverable", $('.pivot_topbar')[0], i18n.t("graphView"));
     self.button.htmlElement.onclick = function () {
         self.select();
 
@@ -11980,7 +11996,7 @@ var MapView = function (container, isSelected) {
     self.markers = [];
     self.mLayers = [];
     self.highlightedMarkers = [];
-    self.button = new Button("div", "pivot_sorttools mapButton pivot_activesort", $('.pivot_topbar')[0], "Карта");
+    self.button = new Button("div", "pivot_sorttools mapButton pivot_activesort", $('.pivot_topbar')[0], i18n.t("mapView"));
     self.button.htmlElement.onclick = function () {
         self.select();
 
@@ -12330,7 +12346,7 @@ var TableView = function (container, isSelected) {
     self.isCreated = false;
     self.activeItems = {};
 
-    self.button = new Button("div", "pivot_sorttools tableButton pivot_hoverable", $('.pivot_topbar')[0], "�������");
+    self.button = new Button("div", "pivot_sorttools tableButton pivot_hoverable", $('.pivot_topbar')[0], i18n.t("tableView"));
     self.button.htmlElement.onclick = function () {
         self.select();
 
@@ -15806,14 +15822,14 @@ var Pivot_init = Pivot.init = function (div, useHash) {
 
     // the rest of the top bar stuff.
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
-    zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
+    zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, i18n.t("zoomOut"), i18n.t("zoomIn"));
 
-    var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Экспорт в CSV");
+    var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, i18n.t("exportCSV"));
     exportButton.htmlElement.onclick = function () {
         (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return deleteAdditionalProperties(item); }));
     };
 
-    var clearFilterButton = new Button("div", "pivot_sorttools pivot_clear_filter pivot_hoverable", topBar, "Очистить фильтры");
+    var clearFilterButton = new Button("div", "pivot_sorttools pivot_clear_filter pivot_hoverable", topBar, i18n.t("clearFilters"));
     clearFilterButton.htmlElement.onclick = onClearAll;
 
     viewer.views.forEach(function (view, index, array) {
@@ -15828,7 +15844,6 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         };
     });
 
-    //viewer.views[2].select();
     viewer.views.filter(function (view) { return view.isSelected; }).forEach(function (view) {
         view.select();
     });

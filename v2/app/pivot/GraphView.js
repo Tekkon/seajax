@@ -2,7 +2,7 @@
     BaseView.call(this, container, isSelected);
     var self = this;
 
-    self.button = new Button("div", "pivot_sorttools graphButton pivot_hoverable", $('.pivot_topbar')[0], "Графическое представление");
+    self.button = new Button("div", "pivot_sorttools graphButton pivot_hoverable", $('.pivot_topbar')[0], i18n.t("graphView"));
     self.button.htmlElement.onclick = function () {
         self.select();
 

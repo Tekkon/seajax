@@ -28,5 +28,13 @@
     under: "Under ",
     over: "Over ",
     exactly: "Exactly ",
-    clearAll: "Clear All"
+    clearAll: "Clear All",
+    zoomIn: "Zoom In",
+    zoomOut: "Zoom Out",
+    exportCSV: "Export to CSV",
+    clearFilters: "Clear Filters",
+    graphView: "Graph View",
+    gridView: "Grid View",
+    mapView: "Map View",
+    tableView: "Table View"
 }

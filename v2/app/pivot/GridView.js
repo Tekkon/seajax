@@ -2,7 +2,7 @@
     BaseView.call(this, container, isSelected);
     var self = this;
 
-    self.button = new Button("div", "pivot_sorttools gridButton pivot_hoverable", $('.pivot_topbar')[0], "Сетка");
+    self.button = new Button("div", "pivot_sorttools gridButton pivot_hoverable", $('.pivot_topbar')[0], i18n.t("gridView"));
     self.button.htmlElement.onclick = function () {
         self.select();
 

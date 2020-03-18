@@ -28,5 +28,13 @@
     under: "Менее ",
     over: "Более ",
     exactly: "Ровно ",
-    clearAll: "Очистить все"
+    clearAll: "Очистить все",
+    zoomIn: "Увеличить",
+    zoomOut: "Уменьшить",
+    exportCSV: "Экспорт в CSV",
+    clearFilters: "Очистить фильтры",
+    graphView: "Графическое представление",
+    gridView: "Сетка",
+    mapView: "Карта",
+    tableView: "Таблица"
 }

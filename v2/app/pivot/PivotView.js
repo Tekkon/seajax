@@ -281,14 +281,14 @@ var Pivot_init = Pivot.init = function (div, useHash) {
 
     // the rest of the top bar stuff.
     var zoomSlider = makeElement("div", "pivot pivot_sorttools pivot_zoomslider", topBar);
-    zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, "Zoom Out", "Zoom In"); 
+    zoomSlider = new PivotSlider(zoomSlider, 0, 100, 0, i18n.t("zoomOut"), i18n.t("zoomIn"));
 
-    var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, "Экспорт в CSV");
+    var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, i18n.t("exportCSV"));
     exportButton.htmlElement.onclick = function () {
         (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return deleteAdditionalProperties(item); }));
     };
 
-    var clearFilterButton = new Button("div", "pivot_sorttools pivot_clear_filter pivot_hoverable", topBar, "Очистить фильтры");
+    var clearFilterButton = new Button("div", "pivot_sorttools pivot_clear_filter pivot_hoverable", topBar, i18n.t("clearFilters"));
     clearFilterButton.htmlElement.onclick = onClearAll;
 
     viewer.views.forEach(function (view, index, array) {

@@ -5,7 +5,7 @@
     self.markers = [];
     self.mLayers = [];
     self.highlightedMarkers = [];
-    self.button = new Button("div", "pivot_sorttools mapButton pivot_activesort", $('.pivot_topbar')[0], "Карта");
+    self.button = new Button("div", "pivot_sorttools mapButton pivot_activesort", $('.pivot_topbar')[0], i18n.t("mapView"));
     self.button.htmlElement.onclick = function () {
         self.select();
 

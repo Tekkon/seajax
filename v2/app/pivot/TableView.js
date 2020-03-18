@@ -7,7 +7,7 @@ var TableView = function (container, isSelected) {
     self.isCreated = false;
     self.activeItems = {};
 
-    self.button = new Button("div", "pivot_sorttools tableButton pivot_hoverable", $('.pivot_topbar')[0], "Таблица");
+    self.button = new Button("div", "pivot_sorttools tableButton pivot_hoverable", $('.pivot_topbar')[0], i18n.t("tableView"));
     self.button.htmlElement.onclick = function () {
         self.select();
 
