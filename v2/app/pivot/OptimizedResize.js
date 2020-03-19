@@ -1,11 +1,19 @@
-﻿var throttle = function (type, name, obj) {
+var throttle = function (type, name, obj) {
     obj = obj || window;
     var running = false;
     var func = function () {
         if (running) { return; }
         running = true;
         requestAnimationFrame(function () {
-            obj.dispatchEvent(new CustomEvent(name));
+            var event;
+            if (typeof (Event) === 'function') {
+                event = new Event(name);
+            } else {
+                event = document.createEvent('Event');
+                event.initEvent(name, true, true);
+            }
+
+            obj.dispatchEvent(event); //new CustomEvent(name));
             running = false;
         });
     };

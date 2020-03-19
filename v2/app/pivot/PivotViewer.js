@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // All rights reserved. 
 // BSD License
 //
@@ -1227,7 +1227,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     // Helpers -- CORE
 
     function rectsOverlap(a, b) {
-        return (b.x + b.width > a.x) && (a.x + a.width > b.x) && (b.y + b.height > a.y) && (a.y + a.height > b.y);
+        if (b !== undefined && a !== undefined) {
+            return (b.x + b.width > a.x) && (a.x + a.width > b.x) && (b.y + b.height > a.y) && (a.y + a.height > b.y);
+        }
+
+        return false;
     }
 
     // generate an ID that doesn't match any of the items in the collection

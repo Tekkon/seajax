@@ -51,11 +51,11 @@ var SDTimer = SD.Timer = new function () {
             now = new Date().getTime(),
             retVal;
         for (cur = first; cur; cur = cur.next) {
-            try {
+            //try {
                 retVal = cur.callback(cur.arg, now);
-            } catch (e) {
-                SDDebug_warn("Exception caught in timer: " + e.message);
-            }
+            //} catch (e) {
+            //    SDDebug_warn("Exception caught in timer: " + e.message);
+            //}
             if (!retVal) {
                 that.unregister(cur);
             }

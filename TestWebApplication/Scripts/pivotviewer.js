@@ -2815,11 +2815,11 @@ var SDTimer = SD.Timer = new function () {
             now = new Date().getTime(),
             retVal;
         for (cur = first; cur; cur = cur.next) {
-            try {
+            //try {
                 retVal = cur.callback(cur.arg, now);
-            } catch (e) {
-                SDDebug_warn("Exception caught in timer: " + e.message);
-            }
+            //} catch (e) {
+            //    SDDebug_warn("Exception caught in timer: " + e.message);
+            //}
             if (!retVal) {
                 that.unregister(cur);
             }
@@ -10091,7 +10091,13 @@ TRANSLATION.en = {
     graphView: "Graph View",
     gridView: "Grid View",
     mapView: "Map View",
-    tableView: "Table View"
+    tableView: "Table View",
+    yndx: "Yandex",
+    ysat: "Yandex satellite",
+    ytraffic: "Yandex traffic",
+    googleMap: "Google",
+    googleMapSat: "Google satellite",
+    openStreetsMap: "Open Streets"
 }
 TRANSLATION.ru = {
     sort: "Сортировка:",
@@ -10131,7 +10137,13 @@ TRANSLATION.ru = {
     graphView: "Графическое представление",
     gridView: "Сетка",
     mapView: "Карта",
-    tableView: "Таблица"
+    tableView: "Таблица",
+    yndx: "Яндекс",
+    ysat: "Яндекс спутник",
+    ytraffic: "Яндекс пробки",
+    googleMap: "Google",
+    googleMapSat: "Google спутник",
+    openStreetsMap: "Open Streets"
 }
 function parseHTML(str) {
     return new DOMParser().parseFromString(str, "text/html");
@@ -10211,6 +10223,126 @@ function cleanUTF8String(input) {
     }
     return output;
 }
+
+if (!Object.entries) {
+    Object.entries = function (obj) {
+        var ownProps = Object.keys(obj),
+            i = ownProps.length,
+            resArray = new Array(i); // preallocate the Array
+        while (i--)
+            resArray[i] = [ownProps[i], obj[ownProps[i]]];
+
+        return resArray;
+    }
+}
+
+if (!Object.values) {
+    Object.values = function (o) {
+        return Object.keys(o).map(function (k) { return o[k] });
+    }
+}
+
+if (typeof Object.assign != 'function') {
+    Object.assign = function (target, varArgs) { // .length of function is 2
+        'use strict';
+        if (target == null) { // TypeError if undefined or null
+            throw new TypeError('Cannot convert undefined or null to object');
+        }
+
+        var to = Object(target);
+
+        for (var index = 1; index < arguments.length; index++) {
+            var nextSource = arguments[index];
+
+            if (nextSource != null) { // Skip over if undefined or null
+                for (var nextKey in nextSource) {
+                    // Avoid bugs when hasOwnProperty is shadowed
+                    if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                        to[nextKey] = nextSource[nextKey];
+                    }
+                }
+            }
+        }
+        return to;
+    };
+}
+
+if (!Array.from) {
+    Array.from = (function () {
+        var toStr = Object.prototype.toString;
+        var isCallable = function (fn) {
+            return typeof fn === 'function' || toStr.call(fn) === '[object Function]';
+        };
+        var toInteger = function (value) {
+            var number = Number(value);
+            if (isNaN(number)) { return 0; }
+            if (number === 0 || !isFinite(number)) { return number; }
+            return (number > 0 ? 1 : -1) * Math.floor(Math.abs(number));
+        };
+        var maxSafeInteger = Math.pow(2, 53) - 1;
+        var toLength = function (value) {
+            var len = toInteger(value);
+            return Math.min(Math.max(len, 0), maxSafeInteger);
+        };
+
+        // The length property of the from method is 1.
+        return function from(arrayLike/*, mapFn, thisArg */) {
+            // 1. Let C be the this value.
+            var C = this;
+
+            // 2. Let items be ToObject(arrayLike).
+            var items = Object(arrayLike);
+
+            // 3. ReturnIfAbrupt(items).
+            if (arrayLike == null) {
+                throw new TypeError("Array.from requires an array-like object - not null or undefined");
+            }
+
+            // 4. If mapfn is undefined, then let mapping be false.
+            var mapFn = arguments.length > 1 ? arguments[1] : void undefined;
+            var T;
+            if (typeof mapFn !== 'undefined') {
+                // 5. else
+                // 5. a If IsCallable(mapfn) is false, throw a TypeError exception.
+                if (!isCallable(mapFn)) {
+                    throw new TypeError('Array.from: when provided, the second argument must be a function');
+                }
+
+                // 5. b. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                if (arguments.length > 2) {
+                    T = arguments[2];
+                }
+            }
+
+            // 10. Let lenValue be Get(items, "length").
+            // 11. Let len be ToLength(lenValue).
+            var len = toLength(items.length);
+
+            // 13. If IsConstructor(C) is true, then
+            // 13. a. Let A be the result of calling the [[Construct]] internal method of C with an argument list containing the single item len.
+            // 14. a. Else, Let A be ArrayCreate(len).
+            var A = isCallable(C) ? Object(new C(len)) : new Array(len);
+
+            // 16. Let k be 0.
+            var k = 0;
+            // 17. Repeat, while k < len… (also steps a - h)
+            var kValue;
+            while (k < len) {
+                kValue = items[k];
+                if (mapFn) {
+                    A[k] = typeof T === 'undefined' ? mapFn(kValue, k) : mapFn.call(T, kValue, k);
+                } else {
+                    A[k] = kValue;
+                }
+                k += 1;
+            }
+            // 18. Let putStatus be Put(A, "length", len, true).
+            A.length = len;
+            // 20. Return A.
+            return A;
+        };
+    }());
+}
 var throttle = function (type, name, obj) {
     obj = obj || window;
     var running = false;
@@ -10218,7 +10350,15 @@ var throttle = function (type, name, obj) {
         if (running) { return; }
         running = true;
         requestAnimationFrame(function () {
-            obj.dispatchEvent(new CustomEvent(name));
+            var event;
+            if (typeof (Event) === 'function') {
+                event = new Event(name);
+            } else {
+                event = document.createEvent('Event');
+                event.initEvent(name, true, true);
+            }
+
+            obj.dispatchEvent(event); //new CustomEvent(name));
             running = false;
         });
     };
@@ -12023,12 +12163,14 @@ MapView.prototype.createView = function (options) {
     var self = this;
 
     if (this.map == null) {
-        var div = makeElement("div", "", options.mapLayer);
+        var div = makeElement("div", "mapDiv", options.mapLayer);
         var width = options.canvas.clientWidth - options.leftRailWidth - 11;
         var height = options.canvas.clientHeight - 12;
-        div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
 
-        //window.addEventListener('optimizedResize', setMapLayerStyle);
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = '.mapDiv { ' + "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;"; + ' }';
+        document.getElementsByTagName('head')[0].appendChild(style);
 
         var setLayer = function (layer) {
             var centerPoint = self.map.getCenter();
@@ -12069,7 +12211,7 @@ MapView.prototype.createView = function (options) {
             if (typeof fileref != "undefined")
                 document.getElementsByTagName("head")[0].appendChild(fileref)
         }
-        
+
         var googleMap =
            L.tileLayer('http://mt{s}.google.com/vt/lyrs=m&z={z}&x={x}&y={y}&lang=ru_RU', {
                subdomains: ['0', '1', '2', '3'],
@@ -12112,7 +12254,7 @@ MapView.prototype.createView = function (options) {
             "Google": googleMap,
             "Google спутник": googleMapSat,
             "Open Streets": openStreetsMap
-        };
+        }
 
         map.on('baselayerchange', setLayer);
 
@@ -12156,11 +12298,11 @@ MapView.prototype.showSelectedItems = function () {
     self.container.selectedItems.forEach(function (item, index) {
         var clickedMarker = self.markers.filter(function (marker) {
             return item.facets === marker.options.dataRow;
-        })[0];
+})[0];
         self.setMarkerIcon(clickedMarker, 'highlightedMarker');
         self.highlightedMarkers.push(clickedMarker);
         self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
-    });
+});
 }
 
 MapView.prototype.resetHighlightedMarkers = function () {
@@ -12168,7 +12310,7 @@ MapView.prototype.resetHighlightedMarkers = function () {
 
     for (var i = 0; i < self.highlightedMarkers.length; i++) {
         self.setMarkerIcon(self.highlightedMarkers[i], 'mapMarker');
-    }
+}
 
     self.highlightedMarkers = [];
 }
@@ -12178,34 +12320,34 @@ MapView.prototype.substituteValues = function (s, params) {
 
     if (params[0] != null && params[0] != undefined) {
         ret = ret.replace('{LABEL}', params[0]);
-    }
+}
 
     if (params[1] != null && params[1] != undefined) {
         ret = ret.replace('{HINT}', params[1]);
-    }
+}
 
     if (params[2] != null && params[2] != undefined) {
         ret = ret.replace('{URL}', params[2]);
-    }
+}
 
     if (params[3] != null && params[3] != undefined) {
         if (Array.isArray(params[3])) {
             params[3].forEach(function (d, i) {
                 ret = ret.replace('{DIM' + i + '}', d);
-            });
-        }
-    }
+});
+}
+}
 
     return ret;
 }
 
 MapView.prototype.setMarkerIcon = function (marker, className) {
     marker.setIcon(new L.Icon({
-        iconUrl: 'images/icon-point-gas.png',
-        className: className,
-        iconAnchor: [12, 41],
-        popupAnchor: [0, -41]
-    }));
+    iconUrl: className === 'mapMarker' ? 'Content/images/icon-point-gas.png' : 'Content/images/icon-point-gas-inverted.png',
+    className: className,
+    iconAnchor: [12, 41],
+    popupAnchor: [0, -41]
+}));
 }
 
 MapView.prototype.setMarkers = function (_items) {
@@ -12217,13 +12359,13 @@ MapView.prototype.setMarkers = function (_items) {
 
         if (typeof _items === "object") {
             filteredData = Object.values(_items);
-        } else if (Array.isArray(values)) {
+} else if (Array.isArray(values)) {
             filteredData = _items;
-        }
+}
 
         function getFacet(dataRow, facetName) {
             return dataRow.facets[facetName] != undefined ? dataRow.facets[facetName][0] : undefined;
-        }
+}
 
         filteredData.forEach(function (dataRow) {
             var latitude = getFacet(dataRow, "LATITUDE") || getFacet(dataRow, "LAT") || getFacet(dataRow, "Широта") || getFacet(dataRow, "ШИРОТА");
@@ -12239,30 +12381,30 @@ MapView.prototype.setMarkers = function (_items) {
 
                 if (self.popupHTML != undefined && self.popupHTML != "") {
                     marker.bindPopup(self.substituteValues(self.popupHTML, [label, hint]));
-                } else if (self.popupURL != undefined && self.popupURL != "") {
+} else if (self.popupURL != undefined && self.popupURL != "") {
                     var template = '<iframe style="width:300px;height:300px;" src="' + self.popupURL + '" />"';
                     marker.bindPopup(self.substituteValues(template, [label, hint]));
-                } else {
+} else {
                     marker.bindPopup(hint);
-                }
+}
 
                 self.setMarkerIcon(marker, 'mapMarker');
                 marker.options.dataRow = dataRow.facets;
 
                 self.markers.push(marker);
-            }
-        });
+}
+});
 
         if (self.markerLayer != null) {
             self.map.removeLayer(self.markerLayer);
-        }
+}
 
         if (self.enableClustering && self.markers.length >= self.startClusterLimit) {
             self.markerLayer = L.markerClusterGroup();
             self.markerLayer.options.maxClusterRadius = self.clusterRadius;
-        } else {
+} else {
             self.markerLayer = new L.featureGroup(self.markers);
-        }
+}
 
         for (var i = 0; i < self.markers.length; ++i) {
             if (self.iconHTML != undefined && self.iconHTML != "") {
@@ -12270,33 +12412,33 @@ MapView.prototype.setMarkers = function (_items) {
 
                 if (self.markers[i]._popup != undefined) {
                     popup = self.markers[i]._popup._content;
-                }
+}
 
                 var m = L.marker([self.markers[i]._latlng.lat, self.markers[i]._latlng.lng], { dataRow: self.markers[i].options.dataRow });
 
                 if (popup != undefined) {
                     m.bindPopup(popup);
-                }
+}
 
                 self.setMarkerIcon(m, 'mapMarker');
 
                 self.markerLayer.addLayer(m);
 
                 self.mLayers.push(m);
-            } else {
+} else {
                 self.markerLayer.addLayer(self.markers[i]);
-            }
-        }
+}
+}
 
         self.map.addLayer(self.markerLayer);
 
         if (self.markers.length > 0) {
             setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
-        }
+}
 
         if (self.markers.length == 0) {
             self.map.setView([0, 0], 2);
-        }
+}
 
         self.isExecuteSelectItem = true;
         self.markerLayer.on("click", function (event) {
@@ -12309,27 +12451,27 @@ MapView.prototype.setMarkers = function (_items) {
             var itemsArr;
             if (typeof _items === "object") {
                 itemsArr = Object.values(_items);
-            } else {
+} else {
                 itemsArr = _items;
-            }
+}
 
             var clickedItem = itemsArr.filter(function (item) {
                 return item.facets === clickedMarker.options.dataRow;
-            })[0];
+})[0];
             if (self.detailsEnabled) {
                 self.container.trigger("showDetails", clickedItem, self.container.facets);
                 self.container.trigger("showInfoButton");
-            }
+}
             self.container.trigger("filterItem", clickedItem, self.container.facets);
 
             self.container.selectedItems = [];
             self.container.selectedItems.push(clickedItem);
-        });
+});
 
         self.markerLayer.on("mouseover", function (event) {
             event.layer.openPopup();
-        });
-    }
+});
+}
 }
 
 MapView.prototype.clearFilter = function () {
@@ -12366,12 +12508,16 @@ TableView.prototype.createView = function (options) {
     if (!self.isCreated) {
         self.isCreated = true;
 
-        var div = makeElement("div", "tableView ag-theme-balham", options.tableLayer);
+        var div = makeElement("div", "tableView ag-theme-balham tableDiv", options.tableLayer);
         self.div = div;
         div.innerHtml = '';
         var width = options.canvas.clientWidth - options.leftRailWidth - 11;
         var height = options.canvas.clientHeight - 12;
-        div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
+
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = '.tableDiv { ' + "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;"; + ' }';
+        document.getElementsByTagName('head')[0].appendChild(style);
 
         var data = Object.entries(options.activeItems).map(function (item) {
             var dataObj = {};
@@ -12592,17 +12738,21 @@ CSVExporter.prototype.dataURLtoBlob = function(dataurl, callback) {
 }
 
 CSVExporter.prototype.callback = function (blob) {
-    var a = document.createElement('a');
-    a.download = 'data.csv';
-    a.innerHTML = 'download';
-    a.href = URL.createObjectURL(blob);
-    a.onclick = function () {
-        requestAnimationFrame(function () {
-            URL.revokeObjectURL(decodeURI(a.href));
-            document.body.removeChild(a);
-        });
-    };
-    a.click();
+    if (window.navigator.msSaveOrOpenBlob !== undefined) {
+        window.navigator.msSaveOrOpenBlob(blob, "data.csv");
+    } else {
+        var a = document.createElement('a');
+        a.download = 'data.csv';
+        a.innerHTML = 'download';
+        a.href = URL.createObjectURL(blob);
+        a.onclick = function () {
+            requestAnimationFrame(function () {
+                URL.revokeObjectURL(decodeURI(a.href));
+                document.body.removeChild(a);
+            });
+        };
+        a.click();
+    }
 };
 // Copyright (c) Microsoft Corporation
 // All rights reserved. 
@@ -13833,7 +13983,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     // Helpers -- CORE
 
     function rectsOverlap(a, b) {
-        return (b.x + b.width > a.x) && (a.x + a.width > b.x) && (b.y + b.height > a.y) && (a.y + a.height > b.y);
+        if (b !== undefined && a !== undefined) {
+            return (b.x + b.width > a.x) && (a.x + a.width > b.x) && (b.y + b.height > a.y) && (a.y + a.height > b.y);
+        }
+
+        return false;
     }
 
     // generate an ID that doesn't match any of the items in the collection

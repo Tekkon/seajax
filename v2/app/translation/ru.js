@@ -36,5 +36,11 @@
     graphView: "Графическое представление",
     gridView: "Сетка",
     mapView: "Карта",
-    tableView: "Таблица"
+    tableView: "Таблица",
+    yndx: "Яндекс",
+    ysat: "Яндекс спутник",
+    ytraffic: "Яндекс пробки",
+    googleMap: "Google",
+    googleMapSat: "Google спутник",
+    openStreetsMap: "Open Streets"
 }

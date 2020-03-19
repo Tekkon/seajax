@@ -1,4 +1,4 @@
-﻿var PIVOT_PARAMETERS = {
+var PIVOT_PARAMETERS = {
     map: {        
         enableClustering: true,
         multipleClusterColors: false,

@@ -27,12 +27,16 @@ TableView.prototype.createView = function (options) {
     if (!self.isCreated) {
         self.isCreated = true;
 
-        var div = makeElement("div", "tableView ag-theme-balham", options.tableLayer);
+        var div = makeElement("div", "tableView ag-theme-balham tableDiv", options.tableLayer);
         self.div = div;
         div.innerHtml = '';
         var width = options.canvas.clientWidth - options.leftRailWidth - 11;
         var height = options.canvas.clientHeight - 12;
-        div.style = "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;";
+
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = '.tableDiv { ' + "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;"; + ' }';
+        document.getElementsByTagName('head')[0].appendChild(style);
 
         var data = Object.entries(options.activeItems).map(function (item) {
             var dataObj = {};

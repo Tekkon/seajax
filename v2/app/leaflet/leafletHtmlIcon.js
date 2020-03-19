@@ -1,4 +1,4 @@
-﻿L.HtmlIcon = L.Icon.extend({
+L.HtmlIcon = L.Icon.extend({
     options: {
         /*
 		html: (String) (required)

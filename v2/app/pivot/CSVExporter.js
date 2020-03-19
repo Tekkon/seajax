@@ -1,4 +1,4 @@
-﻿var CSVExporter = function (decimalSeparator, fieldSeparator, rowSeparator, quote, culture, encoding) {
+var CSVExporter = function (decimalSeparator, fieldSeparator, rowSeparator, quote, culture, encoding) {
     Exporter.call(this);
 
     this.decimalSeparator = decimalSeparator;
@@ -53,15 +53,19 @@ CSVExporter.prototype.dataURLtoBlob = function(dataurl, callback) {
 }
 
 CSVExporter.prototype.callback = function (blob) {
-    var a = document.createElement('a');
-    a.download = 'data.csv';
-    a.innerHTML = 'download';
-    a.href = URL.createObjectURL(blob);
-    a.onclick = function () {
-        requestAnimationFrame(function () {
-            URL.revokeObjectURL(decodeURI(a.href));
-            document.body.removeChild(a);
-        });
-    };
-    a.click();
+    if (window.navigator.msSaveOrOpenBlob !== undefined) {
+        window.navigator.msSaveOrOpenBlob(blob, "data.csv");
+    } else {
+        var a = document.createElement('a');
+        a.download = 'data.csv';
+        a.innerHTML = 'download';
+        a.href = URL.createObjectURL(blob);
+        a.onclick = function () {
+            requestAnimationFrame(function () {
+                URL.revokeObjectURL(decodeURI(a.href));
+                document.body.removeChild(a);
+            });
+        };
+        a.click();
+    }
 };

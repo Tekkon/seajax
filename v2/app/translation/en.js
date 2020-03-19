@@ -36,5 +36,11 @@
     graphView: "Graph View",
     gridView: "Grid View",
     mapView: "Map View",
-    tableView: "Table View"
+    tableView: "Table View",
+    yndx: "Yandex",
+    ysat: "Yandex satellite",
+    ytraffic: "Yandex traffic",
+    googleMap: "Google",
+    googleMapSat: "Google satellite",
+    openStreetsMap: "Open Streets"
 }

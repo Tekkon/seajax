@@ -23,6 +23,7 @@
 </head>
 <body>
     <div id="myGrid" style="height: 200px; width:500px;" class="ag-theme-balham"></div>
+    <div id="map" style="height: 200px; width:500px;"></div>
 
     <script type="text/javascript">
         var columnDefs = [
@@ -49,6 +50,103 @@
             var gridDiv = document.querySelector('#myGrid');
             new agGrid.Grid(gridDiv, gridOptions);
         });
+
+        var div = $('#map')[0];
+        var setLayer = function (layer) {
+            var centerPoint = self.map.getCenter();
+
+            if (typeof layer.layer.options.crs != 'undefined') {
+                self.map.setCrs(layer.layer.options.crs);
+            }
+            else {
+                self.map.setCrs(L.CRS.EPSG3857);
+            }
+            self.map.setView(centerPoint, self.map.getZoom());
+        }
+
+        var getPropertyValue = function (dataRow, property) {
+            return dataRow.getValue(property)[0] != undefined ? dataRow.getValue(property)[0] : "";
+        }
+
+        var setMarkerDivIcon = function (marker, template) {
+            marker.setIcon(new L.DivIcon({
+                className: 'my-div-icon',
+                html: template,
+                iconSize: new L.Point(25, 10)
+            }));
+        }
+
+        var loadjscssfile = function (filename, filetype) {
+            if (filetype == "js") {
+                var fileref = document.createElement('script')
+                fileref.setAttribute("type", "text/javascript")
+                fileref.setAttribute("src", self.sourceURL + filename)
+            }
+            else if (filetype == "css") {
+                var fileref = document.createElement("link")
+                fileref.setAttribute("rel", "stylesheet")
+                fileref.setAttribute("type", "text/css")
+                fileref.setAttribute("href", self.sourceURL + filename)
+            }
+            if (typeof fileref != "undefined")
+                document.getElementsByTagName("head")[0].appendChild(fileref)
+        }
+        
+        var googleMap =
+           L.tileLayer('http://mt{s}.google.com/vt/lyrs=m&z={z}&x={x}&y={y}&lang=ru_RU', {
+               subdomains: ['0', '1', '2', '3'],
+               attribution: '<a http="google.ru" target="_blank">Google</a>',
+               reuseTiles: true,
+               updateWhenIdle: false
+           });
+
+        var googleMapSat =
+            L.tileLayer('http://mt{s}.google.com/vt/lyrs=y&z={z}&x={x}&y={y}&lang=ru_RU', {
+                subdomains: ['0', '1', '2', '3'],
+                attribution: '<a http="google.ru" target="_blank">Google</a>',
+                reuseTiles: true,
+                updateWhenIdle: false
+            });
+
+        var openStreetsMap =
+            L.tileLayer('http://a.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '<a http="google.ru" target="_blank">Open Streets</a>',
+                reuseTiles: true,
+                updateWhenIdle: false
+            });
+
+        var yndx = new L.Yandex();
+        var ytraffic = new L.Yandex("null", { traffic: true, opacity: 1, overlay: false });
+        var ysat = new L.Yandex("hybrid");
+        var ypublic = new L.Yandex("publicMap");
+
+        var map = L.map(div, { layers: [yndx] }).setView([0, 0], 2);
+        this.map = map;
+
+        L.Map.prototype.setCrs = function (newCrs) {
+            this.options.crs = newCrs;
+        }
+
+        var yndxName = i18n.t("yndx");
+        var ysatName = i18n.t("ysat");
+        var ytrafficName = i18n.t("ytraffic");
+        var googleMapName = i18n.t("googleMap");
+        var googleMapSatName = i18n.t("googleMapSat");
+        var openStreetsMapName = i18n.t("openStreetsMap");
+
+        var baseMaps = {
+            yndxName: yndx,
+            ysatName: ysat,
+            ytrafficName: ytraffic,
+            googleMapName: googleMap,
+            googleMapSatName: googleMapSat,
+            openStreetsMapName: openStreetsMap
+        };
+
+        map.on('baselayerchange', setLayer);
+
+        L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
+        loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
     </script>
 </body>
 </html>

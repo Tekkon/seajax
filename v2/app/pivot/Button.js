@@ -1,4 +1,4 @@
-﻿var Button = function (element, classes, container, title) {
+var Button = function (element, classes, container, title) {
     this.htmlElement = makeElement(element, classes, container);
     this.htmlElement.title = title;
 }
