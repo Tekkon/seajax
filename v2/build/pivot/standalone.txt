@@ -1,3 +1,4 @@
+../app/pivot/Polyfills.js
 core/Seadragon.js
 core/Point.js
 core/Size.js

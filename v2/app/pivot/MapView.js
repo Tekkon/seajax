@@ -20,8 +20,12 @@
     this.clusterRadius = PIVOT_PARAMETERS.map.clusterRadius;
     this.startClusterLimit = PIVOT_PARAMETERS.map.startClusterLimit;
     this.sourceURL = PIVOT_PARAMETERS.map.sourceURL;
+    this.markerUrl = PIVOT_PARAMETERS.map.markerUrl;
+    this.higlightedMarkerUrl = PIVOT_PARAMETERS.map.higlightedMarkerUrl;
+
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
     this.filterElement = PIVOT_PARAMETERS.filterElement;
+    
     this.activeItems = {};
 }
 
@@ -167,19 +171,19 @@ MapView.prototype.showSelectedItems = function () {
     self.container.selectedItems.forEach(function (item, index) {
         var clickedMarker = self.markers.filter(function (marker) {
             return item.facets === marker.options.dataRow;
-})[0];
-        self.setMarkerIcon(clickedMarker, 'highlightedMarker');
+        })[0];
+        self.setMarkerIcon(clickedMarker, self.higlightedMarkerUrl);
         self.highlightedMarkers.push(clickedMarker);
         self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
-});
+    });
 }
 
 MapView.prototype.resetHighlightedMarkers = function () {
     var self = this;
 
     for (var i = 0; i < self.highlightedMarkers.length; i++) {
-        self.setMarkerIcon(self.highlightedMarkers[i], 'mapMarker');
-}
+        self.setMarkerIcon(self.highlightedMarkers[i], self.markerUrl);
+    }
 
     self.highlightedMarkers = [];
 }
@@ -189,34 +193,33 @@ MapView.prototype.substituteValues = function (s, params) {
 
     if (params[0] != null && params[0] != undefined) {
         ret = ret.replace('{LABEL}', params[0]);
-}
+    }
 
     if (params[1] != null && params[1] != undefined) {
         ret = ret.replace('{HINT}', params[1]);
-}
+    }
 
     if (params[2] != null && params[2] != undefined) {
         ret = ret.replace('{URL}', params[2]);
-}
+    }
 
     if (params[3] != null && params[3] != undefined) {
         if (Array.isArray(params[3])) {
             params[3].forEach(function (d, i) {
                 ret = ret.replace('{DIM' + i + '}', d);
-});
-}
-}
+            });
+        }
+    }
 
     return ret;
 }
 
-MapView.prototype.setMarkerIcon = function (marker, className) {
+MapView.prototype.setMarkerIcon = function (marker, iconUrl) {
     marker.setIcon(new L.Icon({
-    iconUrl: className === 'mapMarker' ? 'Content/images/icon-point-gas.png' : 'Content/images/icon-point-gas-inverted.png',
-    className: className,
-    iconAnchor: [12, 41],
-    popupAnchor: [0, -41]
-}));
+        iconUrl: iconUrl,
+        iconAnchor: [12, 41],
+        popupAnchor: [0, -41]
+    }));
 }
 
 MapView.prototype.setMarkers = function (_items) {
@@ -228,13 +231,13 @@ MapView.prototype.setMarkers = function (_items) {
 
         if (typeof _items === "object") {
             filteredData = Object.values(_items);
-} else if (Array.isArray(values)) {
+        } else if (Array.isArray(values)) {
             filteredData = _items;
-}
+        }
 
         function getFacet(dataRow, facetName) {
             return dataRow.facets[facetName] != undefined ? dataRow.facets[facetName][0] : undefined;
-}
+        }
 
         filteredData.forEach(function (dataRow) {
             var latitude = getFacet(dataRow, "LATITUDE") || getFacet(dataRow, "LAT") || getFacet(dataRow, "Широта") || getFacet(dataRow, "ШИРОТА");
@@ -250,30 +253,30 @@ MapView.prototype.setMarkers = function (_items) {
 
                 if (self.popupHTML != undefined && self.popupHTML != "") {
                     marker.bindPopup(self.substituteValues(self.popupHTML, [label, hint]));
-} else if (self.popupURL != undefined && self.popupURL != "") {
+                } else if (self.popupURL != undefined && self.popupURL != "") {
                     var template = '<iframe style="width:300px;height:300px;" src="' + self.popupURL + '" />"';
                     marker.bindPopup(self.substituteValues(template, [label, hint]));
-} else {
+                } else {
                     marker.bindPopup(hint);
-}
+                }
 
-                self.setMarkerIcon(marker, 'mapMarker');
+                self.setMarkerIcon(marker, self.markerUrl);
                 marker.options.dataRow = dataRow.facets;
 
                 self.markers.push(marker);
-}
-});
+            }
+        });
 
         if (self.markerLayer != null) {
             self.map.removeLayer(self.markerLayer);
-}
+        }
 
         if (self.enableClustering && self.markers.length >= self.startClusterLimit) {
             self.markerLayer = L.markerClusterGroup();
             self.markerLayer.options.maxClusterRadius = self.clusterRadius;
-} else {
+        } else {
             self.markerLayer = new L.featureGroup(self.markers);
-}
+        }
 
         for (var i = 0; i < self.markers.length; ++i) {
             if (self.iconHTML != undefined && self.iconHTML != "") {
@@ -281,66 +284,66 @@ MapView.prototype.setMarkers = function (_items) {
 
                 if (self.markers[i]._popup != undefined) {
                     popup = self.markers[i]._popup._content;
-}
+                }
 
                 var m = L.marker([self.markers[i]._latlng.lat, self.markers[i]._latlng.lng], { dataRow: self.markers[i].options.dataRow });
 
                 if (popup != undefined) {
                     m.bindPopup(popup);
-}
+                }
 
-                self.setMarkerIcon(m, 'mapMarker');
+                self.setMarkerIcon(m, self.markerUrl);
 
                 self.markerLayer.addLayer(m);
 
                 self.mLayers.push(m);
-} else {
+            } else {
                 self.markerLayer.addLayer(self.markers[i]);
-}
-}
+            }
+        }
 
         self.map.addLayer(self.markerLayer);
 
         if (self.markers.length > 0) {
             setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
-}
+        }
 
         if (self.markers.length == 0) {
             self.map.setView([0, 0], 2);
-}
+        }
 
         self.isExecuteSelectItem = true;
         self.markerLayer.on("click", function (event) {
             var clickedMarker = event.layer;
 
             self.resetHighlightedMarkers();
-            self.setMarkerIcon(clickedMarker, 'highlightedMarker');
+            self.setMarkerIcon(clickedMarker, self.higlightedMarkerUrl);
             self.highlightedMarkers.push(clickedMarker);
 
             var itemsArr;
             if (typeof _items === "object") {
                 itemsArr = Object.values(_items);
-} else {
+            } else {
                 itemsArr = _items;
-}
+            }
 
             var clickedItem = itemsArr.filter(function (item) {
                 return item.facets === clickedMarker.options.dataRow;
-})[0];
+            })[0];
             if (self.detailsEnabled) {
                 self.container.trigger("showDetails", clickedItem, self.container.facets);
                 self.container.trigger("showInfoButton");
-}
+            }
             self.container.trigger("filterItem", clickedItem, self.container.facets);
 
             self.container.selectedItems = [];
             self.container.selectedItems.push(clickedItem);
-});
+        });
 
         self.markerLayer.on("mouseover", function (event) {
             event.layer.openPopup();
-});
-}
+        });
+    }
 }
 
 MapView.prototype.clearFilter = function () {

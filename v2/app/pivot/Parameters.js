@@ -4,7 +4,9 @@ var PIVOT_PARAMETERS = {
         multipleClusterColors: false,
         clusterRadius: 50,
         startClusterLimit: 10,
-        sourceURL: ""              
+        sourceURL: "",
+        markerUrl: 'Content/images/icon-point-gas.png',
+        higlightedMarkerUrl: 'Content/images/icon-point-gas-inverted.png'
     },
     detailsEnabled: true,
     filterElement: "ID"

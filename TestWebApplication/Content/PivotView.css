@@ -555,13 +555,13 @@ div.pivot_facetlabel {
     visibility: hidden;
 }
 
-.mapMarker {
+/*.mapMarker {
     content:url("images/icon-point-gas.png");
 }
 
 .highlightedMarker {
     content:url("images/icon-point-gas-inverted.png");
-}
+}*/
 
 .pivot_export_csv {
     background: url('images/download.png') no-repeat 6px 3px;

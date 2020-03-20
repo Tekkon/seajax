@@ -65,6 +65,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pivot", "pivot", "{0B3D2BCE
 		TestWebApplication\Content\PivotView.css = TestWebApplication\Content\PivotView.css
 		v2\app\pivot\PivotView.js = v2\app\pivot\PivotView.js
 		v2\app\pivot\PivotViewer.js = v2\app\pivot\PivotViewer.js
+		v2\app\pivot\Polyfills.js = v2\app\pivot\Polyfills.js
 		v2\app\pivot\quickstart.html = v2\app\pivot\quickstart.html
 		v2\app\pivot\search.gif = v2\app\pivot\search.gif
 		v2\app\pivot\Slider.js = v2\app\pivot\Slider.js
