@@ -10394,6 +10394,10 @@ function cleanUTF8String(input) {
     return output;
 }
 
+function arraysEqual(a1, a2) {
+    /* WARNING: arrays must not contain {objects} or behavior may be undefined */
+    return JSON.stringify(a1) == JSON.stringify(a2);
+}
 var throttle = function (type, name, obj) {
     obj = obj || window;
     var running = false;
@@ -12358,7 +12362,7 @@ MapView.prototype.showSelectedItems = function () {
         })[0];
         self.setMarkerIcon(clickedMarker, self.higlightedMarkerUrl);
         self.highlightedMarkers.push(clickedMarker);
-        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
+        //self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
     });
 }
 
@@ -12527,6 +12531,10 @@ MapView.prototype.setMarkers = function (_items) {
         self.markerLayer.on("mouseover", function (event) {
             event.layer.openPopup();
         });
+
+        self.markerLayer.on("mouseout", function (event) {
+            event.layer.closePopup();
+        });
     }
 }
 
@@ -12650,10 +12658,10 @@ TableView.prototype.createView = function (options) {
 
     //self.div.childNodes[0].childNodes[1].focus();
 
-    if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
+    /*if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
         self.rearrange(options.activeItems);
         self.activeItems = options.activeItems;
-    } 
+    }*/
        
     self.showSelectedItems();    
 }
@@ -13058,7 +13066,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             }
         });
 
-        var isActiveItemsChanged = Object.entries(activeItems).length !== Object.entries(prevActiveItems).length;
+        var isActiveItemsChanged = !arraysEqual(Object.entries(activeItems).map(function (item) { return item[1].id }), Object.entries(prevActiveItems).map(function (item) { return item[1].id }));
 
         /*if (!isActiveItemsChanged) {
             Object.entries(activeItems).forEach(function (item) {
@@ -16867,10 +16875,10 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                     }());
                     comparatorNames.push(i18n.t("sort1") + facet.orders[0].name);
                 }
-                comparatorNames.push(i18n.t("sortQuantity"));
-                comparators.push(compareByQuantity);
                 comparatorNames.push(i18n.t("sortAZ"));
                 comparators.push(compareAlphabetical);
+                comparatorNames.push(i18n.t("sortQuantity"));
+                comparators.push(compareByQuantity);
             }
             clearButton = clearButtons[name] = clearButton.cloneNode(true);
             clearButton.onclick = onClear;

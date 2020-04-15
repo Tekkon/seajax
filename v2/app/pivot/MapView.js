@@ -174,7 +174,7 @@ MapView.prototype.showSelectedItems = function () {
         })[0];
         self.setMarkerIcon(clickedMarker, self.higlightedMarkerUrl);
         self.highlightedMarkers.push(clickedMarker);
-        self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
+        //self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
     });
 }
 
@@ -342,6 +342,10 @@ MapView.prototype.setMarkers = function (_items) {
 
         self.markerLayer.on("mouseover", function (event) {
             event.layer.openPopup();
+        });
+
+        self.markerLayer.on("mouseout", function (event) {
+            event.layer.closePopup();
         });
     }
 }

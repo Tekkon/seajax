@@ -1116,10 +1116,10 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                     }());
                     comparatorNames.push(i18n.t("sort1") + facet.orders[0].name);
                 }
-                comparatorNames.push(i18n.t("sortQuantity"));
-                comparators.push(compareByQuantity);
                 comparatorNames.push(i18n.t("sortAZ"));
                 comparators.push(compareAlphabetical);
+                comparatorNames.push(i18n.t("sortQuantity"));
+                comparators.push(compareByQuantity);
             }
             clearButton = clearButtons[name] = clearButton.cloneNode(true);
             clearButton.onclick = onClear;

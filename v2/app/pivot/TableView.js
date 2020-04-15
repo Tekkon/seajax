@@ -113,10 +113,10 @@ TableView.prototype.createView = function (options) {
 
     //self.div.childNodes[0].childNodes[1].focus();
 
-    if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
+    /*if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
         self.rearrange(options.activeItems);
         self.activeItems = options.activeItems;
-    } 
+    }*/
        
     self.showSelectedItems();    
 }

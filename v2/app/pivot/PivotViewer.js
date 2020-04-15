@@ -246,7 +246,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             }
         });
 
-        var isActiveItemsChanged = Object.entries(activeItems).length !== Object.entries(prevActiveItems).length;
+        var isActiveItemsChanged = !arraysEqual(Object.entries(activeItems).map(function (item) { return item[1].id }), Object.entries(prevActiveItems).map(function (item) { return item[1].id }));
 
         /*if (!isActiveItemsChanged) {
             Object.entries(activeItems).forEach(function (item) {
