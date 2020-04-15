@@ -131,6 +131,12 @@ MapView.prototype.createView = function (options) {
 
         map.on('baselayerchange', setLayer);
 
+        map.on('click', function (event) {
+            self.resetHighlightedMarkers();
+            //self.container.trigger("clearFilter");
+            self.container.trigger("filterSet", self.container.activeItemsArr)
+        })
+
         L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
 
         if (this.multipleClusterColors) {
@@ -174,7 +180,6 @@ MapView.prototype.showSelectedItems = function () {
         })[0];
         self.setMarkerIcon(clickedMarker, self.higlightedMarkerUrl);
         self.highlightedMarkers.push(clickedMarker);
-        //self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
     });
 }
 

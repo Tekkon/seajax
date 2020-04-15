@@ -12319,6 +12319,12 @@ MapView.prototype.createView = function (options) {
 
         map.on('baselayerchange', setLayer);
 
+        map.on('click', function (event) {
+            self.resetHighlightedMarkers();
+            //self.container.trigger("clearFilter");
+            self.container.trigger("filterSet", self.container.activeItemsArr)
+        })
+
         L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
 
         if (this.multipleClusterColors) {
@@ -12362,7 +12368,6 @@ MapView.prototype.showSelectedItems = function () {
         })[0];
         self.setMarkerIcon(clickedMarker, self.higlightedMarkerUrl);
         self.highlightedMarkers.push(clickedMarker);
-        //self.map.setView([clickedMarker._latlng.lat, clickedMarker._latlng.lng], 20);
     });
 }
 
@@ -14662,9 +14667,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.addListener("resize", onResize);
 
         self.addListener("clearFilter", function () {
-            self.views.filter(function (view) {
+            /*self.views.filter(function (view) {
                 return view.isSelected;
-            })[0].clearFilter();
+            })[0].clearFilter();*/
 
             if (self.detailsEnabled) {
                 self.trigger("hideDetails");
@@ -16530,6 +16535,9 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             refreshFilterPane();
         }
 
+        viewer.views.filter(function (view) {
+            return view.isSelected;
+        })[0].clearFilter();
         viewer.trigger("clearFilter");
     }
 

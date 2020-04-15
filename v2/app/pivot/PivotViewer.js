@@ -1842,9 +1842,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         self.addListener("resize", onResize);
 
         self.addListener("clearFilter", function () {
-            self.views.filter(function (view) {
+            /*self.views.filter(function (view) {
                 return view.isSelected;
-            })[0].clearFilter();
+            })[0].clearFilter();*/
 
             if (self.detailsEnabled) {
                 self.trigger("hideDetails");

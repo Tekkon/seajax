@@ -771,6 +771,9 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             refreshFilterPane();
         }
 
+        viewer.views.filter(function (view) {
+            return view.isSelected;
+        })[0].clearFilter();
         viewer.trigger("clearFilter");
     }
 
