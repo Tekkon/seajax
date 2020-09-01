@@ -10447,12 +10447,14 @@ throttle("resize", "optimizedResize");
 var PIVOT_PARAMETERS = {
     map: {        
         enableClustering: true,
+        highlightMarkersOnFilter: true,
         multipleClusterColors: false,
         clusterRadius: 50,
         startClusterLimit: 10,
         sourceURL: "",
         markerUrl: 'Content/images/icon-point-gas.png',
-        higlightedMarkerUrl: 'Content/images/icon-point-gas-inverted.png'
+        highlightedMarkerUrl: 'Content/images/icon-point-gas-inverted.png',
+        filteredMarkerUrl: 'Content/images/icon-point-gas-green.png'
     },
     detailsEnabled: true,
     filterElement: "ID"
@@ -12204,17 +12206,43 @@ var MapView = function (container, isSelected) {
     }
 
     this.enableClustering = PIVOT_PARAMETERS.map.enableClustering;
+    this.highlightMarkersOnFilter = PIVOT_PARAMETERS.map.highlightMarkersOnFilter;
     this.multipleClusterColors = PIVOT_PARAMETERS.map.multipleClusterColors;
     this.clusterRadius = PIVOT_PARAMETERS.map.clusterRadius;
     this.startClusterLimit = PIVOT_PARAMETERS.map.startClusterLimit;
     this.sourceURL = PIVOT_PARAMETERS.map.sourceURL;
     this.markerUrl = PIVOT_PARAMETERS.map.markerUrl;
-    this.higlightedMarkerUrl = PIVOT_PARAMETERS.map.higlightedMarkerUrl;
+    this.highlightedMarkerUrl = PIVOT_PARAMETERS.map.highlightedMarkerUrl;
+    this.filteredMarkerUrl = PIVOT_PARAMETERS.map.filteredMarkerUrl;
 
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
     this.filterElement = PIVOT_PARAMETERS.filterElement;
     
     this.activeItems = {};
+
+    this.defaultIcon = new L.Icon({
+        iconUrl: this.markerUrl,
+        iconAnchor: [12, 41],
+        popupAnchor: [0, -41]
+    });
+
+    this.highlightedIcon = new L.Icon({
+        iconUrl: this.highlightedMarkerUrl,
+        iconAnchor: [12, 41],
+        popupAnchor: [0, -41]
+    });
+
+    this.filteredIcon = new L.Icon({
+        iconUrl: this.filteredMarkerUrl,
+        iconAnchor: [12, 41],
+        popupAnchor: [0, -41]
+    });
+
+    img = document.createElement('img');
+    img.src = this.highlightedMarkerUrl
+
+    img1 = document.createElement('img');
+    img1.src = this.filteredMarkerUrl;
 }
 
 MapView.prototype = Object.create(BaseView.prototype);
@@ -12342,20 +12370,20 @@ MapView.prototype.createView = function (options) {
     }
 
     if (Object.entries(self.activeItems).length !== Object.entries(_items).length) {
-        self.rearrange(_items);
+        self.rearrange(_items, false);
         self.activeItems = _items;
     } else {
         self.showSelectedItems();
-    }
+    }    
 }
 
 MapView.prototype.filter = function (filterData) {
     this.container.selectedItems = [];
-    this.rearrange(filterData);
+    this.rearrange(filterData, true);
 }
 
-MapView.prototype.rearrange = function (filterData) {
-    this.setMarkers(filterData);
+MapView.prototype.rearrange = function (filterData, isFiltering) {
+    this.setMarkers(filterData, isFiltering);
 }
 
 MapView.prototype.showSelectedItems = function () {
@@ -12366,7 +12394,7 @@ MapView.prototype.showSelectedItems = function () {
         var clickedMarker = self.markers.filter(function (marker) {
             return item.facets === marker.options.dataRow;
         })[0];
-        self.setMarkerIcon(clickedMarker, self.higlightedMarkerUrl);
+        self.setMarkerIcon(clickedMarker, self.highlightedIcon);
         self.highlightedMarkers.push(clickedMarker);
     });
 }
@@ -12375,7 +12403,16 @@ MapView.prototype.resetHighlightedMarkers = function () {
     var self = this;
 
     for (var i = 0; i < self.highlightedMarkers.length; i++) {
-        self.setMarkerIcon(self.highlightedMarkers[i], self.markerUrl);
+        if (self.highlightMarkersOnFilter) {
+            var filteredMarker = self.filteredMarkers.filter(function (marker) { return marker._latlng == self.highlightedMarkers[i]._latlng })[0];
+            if (filteredMarker != undefined) {
+                self.setMarkerIcon(self.highlightedMarkers[i], self.filteredIcon);
+            } else {
+                self.setMarkerIcon(self.highlightedMarkers[i], self.defaultIcon);
+            }
+        } else {
+            self.setMarkerIcon(self.highlightedMarkers[i], self.defaultIcon);
+        }        
     }
 
     self.highlightedMarkers = [];
@@ -12407,19 +12444,34 @@ MapView.prototype.substituteValues = function (s, params) {
     return ret;
 }
 
-MapView.prototype.setMarkerIcon = function (marker, iconUrl) {
-    marker.setIcon(new L.Icon({
-        iconUrl: iconUrl,
-        iconAnchor: [12, 41],
-        popupAnchor: [0, -41]
-    }));
+MapView.prototype.setMarkerIcon = function (marker, icon) {
+    marker.setIcon(icon);
 }
 
-MapView.prototype.setMarkers = function (_items) {
+MapView.prototype.setMarkers = function (_items, isFiltering) {
     var self = this;
 
-    if (this.map != null) {
-        this.markers = [];
+    if (self.map != null) {
+        function createMarker(latitude, longitude, dataRow, label, hint) {
+            var marker = new L.marker([latitude, longitude]);
+
+            if (self.popupHTML != undefined && self.popupHTML != "") {
+                marker.bindPopup(self.substituteValues(self.popupHTML, [label, hint]));
+            } else if (self.popupURL != undefined && self.popupURL != "") {
+                var template = '<iframe style="width:300px;height:300px;" src="' + self.popupURL + '" />"';
+                marker.bindPopup(self.substituteValues(template, [label, hint]));
+            } else {
+                marker.bindPopup(hint);
+            }
+
+            self.setMarkerIcon(marker, self.defaultIcon);
+            marker.options.dataRow = dataRow.facets;
+
+            self.markers.push(marker);
+
+            return marker;
+        }
+
         var filteredData = [];
 
         if (typeof _items === "object") {
@@ -12431,7 +12483,16 @@ MapView.prototype.setMarkers = function (_items) {
         function getFacet(dataRow, facetName) {
             return dataRow.facets[facetName] != undefined ? dataRow.facets[facetName][0] : undefined;
         }
+       
+        if (self.highlightMarkersOnFilter) {
+            self.markers.forEach(function (marker) {
+                self.setMarkerIcon(marker, self.defaultIcon);
+            });            
+        } else {
+            self.markers = [];
+        }
 
+        self.filteredMarkers = [];
         filteredData.forEach(function (dataRow) {
             var latitude = getFacet(dataRow, "LATITUDE") || getFacet(dataRow, "LAT") || getFacet(dataRow, "Широта") || getFacet(dataRow, "ШИРОТА");
             var longitude = getFacet(dataRow, "LONGITUDE") || getFacet(dataRow, "LONG") || getFacet(dataRow, "Долгота") || getFacet(dataRow, "ДОЛГОТА");
@@ -12442,21 +12503,20 @@ MapView.prototype.setMarkers = function (_items) {
             if (typeof latitude != 'undefined' && latitude != null && latitude != 0 &&
                 typeof longitude != 'undefined' && longitude != null && longitude != 0) {
 
-                var marker = new L.marker([latitude, longitude]);
+                if (self.highlightMarkersOnFilter) {
+                    var marker = self.markers.filter(function (marker) {
+                        return marker._latlng.lat == latitude && marker._latlng.lng == longitude
+                    })[0];
 
-                if (self.popupHTML != undefined && self.popupHTML != "") {
-                    marker.bindPopup(self.substituteValues(self.popupHTML, [label, hint]));
-                } else if (self.popupURL != undefined && self.popupURL != "") {
-                    var template = '<iframe style="width:300px;height:300px;" src="' + self.popupURL + '" />"';
-                    marker.bindPopup(self.substituteValues(template, [label, hint]));
+                    if (marker != undefined) {
+                        self.setMarkerIcon(marker, self.filteredIcon);
+                        self.filteredMarkers.push(marker);
+                    } else {
+                        createMarker(latitude, longitude, dataRow, label, hint);
+                    }
                 } else {
-                    marker.bindPopup(hint);
+                    createMarker(latitude, longitude, dataRow, label, hint);
                 }
-
-                self.setMarkerIcon(marker, self.markerUrl);
-                marker.options.dataRow = dataRow.facets;
-
-                self.markers.push(marker);
             }
         });
 
@@ -12469,6 +12529,10 @@ MapView.prototype.setMarkers = function (_items) {
             self.markerLayer.options.maxClusterRadius = self.clusterRadius;
         } else {
             self.markerLayer = new L.featureGroup(self.markers);
+        }
+
+        if (self.highlightMarkersOnFilter) {
+            self.filteredMarkersLayer = new L.featureGroup(self.filteredMarkers);
         }
 
         for (var i = 0; i < self.markers.length; ++i) {
@@ -12485,7 +12549,7 @@ MapView.prototype.setMarkers = function (_items) {
                     m.bindPopup(popup);
                 }
 
-                self.setMarkerIcon(m, self.markerUrl);
+                self.setMarkerIcon(m, self.defaultIcon)
 
                 self.markerLayer.addLayer(m);
 
@@ -12497,9 +12561,15 @@ MapView.prototype.setMarkers = function (_items) {
 
         self.map.addLayer(self.markerLayer);
 
-        if (self.markers.length > 0) {
-            setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
-        }
+        if (self.highlightMarkersOnFilter) {
+            if (self.filteredMarkers.length > 0) {
+                setTimeout(function () { self.map.fitBounds(self.filteredMarkersLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
+            }
+        } else {
+            if (self.markers.length > 0) {
+                setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
+            }
+        }        
 
         if (self.markers.length == 0) {
             self.map.setView([0, 0], 2);
@@ -12510,7 +12580,7 @@ MapView.prototype.setMarkers = function (_items) {
             var clickedMarker = event.layer;
 
             self.resetHighlightedMarkers();
-            self.setMarkerIcon(clickedMarker, self.higlightedMarkerUrl);
+            self.setMarkerIcon(clickedMarker, self.highlightedIcon);
             self.highlightedMarkers.push(clickedMarker);
 
             var itemsArr;
@@ -12539,14 +12609,14 @@ MapView.prototype.setMarkers = function (_items) {
 
         self.markerLayer.on("mouseout", function (event) {
             event.layer.closePopup();
-        });
+        });        
     }
 }
 
 MapView.prototype.clearFilter = function () {
     var self = this;
 
-    self.rearrange(self.activeItems);
+    self.rearrange(self.activeItems, false);
 }
 var TableView = function (container, isSelected) {
     BaseView.call(this, container, isSelected);
@@ -13084,9 +13154,13 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }*/
 
         if (isActiveItemsChanged || self.views[0].isSelected || self.views[1].isSelected) {
-            self.views.filter(function (view) {
+            /*self.views.filter(function (view) {
                 return view.isSelected;
-            })[0].filter(activeItems);
+            })[0].filter(activeItems);*/
+
+            self.views.forEach(function (view) {
+                view.filter(activeItems);
+            });         
 
             if (self.detailsEnabled) {
                 self.trigger("hideDetails");
@@ -13986,13 +14060,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             self.activeItemsArr[i].destination = [];
         }
         
-        setTimeout(function () {
-            self.views.filter(function (elem) {
-                return elem.isSelected;
-            })[0].createView({
-                canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer,
-                leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems
-            });
+        self.views.filter(function (elem) {
+            return elem.isSelected;
+        })[0].createView({
+            canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer,
+            leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems
         });
         
         // initial creation of additional views 

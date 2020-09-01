@@ -105,6 +105,8 @@
     <Content Include="Content\images\datagrid_icons.png" />
     <Content Include="Content\images\datebox_arrow.png" />
     <Content Include="Content\images\export.png" />
+    <Content Include="Content\images\icon-point-gas-blue.png" />
+    <Content Include="Content\images\icon-point-gas-green.png" />
     <Content Include="Content\images\icon-point-gas-inverted.png" />
     <Content Include="Content\images\icon-point-gas.png" />
     <Content Include="Content\images\layers.png" />

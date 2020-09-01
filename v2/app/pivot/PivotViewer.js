@@ -259,9 +259,13 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }*/
 
         if (isActiveItemsChanged || self.views[0].isSelected || self.views[1].isSelected) {
-            self.views.filter(function (view) {
+            /*self.views.filter(function (view) {
                 return view.isSelected;
-            })[0].filter(activeItems);
+            })[0].filter(activeItems);*/
+
+            self.views.forEach(function (view) {
+                view.filter(activeItems);
+            });         
 
             if (self.detailsEnabled) {
                 self.trigger("hideDetails");
@@ -1161,13 +1165,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             self.activeItemsArr[i].destination = [];
         }
         
-        setTimeout(function () {
-            self.views.filter(function (elem) {
-                return elem.isSelected;
-            })[0].createView({
-                canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer,
-                leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems
-            });
+        self.views.filter(function (elem) {
+            return elem.isSelected;
+        })[0].createView({
+            canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer,
+            leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems
         });
         
         // initial creation of additional views 
