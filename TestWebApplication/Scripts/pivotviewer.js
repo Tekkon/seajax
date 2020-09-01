@@ -15896,8 +15896,8 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     var mouseBox = makeElement("div", "pivot pivot_layer", canvasBox);
     var behindLayer = makeElement("div", "pivot pivot_layer behindLayer", mouseBox);
     var canvas = makeElement("canvas", "pivot", mouseBox);
-    canvas.height = canvas.offsetHeight;
-    canvas.width = canvas.offsetWidth;
+    //canvas.height = canvas.offsetHeight;
+    //canvas.width = canvas.offsetWidth;
     var frontLayer = makeElement("div", "pivot pivot_layer frontLayer ", mouseBox);
     var mapLayer = makeElement("div", "pivot pivot_layer mapLayer", mouseBox);
     var tableLayer = makeElement("div", "pivot pivot_layer tableLayer", mouseBox);
