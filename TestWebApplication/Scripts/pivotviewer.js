@@ -12391,11 +12391,13 @@ MapView.prototype.showSelectedItems = function () {
 
     self.resetHighlightedMarkers();
     self.container.selectedItems.forEach(function (item, index) {
-        var clickedMarker = self.markers.filter(function (marker) {
-            return item.facets === marker.options.dataRow;
-        })[0];
-        self.setMarkerIcon(clickedMarker, self.highlightedIcon);
-        self.highlightedMarkers.push(clickedMarker);
+        if (item != undefined) {
+            var clickedMarker = self.markers.filter(function (marker) {
+                return item.facets === marker.options.dataRow;
+            })[0];
+            self.setMarkerIcon(clickedMarker, self.highlightedIcon);
+            self.highlightedMarkers.push(clickedMarker);
+        }
     });
 }
 
@@ -12404,7 +12406,7 @@ MapView.prototype.resetHighlightedMarkers = function () {
 
     for (var i = 0; i < self.highlightedMarkers.length; i++) {
         if (self.highlightMarkersOnFilter) {
-            var filteredMarker = self.filteredMarkers.filter(function (marker) { return marker._latlng == self.highlightedMarkers[i]._latlng })[0];
+            var filteredMarker = self.filteredMarkers.filter(function (marker) { return marker.options.dataRow == self.highlightedMarkers[i].options.dataRow })[0];
             if (filteredMarker != undefined) {
                 self.setMarkerIcon(self.highlightedMarkers[i], self.filteredIcon);
             } else {
@@ -12505,7 +12507,7 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
 
                 if (self.highlightMarkersOnFilter) {
                     var marker = self.markers.filter(function (marker) {
-                        return marker._latlng.lat == latitude && marker._latlng.lng == longitude
+                        return marker.options.dataRow === dataRow.facets
                     })[0];
 
                     if (marker != undefined) {
@@ -12521,6 +12523,9 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
         });
 
         if (self.markerLayer != null) {
+            self.markerLayer.removeEventListener('click', clickListener, false);
+            self.markerLayer.removeEventListener("mouseover", mouseoverListener, false);
+            self.markerLayer.removeEventListener("mouseout", mouseoutListener, false);
             self.map.removeLayer(self.markerLayer);
         }
 
@@ -12576,7 +12581,8 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
         }
 
         self.isExecuteSelectItem = true;
-        self.markerLayer.on("click", function (event) {
+
+        var clickListener = function (event) {
             var clickedMarker = event.layer;
 
             self.resetHighlightedMarkers();
@@ -12593,6 +12599,7 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
             var clickedItem = itemsArr.filter(function (item) {
                 return item.facets === clickedMarker.options.dataRow;
             })[0];
+
             if (self.detailsEnabled) {
                 self.container.trigger("showDetails", clickedItem, self.container.facets);
                 self.container.trigger("showInfoButton");
@@ -12601,15 +12608,19 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
 
             self.container.selectedItems = [];
             self.container.selectedItems.push(clickedItem);
-        });
+        }
 
-        self.markerLayer.on("mouseover", function (event) {
+        var mouseoverListener = function (event) {
             event.layer.openPopup();
-        });
+        }
 
-        self.markerLayer.on("mouseout", function (event) {
+        var mouseoutListener = function (event) {
             event.layer.closePopup();
-        });        
+        }
+
+        self.markerLayer.addEventListener('click', clickListener, false);
+        self.markerLayer.addEventListener("mouseover", mouseoverListener, false);
+        self.markerLayer.addEventListener("mouseout", mouseoutListener, false);
     }
 }
 
@@ -12797,16 +12808,18 @@ TableView.prototype.showSelectedItems = function () {
     self.gridOptions.api.deselectAll();
 
     self.container.selectedItems.forEach(function (item, index) {
-        var selectedNodeIndex = 0;
-        if (self.gridOptions !== undefined) {
-            self.gridOptions.api.forEachNode(function (node, index) {
-                if (node.data[self.filterElement] === (Array.isArray(item.id) ? item.id[0] : item.id)) {
-                    node.setSelected(true, true);
-                    selectedNodeIndex = index;
-                }
-            });
+        if (item != undefined) {
+            var selectedNodeIndex = 0;
+            if (self.gridOptions !== undefined) {
+                self.gridOptions.api.forEachNode(function (node, index) {
+                    if (node.data[self.filterElement] === (Array.isArray(item.id) ? item.id[0] : item.id)) {
+                        node.setSelected(true, true);
+                        selectedNodeIndex = index;
+                    }
+                });
 
-            self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
+                self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
+            }
         }
     }); 
 }

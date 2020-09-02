@@ -177,16 +177,18 @@ TableView.prototype.showSelectedItems = function () {
     self.gridOptions.api.deselectAll();
 
     self.container.selectedItems.forEach(function (item, index) {
-        var selectedNodeIndex = 0;
-        if (self.gridOptions !== undefined) {
-            self.gridOptions.api.forEachNode(function (node, index) {
-                if (node.data[self.filterElement] === (Array.isArray(item.id) ? item.id[0] : item.id)) {
-                    node.setSelected(true, true);
-                    selectedNodeIndex = index;
-                }
-            });
+        if (item != undefined) {
+            var selectedNodeIndex = 0;
+            if (self.gridOptions !== undefined) {
+                self.gridOptions.api.forEachNode(function (node, index) {
+                    if (node.data[self.filterElement] === (Array.isArray(item.id) ? item.id[0] : item.id)) {
+                        node.setSelected(true, true);
+                        selectedNodeIndex = index;
+                    }
+                });
 
-            self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
+                self.gridOptions.api.ensureIndexVisible(selectedNodeIndex);
+            }
         }
     }); 
 }
