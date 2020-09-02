@@ -12350,10 +12350,83 @@ MapView.prototype.createView = function (options) {
         map.on('click', function (event) {
             self.resetHighlightedMarkers();
             //self.container.trigger("clearFilter");
-            self.container.trigger("filterSet", self.container.activeItemsArr)
-        })
+            self.container.trigger("filterSet", self.container.activeItemsArr);
+
+            if (event.originalEvent.target.classList[0] == "route-input") {
+                setTimeout(function () {
+                    event.originalEvent.target.focus();
+                }, 10);
+            };
+        });
 
         L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
+        
+        L.Control.RouteInput = L.Control.extend({
+            onAdd: function (map) {
+                var div = L.DomUtil.create('div');
+                div.classList.add("route-control");
+                div.innerHTML = "<h7>Маршрут</h7><br/>" +
+                                "<label for='routeInputA' class='route-label'>Точка A</label><input id='routeInputA' type='text' class='route-input' /><br />" +
+                                "<label for='routeInputB' class='route-label'>Точка B</label><input id='routeInputB' type='text' class='route-input' /><br />" +
+                                "<input id='routeSubmit' type='button' value='OK' />" +
+                                "<br /><br />" + 
+                                "<label for='routeDistance' class='route-label'>Расстояние:</label><span class='route-input' id='routeDistance'></span>" ;
+                return div;
+            },
+            onRemove: function (map) {
+            }
+        });
+
+        L.control.routeInput = function (opts) {
+            return new L.Control.RouteInput(opts);
+        }
+
+        L.control.routeInput({ position: 'topright' }).addTo(map);
+
+        var routeLayer;
+        function createRoute(locations) {
+            var dir = MQ.routing.directions()
+                .on('success', function (data) {
+                    if (data.route.distance != undefined) {
+                        $('#routeDistance')[0].textContent = Number((data.route.distance * 1.609).toFixed(2)) + " км";
+                    }
+                });
+
+            dir.route({
+                locations: locations
+            });
+
+            if (routeLayer != undefined) {
+                map.removeLayer(routeLayer);
+            }
+
+            routeLayer = MQ.routing.routeLayer({
+                directions: dir,
+                fitBounds: true
+            });
+
+            map.addLayer(routeLayer);
+        }
+
+        var timer;
+        //$(".route-input").on("input", function (e) {
+        $('#routeSubmit').click(function(e) {
+            /*var value = $(this).val();
+            if ($(this).data("lastval") != value) {
+                $(this).data("lastval", value);
+                clearTimeout(timer);
+
+                timer = setTimeout(function () {
+                    if ($('#routeInputA').val().length > 0 && $('#routeInputB').val().length > 0) {
+                        createRoute([$('#routeInputA').val(), $('#routeInputB').val()]);
+                    }                    
+                }, 500);
+            };*/
+
+            if ($('#routeInputA').val().length > 0 && $('#routeInputB').val().length > 0) {
+                createRoute([$('#routeInputA').val(), $('#routeInputB').val()]);
+            }
+        });
 
         if (this.multipleClusterColors) {
             loadjscssfile("Content/MarkerCluster.Default.css", "css");

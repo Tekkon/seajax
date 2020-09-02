@@ -113,6 +113,7 @@
     <Content Include="Content\images\layout_arrows.png" />
     <Content Include="Content\images\linkbutton_bg.png" />
     <Content Include="Content\images\loading.gif" />
+    <Content Include="Content\images\location.png" />
     <Content Include="Content\images\map.png" />
     <Content Include="Content\images\map1-16.png" />
     <Content Include="Content\images\map2-16.png" />
@@ -123,6 +124,7 @@
     <Content Include="Content\images\panel_tools.png" />
     <Content Include="Content\images\passwordbox_close.png" />
     <Content Include="Content\images\passwordbox_open.png" />
+    <Content Include="Content\images\route %281%29.png" />
     <Content Include="Content\images\searchbox_button.png" />
     <Content Include="Content\images\slider_handle.png" />
     <Content Include="Content\images\spinner_arrows.png" />
@@ -176,6 +178,8 @@
     <Content Include="Scripts\leafletHtmlIcon.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Content\PivotView.css" />
+    <Content Include="Scripts\mq-map.js" />
+    <Content Include="Scripts\mq-routing.js" />
     <Content Include="Scripts\pivotviewer.js" />
     <Content Include="Scripts\pivotviewer.min.js" />
     <Content Include="Scripts\respond.js" />
