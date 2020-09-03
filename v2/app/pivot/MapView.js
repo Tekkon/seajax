@@ -67,13 +67,31 @@ function toggleInvisible(name) {
 }
 
 function makeVisible(name) {
-    if (document.getElementById(name).classList.value.includes("invisible")) {
+    var classList = document.getElementById(name).classList;
+    var isIncludes = false;
+
+    for (var i = 0; i < classList.length; i++) {
+        if (classList[i] == "invisible") {
+            isIncludes = true;
+        }
+    }
+
+    if (isIncludes) {
         toggleInvisible(name);
     }
 }
 
 function makeInvisible(name) {
-    if (!document.getElementById(name).classList.value.includes("invisible")) {
+    var classList = document.getElementById(name).classList;
+    var isIncludes = false;
+
+    for (var i = 0; i < classList.length; i++) {
+        if (classList[i] == "invisible") {
+            isIncludes = true;            
+        }
+    }
+
+    if (!isIncludes) {
         toggleInvisible(name);
     }
 }
@@ -238,14 +256,16 @@ MapView.prototype.createView = function (options) {
         map.on('mouseover', function (event) {
             var classList = event.originalEvent.target.classList;
 
-            if (classList[0] == "dropdownArow") {
-                setTimeout(function () {
-                    $('#dropdownA').focus();
-                }, 10);
-            } else if (classList[0] == "dropdownBrow") {
-                setTimeout(function () {
-                    $('#dropdownB').focus();
-                }, 10);
+            if (classList != undefined && classList.length > 0) {
+                if (classList[0] == "dropdownArow") {
+                    setTimeout(function () {
+                        $('#dropdownA').focus();
+                    }, 10);
+                } else if (classList[0] == "dropdownBrow") {
+                    setTimeout(function () {
+                        $('#dropdownB').focus();
+                    }, 10);
+                }
             }
         });
 
