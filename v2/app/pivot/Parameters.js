@@ -12,7 +12,5 @@ var PIVOT_PARAMETERS = {
     },
     detailsEnabled: true,
     filterElement: "ID",
-    nameElement: "ORG_NAME",
-    latElement: "LATITUDE",
-    lngElement: "LONGITUDE"
+    nameElement: "ORG_NAME"
 }

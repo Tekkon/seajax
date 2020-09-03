@@ -366,8 +366,32 @@ MapView.prototype.createView = function (options) {
                     return itemValue === $('#routeInputB').val();
                 })[0];
 
+                function getValue(dataRow, facetName) {
+                    return dataRow[facetName] != undefined ? dataRow[facetName][0] : undefined;
+                }
+
                 if (pointA != undefined && pointB != undefined) {
+                    var latitudeA = getValue(pointA.options.dataRow, "LATITUDE") || getValue(pointA.options.dataRow, "LAT") || getValue(pointA.options.dataRow, "Широта") || getValue(pointA.options.dataRow, "ШИРОТА");
+                    var longitudeA = getValue(pointA.options.dataRow, "LONGITUDE") || getValue(pointA.options.dataRow, "LONG") || getValue(pointA.options.dataRow, "Долгота") || getValue(pointA.options.dataRow, "ДОЛГОТА");
+                    var latitudeB = getValue(pointB.options.dataRow, "LATITUDE") || getValue(pointB.options.dataRow, "LAT") || getValue(pointB.options.dataRow, "Широта") || getValue(pointB.options.dataRow, "ШИРОТА");
+                    var longitudeB = getValue(pointB.options.dataRow, "LONGITUDE") || getValue(pointB.options.dataRow, "LONG") || getValue(pointB.options.dataRow, "Долгота") || getValue(pointB.options.dataRow, "ДОЛГОТА");
+
                     var locations = [
+                        {
+                            latLng: {
+                                lat: latitudeA,
+                                lng: longitudeA
+                            }
+                        },
+                        {
+                            latLng: {
+                                lat: latitudeB,
+                                lng: longitudeB
+                            }
+                        }
+                    ]
+
+                    /*var locations = [
                         {
                             latLng: {
                                 lat: Array.isArray(pointA.options.dataRow[PIVOT_PARAMETERS.latElement]) ? pointA.options.dataRow[PIVOT_PARAMETERS.latElement][0] : pointA.options.dataRow[PIVOT_PARAMETERS.latElement],
@@ -380,7 +404,7 @@ MapView.prototype.createView = function (options) {
                                 lng: Array.isArray(pointB.options.dataRow[PIVOT_PARAMETERS.lngElement]) ? pointB.options.dataRow[PIVOT_PARAMETERS.lngElement][0] : pointB.options.dataRow[PIVOT_PARAMETERS.lngElement]
                             }
                         }
-                    ]
+                    ]*/
 
                     createRoute(locations);
                 }                
@@ -515,11 +539,7 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
             filteredData = Object.values(_items);
         } else if (Array.isArray(values)) {
             filteredData = _items;
-        }
-
-        function getFacet(dataRow, facetName) {
-            return dataRow.facets[facetName] != undefined ? dataRow.facets[facetName][0] : undefined;
-        }
+        }        
        
         if (self.highlightMarkersOnFilter) {
             self.markers.forEach(function (marker) {
@@ -529,6 +549,10 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
             self.markers = [];
             $('#dropdownA')[0].innerHTML = '';
             $('#dropdownB')[0].innerHTML = '';
+        }
+
+        function getFacet(dataRow, facetName) {
+            return dataRow.facets[facetName] != undefined ? dataRow.facets[facetName][0] : undefined;
         }
 
         self.filteredMarkers = [];
