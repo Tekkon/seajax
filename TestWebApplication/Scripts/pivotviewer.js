@@ -10457,7 +10457,10 @@ var PIVOT_PARAMETERS = {
         filteredMarkerUrl: 'Content/images/icon-point-gas-green.png'
     },
     detailsEnabled: true,
-    filterElement: "ID"
+    filterElement: "ID",
+    nameElement: "ORG_NAME",
+    latElement: "LATITUDE",
+    lngElement: "LONGITUDE"
 }
 // Copyright (c) Microsoft Corporation
 // All rights reserved. 
@@ -12248,6 +12251,72 @@ var MapView = function (container, isSelected) {
 MapView.prototype = Object.create(BaseView.prototype);
 MapView.prototype.constructor = MapView;
 
+function toggleShow(name) {
+    document.getElementById(name).classList.toggle("show");
+}
+
+function toggleInvisible(name) {
+    document.getElementById(name).classList.toggle("invisible");
+}
+
+function makeVisible(name) {
+    if (document.getElementById(name).classList.value.includes("invisible")) {
+        toggleInvisible(name);
+    }
+}
+
+function makeInvisible(name) {
+    if (!document.getElementById(name).classList.value.includes("invisible")) {
+        toggleInvisible(name);
+    }
+}
+
+function filterDropdown(dropdownName, inputName) {
+    var input, filter, ul, li, a, i;
+    input = document.getElementById(inputName);
+    filter = input.value.toUpperCase();
+    div = document.getElementById(dropdownName);
+    a = div.getElementsByTagName("a");
+    for (i = 0; i < a.length; i++) {
+        txtValue = a[i].textContent || a[i].innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            a[i].style.display = "";
+        } else {
+            a[i].style.display = "none";
+        }
+    }
+}
+
+function dropdownRowClick(row, dropdownName, inputName) {
+    input = document.getElementById(inputName);
+    input.value = row.text;
+    toggleShow(dropdownName);
+}
+
+function toggleDropdownA() {
+    toggleShow("dropdownA");
+}
+
+function toggleDropdownB() {
+    toggleShow("dropdownB");
+}
+
+function filterDropdownA() {
+    filterDropdown("dropdownA", "routeInputA");
+}
+
+function filterDropdownB() {
+    filterDropdown("dropdownB", "routeInputB");
+}
+
+function dropdownArowClick(row) {
+    dropdownRowClick(row, "dropdownA", "routeInputA");
+}
+
+function dropdownBrowClick(row) {
+    dropdownRowClick(row, "dropdownB", "routeInputB");
+}
+
 MapView.prototype.createView = function (options) {
     var self = this;
 
@@ -12359,18 +12428,53 @@ MapView.prototype.createView = function (options) {
             };
         });
 
+        map.on('mouseover', function (event) {
+            var classList = event.originalEvent.target.classList;
+
+            if (classList[0] == "dropdownArow") {
+                setTimeout(function () {
+                    $('#dropdownA').focus();
+                }, 10);
+            } else if (classList[0] == "dropdownBrow") {
+                setTimeout(function () {
+                    $('#dropdownB').focus();
+                }, 10);
+            }
+        });
+
         L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
         
         L.Control.RouteInput = L.Control.extend({
             onAdd: function (map) {
                 var div = L.DomUtil.create('div');
                 div.classList.add("route-control");
-                div.innerHTML = "<h7>Маршрут</h7><br/>" +
-                                "<label for='routeInputA' class='route-label'>Точка A</label><input id='routeInputA' type='text' class='route-input' /><br />" +
-                                "<label for='routeInputB' class='route-label'>Точка B</label><input id='routeInputB' type='text' class='route-input' /><br />" +
-                                "<input id='routeSubmit' type='button' value='OK' />" +
-                                "<br /><br />" + 
-                                "<label for='routeDistance' class='route-label'>Расстояние:</label><span class='route-input' id='routeDistance'></span>" ;
+
+                var dropdownA = '<div class="dropdown">' +
+                                  '<input type="text" placeholder="Выберите АЗС..." id="routeInputA" class="route-input" onkeyup="filterDropdownA()" onclick="toggleDropdownA()">' +
+                                  '<div id="dropdownA" class="dropdown-content">' +                                    
+                                  '</div>' +
+                                '</div>';
+
+                var dropdownB = '<div class="dropdown">' +
+                                 '<input type="text" placeholder="Выберите АЗС..." id="routeInputB" class="route-input" onkeyup="filterDropdownB()" onclick="toggleDropdownB()">' +
+                                 '<div id="dropdownB" class="dropdown-content">' +
+                                 '</div>' +
+                                '</div>';
+
+                div.innerHTML = "<div id='routeHeader' onmouseover='makeVisible(\"routeDiv\")' onclick='toggleInvisible(\"routeDiv\")'><h7>Маршрут</h7><img src='Content/images/toggle.png' class='toggleImage' /></div>" +
+                                "<div id='routeDiv' class='invisible'>" +
+                                    "<label for='routeInputA' class='route-label'>Точка A</label>" + dropdownA + "<br />" +
+                                    "<label for='routeInputB' class='route-label'>Точка B</label>" + dropdownB +
+                                    "<div class='result'>" +
+                                        "<div id='loader' class='loader invisible'></div>" +
+                                        "<div id='distanceDiv' class='invisible'>" +
+                                            "<label for='routeDistance' id='routeDistanceLabel' class='route-label'>Расстояние:</label><span class='route-input' id='routeDistance'></span>" +
+                                        "</div>" +
+                                    "</div>" +
+                                    "<input id='routeSubmit' type='button' value='OK' />" +
+                                    "<input id='routeRemove' type='button' value='Сброс' /><br/>" +
+                                "</div>";
+                                
                 return div;
             },
             onRemove: function (map) {
@@ -12385,10 +12489,15 @@ MapView.prototype.createView = function (options) {
 
         var routeLayer;
         function createRoute(locations) {
+            makeVisible("loader");
+            makeInvisible("distanceDiv");
+
             var dir = MQ.routing.directions()
                 .on('success', function (data) {
                     if (data.route.distance != undefined) {
                         $('#routeDistance')[0].textContent = Number((data.route.distance * 1.609).toFixed(2)) + " км";
+                        makeInvisible("loader");
+                        makeVisible("distanceDiv");
                     }
                 });
 
@@ -12408,23 +12517,46 @@ MapView.prototype.createView = function (options) {
             map.addLayer(routeLayer);
         }
 
-        var timer;
-        //$(".route-input").on("input", function (e) {
+        $('#routeRemove').click(function (e) {
+            if (routeLayer != undefined) {
+                $("#routeInputA").val("");
+                $("#routeInputB").val("");
+                filterDropdownA();
+                filterDropdownB();
+                makeInvisible("distanceDiv");
+                map.removeLayer(routeLayer);
+            }
+        });
+
         $('#routeSubmit').click(function(e) {
-            /*var value = $(this).val();
-            if ($(this).data("lastval") != value) {
-                $(this).data("lastval", value);
-                clearTimeout(timer);
-
-                timer = setTimeout(function () {
-                    if ($('#routeInputA').val().length > 0 && $('#routeInputB').val().length > 0) {
-                        createRoute([$('#routeInputA').val(), $('#routeInputB').val()]);
-                    }                    
-                }, 500);
-            };*/
-
             if ($('#routeInputA').val().length > 0 && $('#routeInputB').val().length > 0) {
-                createRoute([$('#routeInputA').val(), $('#routeInputB').val()]);
+                var pointA = self.markers.filter(function (item) {
+                    var itemValue = Array.isArray(item.options.dataRow[PIVOT_PARAMETERS.nameElement]) ? item.options.dataRow[PIVOT_PARAMETERS.nameElement][0] : item.options.dataRow[PIVOT_PARAMETERS.nameElement];
+                    return itemValue === $('#routeInputA').val();
+                })[0];
+                var pointB = self.markers.filter(function (item) {
+                    var itemValue = Array.isArray(item.options.dataRow[PIVOT_PARAMETERS.nameElement]) ? item.options.dataRow[PIVOT_PARAMETERS.nameElement][0] : item.options.dataRow[PIVOT_PARAMETERS.nameElement];
+                    return itemValue === $('#routeInputB').val();
+                })[0];
+
+                if (pointA != undefined && pointB != undefined) {
+                    var locations = [
+                        {
+                            latLng: {
+                                lat: Array.isArray(pointA.options.dataRow[PIVOT_PARAMETERS.latElement]) ? pointA.options.dataRow[PIVOT_PARAMETERS.latElement][0] : pointA.options.dataRow[PIVOT_PARAMETERS.latElement],
+                                lng: Array.isArray(pointA.options.dataRow[PIVOT_PARAMETERS.lngElement]) ? pointA.options.dataRow[PIVOT_PARAMETERS.lngElement][0] : pointA.options.dataRow[PIVOT_PARAMETERS.lngElement]
+                            }
+                        },
+                        {
+                            latLng: {
+                                lat: Array.isArray(pointB.options.dataRow[PIVOT_PARAMETERS.latElement]) ? pointB.options.dataRow[PIVOT_PARAMETERS.latElement][0] : pointB.options.dataRow[PIVOT_PARAMETERS.latElement],
+                                lng: Array.isArray(pointB.options.dataRow[PIVOT_PARAMETERS.lngElement]) ? pointB.options.dataRow[PIVOT_PARAMETERS.lngElement][0] : pointB.options.dataRow[PIVOT_PARAMETERS.lngElement]
+                            }
+                        }
+                    ]
+
+                    createRoute(locations);
+                }                
             }
         });
 
@@ -12541,8 +12673,11 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
 
             self.setMarkerIcon(marker, self.defaultIcon);
             marker.options.dataRow = dataRow.facets;
-
             self.markers.push(marker);
+            
+            var text = Array.isArray(dataRow.facets[PIVOT_PARAMETERS.nameElement]) ? dataRow.facets[PIVOT_PARAMETERS.nameElement][0] : dataRow.facets[PIVOT_PARAMETERS.nameElement];
+            $('#dropdownA')[0].innerHTML += '<a href="javascript:void(0)" class="dropdownArow" onclick="dropdownArowClick(this)">' + text + '</a>';
+            $('#dropdownB')[0].innerHTML += '<a href="javascript:void(0)" class="dropdownBrow" onclick="dropdownBrowClick(this)">' + text + '</a>';
 
             return marker;
         }
@@ -12565,6 +12700,8 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
             });            
         } else {
             self.markers = [];
+            $('#dropdownA')[0].innerHTML = '';
+            $('#dropdownB')[0].innerHTML = '';
         }
 
         self.filteredMarkers = [];

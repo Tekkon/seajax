@@ -498,22 +498,6 @@ div.pivot_facetlabel {
     font-weight:bold;
 }
 
-.route-control {
-    background-color: white;
-    padding: 10px;
-}
-
-.route-label {
-    margin-top: 5px;
-    margin-right: 5px;
-    margin-bottom: 5px;
-}
-
-.route-input {
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-
 .gridButton {
     background:url('images/search.gif') no-repeat -15px 0;
     width:29px;

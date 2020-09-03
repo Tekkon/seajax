@@ -94,6 +94,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\datagrid.css" />
     <Content Include="Content\dx.common.css" />
     <Content Include="Content\dx.light.css" />
@@ -132,6 +133,7 @@
     <Content Include="Content\images\table.png" />
     <Content Include="Content\images\tabs_icons.png" />
     <Content Include="Content\images\tagbox_icons.png" />
+    <Content Include="Content\images\toggle.png" />
     <Content Include="Content\images\tree_icons.png" />
     <Content Include="Content\images\validatebox_warning.png" />
     <Content Include="Content\leaflet-0.7.7.css" />
@@ -159,10 +161,9 @@
     <Content Include="Content\images\search.gif" />
     <Content Include="Index.html" />
     <Content Include="Scripts\ag-grid-community.min.js" />
-    <Content Include="Scripts\bootstrap.js" />
-    <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Data\data.json" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\dx.all.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />

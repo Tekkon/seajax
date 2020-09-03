@@ -11,5 +11,8 @@ var PIVOT_PARAMETERS = {
         filteredMarkerUrl: 'Content/images/icon-point-gas-green.png'
     },
     detailsEnabled: true,
-    filterElement: "ID"
+    filterElement: "ID",
+    nameElement: "ORG_NAME",
+    latElement: "LATITUDE",
+    lngElement: "LONGITUDE"
 }
