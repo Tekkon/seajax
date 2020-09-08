@@ -112,6 +112,8 @@
     <Content Include="Content\images\icon-point-gas.png" />
     <Content Include="Content\images\layers.png" />
     <Content Include="Content\images\layout_arrows.png" />
+    <Content Include="Content\leaflet.routing.icons.png" />
+    <Content Include="Content\leaflet.routing.icons.svg" />
     <Content Include="Content\images\linkbutton_bg.png" />
     <Content Include="Content\images\loading.gif" />
     <Content Include="Content\images\location.png" />
@@ -126,6 +128,7 @@
     <Content Include="Content\images\passwordbox_close.png" />
     <Content Include="Content\images\passwordbox_open.png" />
     <Content Include="Content\images\route %281%29.png" />
+    <Content Include="Content\routing-icon.png" />
     <Content Include="Content\images\searchbox_button.png" />
     <Content Include="Content\images\slider_handle.png" />
     <Content Include="Content\images\spinner_arrows.png" />
@@ -137,11 +140,15 @@
     <Content Include="Content\images\tree_icons.png" />
     <Content Include="Content\images\validatebox_warning.png" />
     <Content Include="Content\leaflet-0.7.7.css" />
+    <Content Include="Content\leaflet-1.2.0.css" />
+    <Content Include="Content\leaflet-routing-machine.css" />
     <Content Include="Content\map.css" />
     <Content Include="Content\images\marker-icon-red.png" />
     <Content Include="Content\images\marker-icon.png" />
     <Content Include="Content\images\marker-shadow.png" />
+    <Content Include="Content\MarkerCluster-old.css" />
     <Content Include="Content\MarkerCluster.css" />
+    <Content Include="Content\MarkerCluster.Default-old.css" />
     <Content Include="Content\MarkerCluster.Default.css" />
     <Content Include="Content\MarkerCluster.Redefined.css" />
     <Content Include="Content\pagination.css" />
@@ -174,6 +181,11 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\leaflet-0.7.7.js" />
+    <Content Include="Scripts\leaflet-1.2.0.js" />
+    <Content Include="Scripts\leaflet-routing-machine.js" />
+    <Content Include="Scripts\leaflet-routing-machine.min.js" />
+    <Content Include="Scripts\leaflet.markercluster-old.js" />
+    <Content Include="Scripts\leaflet.markercluster-src.js" />
     <Content Include="Scripts\leaflet.markercluster.js" />
     <Content Include="Scripts\leaflet.min.js" />
     <Content Include="Scripts\leafletHtmlIcon.js" />
@@ -185,6 +197,7 @@
     <Content Include="Scripts\pivotviewer.min.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\Yandex-old.js" />
     <Content Include="Scripts\Yandex.js" />
     <Content Include="Test.html" />
     <Content Include="Web.config" />

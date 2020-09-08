@@ -164,6 +164,27 @@ if (!String.prototype.includes) {
         }
     };
 }
+
+// Force zIndex of Leaflet
+(function (global) {
+    var MarkerMixin = {
+        _updateZIndex: function (offset) {
+            this._icon.style.zIndex = this.options.forceZIndex ? (this.options.forceZIndex + (this.options.zIndexOffset || 0)) : (this._zIndex + offset);
+        },
+        setForceZIndex: function (forceZIndex) {
+            this.options.forceZIndex = forceZIndex ? forceZIndex : null;
+        }
+    };
+    if (global) global.include(MarkerMixin);
+})(L.Marker);
+
+if (!('remove' in Element.prototype)) {
+    Element.prototype.remove = function () {
+        if (this.parentNode) {
+            this.parentNode.removeChild(this);
+        }
+    };
+}
 // Copyright (c) Microsoft Corporation
 // All rights reserved. 
 // BSD License
@@ -12461,7 +12482,15 @@ MapView.prototype.createView = function (options) {
         });
 
         L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
+
+        if (this.multipleClusterColors) {
+            loadjscssfile("Content/MarkerCluster.Default.css", "css");
+        } else {
+            loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
+        }
         
+        // ***** Routing *****
+
         L.Control.RouteInput = L.Control.extend({
             onAdd: function (map) {
                 var div = L.DomUtil.create('div');
@@ -12483,12 +12512,6 @@ MapView.prototype.createView = function (options) {
                                 "<div id='routeDiv' class='invisible'>" +
                                     "<label for='routeInputA' class='route-label'>Точка A</label>" + dropdownA + "<br />" +
                                     "<label for='routeInputB' class='route-label'>Точка B</label>" + dropdownB +
-                                    "<div class='result'>" +
-                                        "<div id='loader' class='loader invisible'></div>" +
-                                        "<div id='distanceDiv' class='invisible'>" +
-                                            "<label for='routeDistance' id='routeDistanceLabel' class='route-label'>Расстояние:</label><span class='route-input' id='routeDistance'></span>" +
-                                        "</div>" +
-                                    "</div>" +
                                     "<input id='routeSubmit' type='button' value='OK' />" +
                                     "<input id='routeRemove' type='button' value='Сброс' /><br/>" +
                                 "</div>";
@@ -12505,44 +12528,43 @@ MapView.prototype.createView = function (options) {
 
         L.control.routeInput({ position: 'topright' }).addTo(map);
 
-        var routeLayer;
+        var routeControl;
         function createRoute(locations) {
-            makeVisible("loader");
-            makeInvisible("distanceDiv");
-
-            var dir = MQ.routing.directions()
-                .on('success', function (data) {
-                    if (data.route.distance != undefined) {
-                        $('#routeDistance')[0].textContent = Number((data.route.distance * 1.609).toFixed(2)) + " км";
-                        makeInvisible("loader");
-                        makeVisible("distanceDiv");
-                    }
-                });
-
-            dir.route({
-                locations: locations
-            });
-
-            if (routeLayer != undefined) {
-                map.removeLayer(routeLayer);
+            if (routeControl != undefined) {
+                removeRouteControl();
             }
 
-            routeLayer = MQ.routing.routeLayer({
-                directions: dir,
-                fitBounds: true
-            });
+            routeControl = L.Routing.control({
+                waypoints: [
+                  L.latLng(locations[0].latLng.lat, locations[0].latLng.lng),
+                  L.latLng(locations[1].latLng.lat, locations[1].latLng.lng)
+                ],
+                createMarker: function (i, wp, nWps) {
+                    var m = L.marker(wp.latLng);
+                    m.setForceZIndex(2000);
+                    m.options.draggable = true;
+                    return m;
+                }
+            }).addTo(map);
 
-            map.addLayer(routeLayer);
+            routeControl.on('routesfound', function (e) {
+                var routes = e.routes;
+                var summary = routes[0].summary;
+            });
+        }
+
+        var removeRouteControl = function () {
+            routeControl.spliceWaypoints(0, 2);
+            $(".leaflet-routing-container").remove();
         }
 
         $('#routeRemove').click(function (e) {
-            if (routeLayer != undefined) {
+            if (routeControl != undefined) {
                 $("#routeInputA").val("");
                 $("#routeInputB").val("");
                 filterDropdownA();
                 filterDropdownB();
-                makeInvisible("distanceDiv");
-                map.removeLayer(routeLayer);
+                removeRouteControl();
             }
         });
 
@@ -12582,31 +12604,10 @@ MapView.prototype.createView = function (options) {
                         }
                     ]
 
-                    /*var locations = [
-                        {
-                            latLng: {
-                                lat: Array.isArray(pointA.options.dataRow[PIVOT_PARAMETERS.latElement]) ? pointA.options.dataRow[PIVOT_PARAMETERS.latElement][0] : pointA.options.dataRow[PIVOT_PARAMETERS.latElement],
-                                lng: Array.isArray(pointA.options.dataRow[PIVOT_PARAMETERS.lngElement]) ? pointA.options.dataRow[PIVOT_PARAMETERS.lngElement][0] : pointA.options.dataRow[PIVOT_PARAMETERS.lngElement]
-                            }
-                        },
-                        {
-                            latLng: {
-                                lat: Array.isArray(pointB.options.dataRow[PIVOT_PARAMETERS.latElement]) ? pointB.options.dataRow[PIVOT_PARAMETERS.latElement][0] : pointB.options.dataRow[PIVOT_PARAMETERS.latElement],
-                                lng: Array.isArray(pointB.options.dataRow[PIVOT_PARAMETERS.lngElement]) ? pointB.options.dataRow[PIVOT_PARAMETERS.lngElement][0] : pointB.options.dataRow[PIVOT_PARAMETERS.lngElement]
-                            }
-                        }
-                    ]*/
-
                     createRoute(locations);
                 }                
             }
         });
-
-        if (this.multipleClusterColors) {
-            loadjscssfile("Content/MarkerCluster.Default.css", "css");
-        } else {
-            loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
-        }
     }
 
     var _items = {};

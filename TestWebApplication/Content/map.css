@@ -150,3 +150,7 @@
 #routeHeader {
     cursor: pointer;
 }
+
+.leaflet-routing-alt table {
+    display: none;
+}
