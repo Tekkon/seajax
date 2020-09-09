@@ -114,14 +114,16 @@ L.Yandex = L.Layer.extend({
         var offset = map.project(map.getBounds().getNorthWest(), e.zoom)._subtract(topLeft);
         var scale = map.getZoomScale(e.zoom);
         this._animatedElements.length = 0;
-        this._yandex.panes._array.forEach(function (el) {
-            if (el.pane instanceof ymaps.pane.MovablePane) {
-                var element = el.pane.getElement();
-                L.DomUtil.addClass(element, 'leaflet-zoom-animated');
-                L.DomUtil.setTransform(element, offset, scale);
-                this._animatedElements.push(element);
-            }
-        }, this);
+        if (this._yandex.panes._array != undefined) {
+            this._yandex.panes._array.forEach(function (el) {
+                if (el.pane instanceof ymaps.pane.MovablePane) {
+                    var element = el.pane.getElement();
+                    L.DomUtil.addClass(element, 'leaflet-zoom-animated');
+                    L.DomUtil.setTransform(element, offset, scale);
+                    this._animatedElements.push(element);
+                }
+            }, this);
+        }
     },
 
     _animateZoomEnd: function () {
