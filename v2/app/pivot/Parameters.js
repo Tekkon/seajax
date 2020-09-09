@@ -6,9 +6,9 @@ var PIVOT_PARAMETERS = {
         clusterRadius: 50,
         startClusterLimit: 10,
         sourceURL: "",
-        markerUrl: 'Content/images/icon-point-gas.png',
-        highlightedMarkerUrl: 'Content/images/icon-point-gas-inverted.png',
-        filteredMarkerUrl: 'Content/images/icon-point-gas-green.png'
+        markerUrl: 'Content/images/azs-small-grey.png',
+        highlightedMarkerUrl: 'Content/images/azs-small-red.png',
+        filteredMarkerUrl: 'Content/images/azs-small-blue.png'
     },
     detailsEnabled: true,
     filterElement: "ID",

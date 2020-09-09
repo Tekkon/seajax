@@ -93,11 +93,15 @@
 .show {display:block;}
 
 .route-control {
-    background-color: white;
+    background-color: lightgrey;
     padding: 10px;
     min-width: 70px;
     max-width: 230px;
     border: 1px solid black;
+    text-align:left;
+    font-family:"Segoe UI",sans-serif;
+    color:#333;
+    font-size:13px;
 }
 
 .route-label {
@@ -144,13 +148,29 @@
     width: 12px;
     height: 12px;
     float: right;
-    margin-top: 2px;
+    margin-top: 4px;
+    margin-left: 5px;
 }
 
 #routeHeader {
     cursor: pointer;
+    background-color: lightgrey;
 }
 
 .leaflet-routing-alt table {
     display: none;
+}
+
+.leaflet-routing-container  {
+    text-align:left;
+    font-family:"Segoe UI",sans-serif;
+    color:#333;
+    font-size:13px;
+}
+
+.leaflet-routing-geocoders input {
+    text-align:left;
+    font-family:"Segoe UI",sans-serif;
+    color:#333;
+    font-size:13px;
 }

@@ -33,19 +33,22 @@
     this.defaultIcon = new L.Icon({
         iconUrl: this.markerUrl,
         iconAnchor: [12, 41],
-        popupAnchor: [0, -41]
+        popupAnchor: [0, -41],
+        iconSize: [32, 32]
     });
 
     this.highlightedIcon = new L.Icon({
         iconUrl: this.highlightedMarkerUrl,
         iconAnchor: [12, 41],
-        popupAnchor: [0, -41]
+        popupAnchor: [0, -41],
+        iconSize: [32, 32]
     });
 
     this.filteredIcon = new L.Icon({
         iconUrl: this.filteredMarkerUrl,
         iconAnchor: [12, 41],
-        popupAnchor: [0, -41]
+        popupAnchor: [0, -41],
+        iconSize: [32, 32]
     });
 
     img = document.createElement('img');
@@ -246,14 +249,14 @@ MapView.prototype.createView = function (options) {
             //self.container.trigger("clearFilter");
             self.container.trigger("filterSet", self.container.activeItemsArr);
 
-            if (event.originalEvent.target.classList[0] == "route-input") {
+            /*if (event.originalEvent.target.classList[0] == "leaflet-routing-geocoder") {
                 setTimeout(function () {
                     event.originalEvent.target.focus();
                 }, 10);
-            };
+            };*/
         });
 
-        map.on('mouseover', function (event) {
+        /*map.on('mouseover', function (event) {
             var classList = event.originalEvent.target.classList;
 
             if (classList != undefined && classList.length > 0) {
@@ -267,7 +270,7 @@ MapView.prototype.createView = function (options) {
                     }, 10);
                 }
             }
-        });
+        });*/
 
         L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
 
@@ -284,7 +287,7 @@ MapView.prototype.createView = function (options) {
                 var div = L.DomUtil.create('div');
                 div.classList.add("route-control");
 
-                var dropdownA = '<div class="dropdown">' +
+                /*var dropdownA = '<div class="dropdown">' +
                                   '<input type="text" placeholder="Выберите АЗС..." id="routeInputA" class="route-input" onkeyup="filterDropdownA()" onclick="toggleDropdownA()">' +
                                   '<div id="dropdownA" class="dropdown-content">' +                                    
                                   '</div>' +
@@ -294,15 +297,18 @@ MapView.prototype.createView = function (options) {
                                  '<input type="text" placeholder="Выберите АЗС..." id="routeInputB" class="route-input" onkeyup="filterDropdownB()" onclick="toggleDropdownB()">' +
                                  '<div id="dropdownB" class="dropdown-content">' +
                                  '</div>' +
-                                '</div>';
+                                '</div>';*/
 
-                div.innerHTML = "<div id='routeHeader' onmouseover='makeVisible(\"routeDiv\")' onclick='toggleInvisible(\"routeDiv\")'><h7>Маршрут</h7><img src='Content/images/toggle.png' class='toggleImage' /></div>" +
-                                "<div id='routeDiv' class='invisible'>" +
+                div.innerHTML = "<div id='routeHeader'><h7>Маршрут</h7><img id='toggleImage' src='Content/images/toggle-down.png' class='toggleImage' /></div>" +
+                                /*"<div id='routeDiv' class='invisible'>" +
                                     "<label for='routeInputA' class='route-label'>Точка A</label>" + dropdownA + "<br />" +
                                     "<label for='routeInputB' class='route-label'>Точка B</label>" + dropdownB +
                                     "<input id='routeSubmit' type='button' value='OK' />" +
-                                    "<input id='routeRemove' type='button' value='Сброс' /><br/>" +
+                                    "<input id='routeRemove' type='button' value='Сброс' /><br/>" +*/
+                                //"<input id='routeButton' type='button' width='100' value='Маршрут' />" +
                                 "</div>";
+
+                //div.innerHTML = "<input id='routeButton' type='button' width='100' value='Маршрут' />"
                                 
                 return div;
             },
@@ -314,7 +320,7 @@ MapView.prototype.createView = function (options) {
             return new L.Control.RouteInput(opts);
         }
 
-        L.control.routeInput({ position: 'topright' }).addTo(map);
+        var routeInput = L.control.routeInput({ position: 'topright' }).addTo(map);
 
         var routeControl;
         function createRoute(locations) {
@@ -332,12 +338,17 @@ MapView.prototype.createView = function (options) {
                     m.setForceZIndex(2000);
                     m.options.draggable = true;
                     return m;
-                }
+                },
+                routeWhileDragging: true,
+                geocoder: L.Control.Geocoder.nominatim(),
+                language: 'ru'
             }).addTo(map);
 
             routeControl.on('routesfound', function (e) {
                 var routes = e.routes;
                 var summary = routes[0].summary;
+                addLeafletRoutingGeocoderOnClick();
+                addLeafletRoutingAddWaypointOnClick();               
             });
         }
 
@@ -345,6 +356,71 @@ MapView.prototype.createView = function (options) {
             routeControl.spliceWaypoints(0, 2);
             $(".leaflet-routing-container").remove();
         }
+
+        function getValue(dataRow, facetName) {
+            return dataRow[facetName] != undefined ? dataRow[facetName][0] : undefined;
+        }
+
+        function addLeafletRoutingGeocoderOnClick() {
+            $('.leaflet-routing-geocoder').find("input").off();
+            $('.leaflet-routing-geocoder').find("input").on("click", function (event) {
+                setTimeout(function () { event.originalEvent.target.focus(); }, 10);
+            });
+        }
+
+        function addLeafletRoutingAddWaypointOnClick() {
+            $('.leaflet-routing-add-waypoint').off();
+            $('.leaflet-routing-add-waypoint').click(function (event) {
+                addLeafletRoutingGeocoderOnClick();
+            });
+        }
+
+        $('#routeHeader').click(function (e) {
+            if ($('#toggleImage')[0].src.includes('toggle-down.png')) {
+                $('#toggleImage')[0].src = 'Content/images/toggle-up.png';
+
+                var pointA;
+                var pointB;
+
+                if (self.filteredMarkers.length > 1) {
+                    pointA = self.filteredMarkers[0];
+                    pointB = self.filteredMarkers[1];
+                } else if (self.filteredMarkers.length > 0 && self.markers.length > 0) {
+                    pointA = self.filteredMarkers[0];
+                    pointB = self.markers[0];
+                } else if (self.markers.length > 0) {
+                    pointA = self.markers[0];
+                    pointB = self.markers[1];
+                }
+
+                if (pointA != undefined && pointB != undefined) {
+                    var latitudeA = getValue(pointA.options.dataRow, "LATITUDE") || getValue(pointA.options.dataRow, "LAT") || getValue(pointA.options.dataRow, "Широта") || getValue(pointA.options.dataRow, "ШИРОТА");
+                    var longitudeA = getValue(pointA.options.dataRow, "LONGITUDE") || getValue(pointA.options.dataRow, "LONG") || getValue(pointA.options.dataRow, "Долгота") || getValue(pointA.options.dataRow, "ДОЛГОТА");
+                    var latitudeB = getValue(pointB.options.dataRow, "LATITUDE") || getValue(pointB.options.dataRow, "LAT") || getValue(pointB.options.dataRow, "Широта") || getValue(pointB.options.dataRow, "ШИРОТА");
+                    var longitudeB = getValue(pointB.options.dataRow, "LONGITUDE") || getValue(pointB.options.dataRow, "LONG") || getValue(pointB.options.dataRow, "Долгота") || getValue(pointB.options.dataRow, "ДОЛГОТА");
+
+                    var locations = [
+                        {
+                            latLng: {
+                                lat: latitudeA,
+                                lng: longitudeA
+                            }
+                        },
+                        {
+                            latLng: {
+                                lat: latitudeB,
+                                lng: longitudeB
+                            }
+                        }
+                    ]
+
+                    createRoute(locations);
+                }
+            } else {
+                $('#toggleImage')[0].src = 'Content/images/toggle-down.png';
+                removeRouteControl();
+            }            
+        });
 
         $('#routeRemove').click(function (e) {
             if (routeControl != undefined) {
@@ -366,10 +442,6 @@ MapView.prototype.createView = function (options) {
                     var itemValue = Array.isArray(item.options.dataRow[PIVOT_PARAMETERS.nameElement]) ? item.options.dataRow[PIVOT_PARAMETERS.nameElement][0] : item.options.dataRow[PIVOT_PARAMETERS.nameElement];
                     return itemValue === $('#routeInputB').val();
                 })[0];
-
-                function getValue(dataRow, facetName) {
-                    return dataRow[facetName] != undefined ? dataRow[facetName][0] : undefined;
-                }
 
                 if (pointA != undefined && pointB != undefined) {
                     var latitudeA = getValue(pointA.options.dataRow, "LATITUDE") || getValue(pointA.options.dataRow, "LAT") || getValue(pointA.options.dataRow, "Широта") || getValue(pointA.options.dataRow, "ШИРОТА");
@@ -506,9 +578,9 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
             marker.options.dataRow = dataRow.facets;
             self.markers.push(marker);
             
-            var text = Array.isArray(dataRow.facets[PIVOT_PARAMETERS.nameElement]) ? dataRow.facets[PIVOT_PARAMETERS.nameElement][0] : dataRow.facets[PIVOT_PARAMETERS.nameElement];
-            $('#dropdownA')[0].innerHTML += '<a href="javascript:void(0)" class="dropdownArow" onclick="dropdownArowClick(this)">' + text + '</a>';
-            $('#dropdownB')[0].innerHTML += '<a href="javascript:void(0)" class="dropdownBrow" onclick="dropdownBrowClick(this)">' + text + '</a>';
+            //var text = Array.isArray(dataRow.facets[PIVOT_PARAMETERS.nameElement]) ? dataRow.facets[PIVOT_PARAMETERS.nameElement][0] : dataRow.facets[PIVOT_PARAMETERS.nameElement];
+            //$('#dropdownA')[0].innerHTML += '<a href="javascript:void(0)" class="dropdownArow" onclick="dropdownArowClick(this)">' + text + '</a>';
+            //$('#dropdownB')[0].innerHTML += '<a href="javascript:void(0)" class="dropdownBrow" onclick="dropdownBrowClick(this)">' + text + '</a>';
 
             return marker;
         }
@@ -527,8 +599,8 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
             });            
         } else {
             self.markers = [];
-            $('#dropdownA')[0].innerHTML = '';
-            $('#dropdownB')[0].innerHTML = '';
+            //$('#dropdownA')[0].innerHTML = '';
+            //$('#dropdownB')[0].innerHTML = '';
         }
 
         function getFacet(dataRow, facetName) {
