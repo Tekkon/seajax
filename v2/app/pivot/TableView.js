@@ -49,19 +49,22 @@ TableView.prototype.createView = function (options) {
 
         var columns = []; // [ { headerName: "", field: "make", checkboxSelection: true, suppressSizeToFit: true, width: 30 } ];
         var item = Object.entries(options.activeItems)[0];
-        Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
-            if (isHTML(item1[1])) {
-                columns.push({
-                    headerName: item1[0],
-                    field: item1[0],
-                    cellRenderer: function (params) {
-                        return params.data !== undefined ? params.data[item1[0]] : '';
-                    }
-                });
-            } else {
-                columns.push({ headerName: item1[0], field: item1[0], sortable: true, resizable: true });
-            }
-        });
+
+        if (item != undefined) {
+            Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
+                if (isHTML(item1[1])) {
+                    columns.push({
+                        headerName: item1[0],
+                        field: item1[0],
+                        cellRenderer: function (params) {
+                            return params.data !== undefined ? params.data[item1[0]] : '';
+                        }
+                    });
+                } else {
+                    columns.push({ headerName: item1[0], field: item1[0], sortable: true, resizable: true });
+                }
+            });
+        }
 
         self.isExecuteSelectItem = true;
         self.setFilter = function () {

@@ -185,3 +185,12 @@ if (!('remove' in Element.prototype)) {
         }
     };
 }
+
+HTMLElement.prototype._getBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+HTMLElement.prototype.getBoundingClientRect = function () {
+    try {
+        return this._getBoundingClientRect();
+    } catch (e) {
+        return { top: this.offsetTop, left: this.offsetLeft };
+    }
+}

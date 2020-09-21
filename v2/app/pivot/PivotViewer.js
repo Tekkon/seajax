@@ -1170,7 +1170,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         })[0].createView({
             canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer,
             leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems
-        });
+        });   
         
         // initial creation of additional views 
         /*if (!self.isAdditionalViewsCreated) {

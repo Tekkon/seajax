@@ -147,6 +147,7 @@
     <Content Include="Content\images\layers.png" />
     <Content Include="Content\images\layout_arrows.png" />
     <Content Include="Content\images\toggle-up.png" />
+    <Content Include="Content\leaflet-routing-machine-3.2.12.css" />
     <Content Include="Content\leaflet.routing.icons.png" />
     <Content Include="Content\leaflet.routing.icons.svg" />
     <Content Include="Content\images\linkbutton_bg.png" />
@@ -219,6 +220,7 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\leaflet-0.7.7.js" />
     <Content Include="Scripts\leaflet-1.2.0.js" />
+    <Content Include="Scripts\leaflet-routing-machine-3.2.12.js" />
     <Content Include="Scripts\leaflet-routing-machine.js" />
     <Content Include="Scripts\leaflet-routing-machine.min.js" />
     <Content Include="Scripts\leaflet.markercluster-old.js" />

@@ -24,6 +24,8 @@
     this.markerUrl = PIVOT_PARAMETERS.map.markerUrl;
     this.highlightedMarkerUrl = PIVOT_PARAMETERS.map.highlightedMarkerUrl;
     this.filteredMarkerUrl = PIVOT_PARAMETERS.map.filteredMarkerUrl;
+    this.routeMarkerUrl = PIVOT_PARAMETERS.map.routeMarkerUrl;
+    this.routeMarkerShadowUrl = PIVOT_PARAMETERS.map.routeMarkerShadowUrl;
 
     this.detailsEnabled = PIVOT_PARAMETERS.detailsEnabled;
     this.filterElement = PIVOT_PARAMETERS.filterElement;
@@ -51,11 +53,23 @@
         iconSize: [32, 32]
     });
 
+    this.routeIcon = new L.Icon({
+        iconUrl: this.routeMarkerUrl,
+        shadowUrl: this.routeMarkerShadowUrl,
+        iconAnchor: [12, 41]
+    });
+
     img = document.createElement('img');
     img.src = this.highlightedMarkerUrl
 
     img1 = document.createElement('img');
     img1.src = this.filteredMarkerUrl;
+
+    img2 = document.createElement('img');
+    img2.src = this.routeMarkerUrl
+
+    img3 = document.createElement('img');
+    img3.src = this.routeMarkerShadowUrl;
 }
 
 MapView.prototype = Object.create(BaseView.prototype);
@@ -147,17 +161,13 @@ function dropdownBrowClick(row) {
 
 MapView.prototype.createView = function (options) {
     var self = this;
+    if (self.invokeCount == undefined) {
+        self.invokeCount = 0;
+    } else {
+        self.invokeCount += 1;
+    }
 
-    if (this.map == null) {
-        var div = makeElement("div", "mapDiv", options.mapLayer);
-        var width = options.canvas.clientWidth - options.leftRailWidth - 11;
-        var height = options.canvas.clientHeight - 12;
-
-        var style = document.createElement('style');
-        style.type = 'text/css';
-        style.innerHTML = '.mapDiv { ' + "width: " + width + "px; height:" + height + "px; position: relative; margin-left: " + (options.leftRailWidth + 5) + "px; margin-top: 6px;margin-right: 6px;"; + ' }';
-        document.getElementsByTagName('head')[0].appendChild(style);
-
+    if (self.invokeCount == 0) {
         var setLayer = function (layer) {
             var centerPoint = self.map.getCenter();
 
@@ -199,12 +209,12 @@ MapView.prototype.createView = function (options) {
         }
 
         var googleMap =
-           L.tileLayer('http://mt{s}.google.com/vt/lyrs=m&z={z}&x={x}&y={y}&lang=ru_RU', {
-               subdomains: ['0', '1', '2', '3'],
-               attribution: '<a http="google.ru" target="_blank">Google</a>',
-               reuseTiles: true,
-               updateWhenIdle: false
-           });
+            L.tileLayer('http://mt{s}.google.com/vt/lyrs=m&z={z}&x={x}&y={y}&lang=ru_RU', {
+                subdomains: ['0', '1', '2', '3'],
+                attribution: '<a http="google.ru" target="_blank">Google</a>',
+                reuseTiles: true,
+                updateWhenIdle: false
+            });
 
         var googleMapSat =
             L.tileLayer('http://mt{s}.google.com/vt/lyrs=y&z={z}&x={x}&y={y}&lang=ru_RU', {
@@ -222,266 +232,239 @@ MapView.prototype.createView = function (options) {
             });
 
         var yndx = new L.Yandex();
-        var ytraffic = new L.Yandex("null", { traffic: true, opacity: 1, overlay: false });
+        //var ytraffic = new L.Yandex("null", { traffic: true, opacity: 1, overlay: false });
         var ysat = new L.Yandex("hybrid");
         var ypublic = new L.Yandex("publicMap");
 
-        var map = L.map(div, { layers: [yndx] }).setView([0, 0], 2);
-        this.map = map;
+        self.mapDiv = makeElement("div", "mapDiv", options.mapLayer);
+        var width = options.canvas.clientWidth - options.leftRailWidth - 11;
+        var height = options.canvas.clientHeight - 12;
+        self.mapDiv.style.marginLeft = "215px";
+        self.mapDiv.style.marginTop = "6px";
+        self.mapDiv.style.marginRight = "6px";
+        self.mapDiv.style.position = "relative";
+        self.mapDiv.style.width = width + "px";
+        self.mapDiv.style.height = "1000px";
 
-        L.Map.prototype.setCrs = function (newCrs) {
-            this.options.crs = newCrs;
-        }
+        setTimeout(function () {
+            var map = L.map(self.mapDiv, { layers: [yndx] }).setView([0, 0], 2);
+            self.map = map;
 
-        var baseMaps = {
-            "Яндекс": yndx,
-            "Яндекс спутник": ysat,
-            "Яндекс пробки": ytraffic,
-            "Google": googleMap,
-            "Google спутник": googleMapSat,
-            "Open Streets": openStreetsMap
-        }
-
-        map.on('baselayerchange', setLayer);
-
-        map.on('click', function (event) {
-            self.resetHighlightedMarkers();
-            //self.container.trigger("clearFilter");
-            self.container.trigger("filterSet", self.container.activeItemsArr);
-
-            /*if (event.originalEvent.target.classList[0] == "leaflet-routing-geocoder") {
-                setTimeout(function () {
-                    event.originalEvent.target.focus();
-                }, 10);
-            };*/
-        });
-
-        /*map.on('mouseover', function (event) {
-            var classList = event.originalEvent.target.classList;
-
-            if (classList != undefined && classList.length > 0) {
-                if (classList[0] == "dropdownArow") {
-                    setTimeout(function () {
-                        $('#dropdownA').focus();
-                    }, 10);
-                } else if (classList[0] == "dropdownBrow") {
-                    setTimeout(function () {
-                        $('#dropdownB').focus();
-                    }, 10);
-                }
-            }
-        });*/
-
-        L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
-
-        if (this.multipleClusterColors) {
-            loadjscssfile("Content/MarkerCluster.Default.css", "css");
-        } else {
-            loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
-        }
-        
-        // ***** Routing *****
-
-        L.Control.RouteInput = L.Control.extend({
-            onAdd: function (map) {
-                var div = L.DomUtil.create('div');
-                div.classList.add("route-control");
-
-                /*var dropdownA = '<div class="dropdown">' +
-                                  '<input type="text" placeholder="Выберите АЗС..." id="routeInputA" class="route-input" onkeyup="filterDropdownA()" onclick="toggleDropdownA()">' +
-                                  '<div id="dropdownA" class="dropdown-content">' +                                    
-                                  '</div>' +
-                                '</div>';
-
-                var dropdownB = '<div class="dropdown">' +
-                                 '<input type="text" placeholder="Выберите АЗС..." id="routeInputB" class="route-input" onkeyup="filterDropdownB()" onclick="toggleDropdownB()">' +
-                                 '<div id="dropdownB" class="dropdown-content">' +
-                                 '</div>' +
-                                '</div>';*/
-
-                div.innerHTML = "<div id='routeHeader'><h7>Маршрут</h7><img id='toggleImage' src='Content/images/toggle-down.png' class='toggleImage' /></div>" +
-                                /*"<div id='routeDiv' class='invisible'>" +
-                                    "<label for='routeInputA' class='route-label'>Точка A</label>" + dropdownA + "<br />" +
-                                    "<label for='routeInputB' class='route-label'>Точка B</label>" + dropdownB +
-                                    "<input id='routeSubmit' type='button' value='OK' />" +
-                                    "<input id='routeRemove' type='button' value='Сброс' /><br/>" +*/
-                                //"<input id='routeButton' type='button' width='100' value='Маршрут' />" +
-                                "</div>";
-
-                //div.innerHTML = "<input id='routeButton' type='button' width='100' value='Маршрут' />"
-                                
-                return div;
-            },
-            onRemove: function (map) {
-            }
-        });
-
-        L.control.routeInput = function (opts) {
-            return new L.Control.RouteInput(opts);
-        }
-
-        var routeInput = L.control.routeInput({ position: 'topright' }).addTo(map);
-
-        var routeControl;
-        function createRoute(locations) {
-            if (routeControl != undefined) {
-                removeRouteControl();
+            L.Map.prototype.setCrs = function (newCrs) {
+                this.options.crs = newCrs;
             }
 
-            routeControl = L.Routing.control({
-                waypoints: [
-                  L.latLng(locations[0].latLng.lat, locations[0].latLng.lng),
-                  L.latLng(locations[1].latLng.lat, locations[1].latLng.lng)
-                ],
-                createMarker: function (i, wp, nWps) {
-                    var m = L.marker(wp.latLng);
-                    m.setForceZIndex(2000);
-                    m.options.draggable = true;
-                    return m;
-                },
-                routeWhileDragging: true,
-                geocoder: L.Control.Geocoder.nominatim(),
-                language: 'ru'
-            }).addTo(map);
+            var baseMaps = {
+                "Яндекс": yndx,
+                "Яндекс спутник": ysat,
+                //"Яндекс пробки": ytraffic,
+                "Google": googleMap,
+                "Google спутник": googleMapSat,
+                "Open Streets": openStreetsMap
+            }
 
-            routeControl.on('routesfound', function (e) {
-                var routes = e.routes;
-                var summary = routes[0].summary;
-                addLeafletRoutingGeocoderOnClick();
-                addLeafletRoutingAddWaypointOnClick();               
+            map.on('baselayerchange', setLayer);
+
+            map.on('click', function (event) {
+                self.resetHighlightedMarkers();
+                self.container.trigger("filterSet", self.container.activeItemsArr);
             });
-        }
 
-        var removeRouteControl = function () {
-            routeControl.spliceWaypoints(0, 2);
-            $(".leaflet-routing-container").remove();
-        }
+            L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
 
-        function getValue(dataRow, facetName) {
-            return dataRow[facetName] != undefined ? dataRow[facetName][0] : undefined;
-        }
-
-        function addLeafletRoutingGeocoderOnClick() {
-            $('.leaflet-routing-geocoder').find("input").off();
-            $('.leaflet-routing-geocoder').find("input").on("click", function (event) {
-                setTimeout(function () { event.originalEvent.target.focus(); }, 10);
-            });
-        }
-
-        function addLeafletRoutingAddWaypointOnClick() {
-            $('.leaflet-routing-add-waypoint').off();
-            $('.leaflet-routing-add-waypoint').click(function (event) {
-                addLeafletRoutingGeocoderOnClick();
-            });
-        }
-
-        $('#routeHeader').click(function (e) {
-            if ($('#toggleImage')[0].src.includes('toggle-down.png')) {
-                $('#toggleImage')[0].src = 'Content/images/toggle-up.png';
-
-                var pointA;
-                var pointB;
-
-                if (self.filteredMarkers.length > 1) {
-                    pointA = self.filteredMarkers[0];
-                    pointB = self.filteredMarkers[1];
-                } else if (self.filteredMarkers.length > 0 && self.markers.length > 0) {
-                    pointA = self.filteredMarkers[0];
-                    pointB = self.markers[0];
-                } else if (self.markers.length > 0) {
-                    pointA = self.markers[0];
-                    pointB = self.markers[1];
-                }
-
-                if (pointA != undefined && pointB != undefined) {
-                    var latitudeA = getValue(pointA.options.dataRow, "LATITUDE") || getValue(pointA.options.dataRow, "LAT") || getValue(pointA.options.dataRow, "Широта") || getValue(pointA.options.dataRow, "ШИРОТА");
-                    var longitudeA = getValue(pointA.options.dataRow, "LONGITUDE") || getValue(pointA.options.dataRow, "LONG") || getValue(pointA.options.dataRow, "Долгота") || getValue(pointA.options.dataRow, "ДОЛГОТА");
-                    var latitudeB = getValue(pointB.options.dataRow, "LATITUDE") || getValue(pointB.options.dataRow, "LAT") || getValue(pointB.options.dataRow, "Широта") || getValue(pointB.options.dataRow, "ШИРОТА");
-                    var longitudeB = getValue(pointB.options.dataRow, "LONGITUDE") || getValue(pointB.options.dataRow, "LONG") || getValue(pointB.options.dataRow, "Долгота") || getValue(pointB.options.dataRow, "ДОЛГОТА");
-
-                    var locations = [
-                        {
-                            latLng: {
-                                lat: latitudeA,
-                                lng: longitudeA
-                            }
-                        },
-                        {
-                            latLng: {
-                                lat: latitudeB,
-                                lng: longitudeB
-                            }
-                        }
-                    ]
-
-                    createRoute(locations);
-                }
+            if (this.multipleClusterColors) {
+                loadjscssfile("Content/MarkerCluster.Default.css", "css");
             } else {
-                $('#toggleImage')[0].src = 'Content/images/toggle-down.png';
-                removeRouteControl();
-            }            
-        });
-
-        $('#routeRemove').click(function (e) {
-            if (routeControl != undefined) {
-                $("#routeInputA").val("");
-                $("#routeInputB").val("");
-                filterDropdownA();
-                filterDropdownB();
-                removeRouteControl();
+                loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
             }
-        });
 
-        $('#routeSubmit').click(function(e) {
-            if ($('#routeInputA').val().length > 0 && $('#routeInputB').val().length > 0) {
-                var pointA = self.markers.filter(function (item) {
-                    var itemValue = Array.isArray(item.options.dataRow[PIVOT_PARAMETERS.nameElement]) ? item.options.dataRow[PIVOT_PARAMETERS.nameElement][0] : item.options.dataRow[PIVOT_PARAMETERS.nameElement];
-                    return itemValue === $('#routeInputA').val();
-                })[0];
-                var pointB = self.markers.filter(function (item) {
-                    var itemValue = Array.isArray(item.options.dataRow[PIVOT_PARAMETERS.nameElement]) ? item.options.dataRow[PIVOT_PARAMETERS.nameElement][0] : item.options.dataRow[PIVOT_PARAMETERS.nameElement];
-                    return itemValue === $('#routeInputB').val();
-                })[0];
+            // ***** Routing *****
+            L.Control.RouteInput = L.Control.extend({
+                onAdd: function (map) {
+                    var div = L.DomUtil.create('div');
+                    div.classList.add("route-control");
+                    div.innerHTML = "<div id='routeHeader'><h7>Маршрут</h7><img id='toggleImage' src='" + PIVOT_PARAMETERS.map.toggleDownImage + "' class='toggleImage' /></div></div>";
+                    return div;
+                },
+                onRemove: function (map) {
+                }
+            });
 
-                if (pointA != undefined && pointB != undefined) {
-                    var latitudeA = getValue(pointA.options.dataRow, "LATITUDE") || getValue(pointA.options.dataRow, "LAT") || getValue(pointA.options.dataRow, "Широта") || getValue(pointA.options.dataRow, "ШИРОТА");
-                    var longitudeA = getValue(pointA.options.dataRow, "LONGITUDE") || getValue(pointA.options.dataRow, "LONG") || getValue(pointA.options.dataRow, "Долгота") || getValue(pointA.options.dataRow, "ДОЛГОТА");
-                    var latitudeB = getValue(pointB.options.dataRow, "LATITUDE") || getValue(pointB.options.dataRow, "LAT") || getValue(pointB.options.dataRow, "Широта") || getValue(pointB.options.dataRow, "ШИРОТА");
-                    var longitudeB = getValue(pointB.options.dataRow, "LONGITUDE") || getValue(pointB.options.dataRow, "LONG") || getValue(pointB.options.dataRow, "Долгота") || getValue(pointB.options.dataRow, "ДОЛГОТА");
-
-                    var locations = [
-                        {
-                            latLng: {
-                                lat: latitudeA,
-                                lng: longitudeA
-                            }
-                        },
-                        {
-                            latLng: {
-                                lat: latitudeB,
-                                lng: longitudeB
-                            }
-                        }
-                    ]
-
-                    createRoute(locations);
-                }                
+            L.control.routeInput = function (opts) {
+                return new L.Control.RouteInput(opts);
             }
-        });
-    }
 
-    var _items = {};
-    if (options.activeItems !== {}) {
-        _items = options.activeItems;
-    } else {
-        _items = options.items;
-    }
+            var routeInput = L.control.routeInput({ position: 'topright' }).addTo(map);
 
-    if (Object.entries(self.activeItems).length !== Object.entries(_items).length) {
-        self.rearrange(_items, false);
-        self.activeItems = _items;
+            var routeControl;
+            function createRoute(locations) {
+                if (routeControl != undefined) {
+                    removeRouteControl();
+                }
+
+                routeControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(locations[0].latLng.lat, locations[0].latLng.lng),
+                        L.latLng(locations[1].latLng.lat, locations[1].latLng.lng)
+                    ],
+                    createMarker: function (i, wp, nWps) {
+                        var m = L.marker(wp.latLng);
+                        m.setForceZIndex(2000);
+                        m.options.draggable = true;
+                        m.options.icon = self.routeIcon;
+                        return m;
+                    },
+                    routeWhileDragging: true,
+                    geocoder: L.Control.Geocoder.nominatim(),
+                    language: 'ru'
+                }).addTo(map);
+
+                routeControl.on('routesfound', function (e) {
+                    var routes = e.routes;
+                    var summary = routes[0].summary;
+                    addLeafletRoutingGeocoderOnClick();
+                    addLeafletRoutingAddWaypointOnClick();
+                });
+            }
+
+            var removeRouteControl = function () {
+                routeControl.spliceWaypoints(0, 2);
+                $(".leaflet-routing-container").remove();
+            }
+
+            function getValue(dataRow, facetName) {
+                return dataRow[facetName] != undefined ? dataRow[facetName][0] : undefined;
+            }
+
+            function addLeafletRoutingGeocoderOnClick() {
+                $('.leaflet-routing-geocoder').find("input").off();
+                $('.leaflet-routing-geocoder').find("input").on("click", function (event) {
+                    setTimeout(function () { event.originalEvent.target.focus(); }, 10);
+                });
+            }
+
+            function addLeafletRoutingAddWaypointOnClick() {
+                $('.leaflet-routing-add-waypoint').off();
+                $('.leaflet-routing-add-waypoint').click(function (event) {
+                    addLeafletRoutingGeocoderOnClick();
+                });
+            }
+
+            $('#routeHeader').click(function (e) {
+                if ($('#toggleImage')[0].src.includes('toggle-down.png')) {
+                    $('#toggleImage')[0].src = PIVOT_PARAMETERS.map.toggleUpImage;
+
+                    var pointA;
+                    var pointB;
+
+                    if (self.filteredMarkers.length > 1) {
+                        pointA = self.filteredMarkers[0];
+                        pointB = self.filteredMarkers[1];
+                    } else if (self.filteredMarkers.length > 0 && self.markers.length > 0) {
+                        pointA = self.filteredMarkers[0];
+                        pointB = self.markers[0];
+                    } else if (self.markers.length > 0) {
+                        pointA = self.markers[0];
+                        pointB = self.markers[1];
+                    }
+
+                    if (pointA != undefined && pointB != undefined) {
+                        var latitudeA = getValue(pointA.options.dataRow, "LATITUDE") || getValue(pointA.options.dataRow, "LAT") || getValue(pointA.options.dataRow, "Широта") || getValue(pointA.options.dataRow, "ШИРОТА");
+                        var longitudeA = getValue(pointA.options.dataRow, "LONGITUDE") || getValue(pointA.options.dataRow, "LONG") || getValue(pointA.options.dataRow, "Долгота") || getValue(pointA.options.dataRow, "ДОЛГОТА");
+                        var latitudeB = getValue(pointB.options.dataRow, "LATITUDE") || getValue(pointB.options.dataRow, "LAT") || getValue(pointB.options.dataRow, "Широта") || getValue(pointB.options.dataRow, "ШИРОТА");
+                        var longitudeB = getValue(pointB.options.dataRow, "LONGITUDE") || getValue(pointB.options.dataRow, "LONG") || getValue(pointB.options.dataRow, "Долгота") || getValue(pointB.options.dataRow, "ДОЛГОТА");
+
+                        var locations = [
+                            {
+                                latLng: {
+                                    lat: latitudeA,
+                                    lng: longitudeA
+                                }
+                            },
+                            {
+                                latLng: {
+                                    lat: latitudeB,
+                                    lng: longitudeB
+                                }
+                            }
+                        ]
+
+                        createRoute(locations);
+                    }
+                } else {
+                    $('#toggleImage')[0].src = PIVOT_PARAMETERS.map.toggleDownImage;
+                    removeRouteControl();
+                }
+            });
+
+            $('#routeRemove').click(function (e) {
+                if (routeControl != undefined) {
+                    $("#routeInputA").val("");
+                    $("#routeInputB").val("");
+                    filterDropdownA();
+                    filterDropdownB();
+                    removeRouteControl();
+                }
+            });
+
+            $('#routeSubmit').click(function (e) {
+                if ($('#routeInputA').val().length > 0 && $('#routeInputB').val().length > 0) {
+                    var pointA = self.markers.filter(function (item) {
+                        var itemValue = Array.isArray(item.options.dataRow[PIVOT_PARAMETERS.nameElement]) ? item.options.dataRow[PIVOT_PARAMETERS.nameElement][0] : item.options.dataRow[PIVOT_PARAMETERS.nameElement];
+                        return itemValue === $('#routeInputA').val();
+                    })[0];
+                    var pointB = self.markers.filter(function (item) {
+                        var itemValue = Array.isArray(item.options.dataRow[PIVOT_PARAMETERS.nameElement]) ? item.options.dataRow[PIVOT_PARAMETERS.nameElement][0] : item.options.dataRow[PIVOT_PARAMETERS.nameElement];
+                        return itemValue === $('#routeInputB').val();
+                    })[0];
+
+                    if (pointA != undefined && pointB != undefined) {
+                        var latitudeA = getValue(pointA.options.dataRow, "LATITUDE") || getValue(pointA.options.dataRow, "LAT") || getValue(pointA.options.dataRow, "Широта") || getValue(pointA.options.dataRow, "ШИРОТА");
+                        var longitudeA = getValue(pointA.options.dataRow, "LONGITUDE") || getValue(pointA.options.dataRow, "LONG") || getValue(pointA.options.dataRow, "Долгота") || getValue(pointA.options.dataRow, "ДОЛГОТА");
+                        var latitudeB = getValue(pointB.options.dataRow, "LATITUDE") || getValue(pointB.options.dataRow, "LAT") || getValue(pointB.options.dataRow, "Широта") || getValue(pointB.options.dataRow, "ШИРОТА");
+                        var longitudeB = getValue(pointB.options.dataRow, "LONGITUDE") || getValue(pointB.options.dataRow, "LONG") || getValue(pointB.options.dataRow, "Долгота") || getValue(pointB.options.dataRow, "ДОЛГОТА");
+
+                        var locations = [
+                            {
+                                latLng: {
+                                    lat: latitudeA,
+                                    lng: longitudeA
+                                }
+                            },
+                            {
+                                latLng: {
+                                    lat: latitudeB,
+                                    lng: longitudeB
+                                }
+                            }
+                        ]
+
+                        createRoute(locations);
+                    }
+                }
+            });
+
+            evaluateActiveItems();
+        }, 10);            
     } else {
-        self.showSelectedItems();
+        evaluateActiveItems();
+        self.mapDiv.style.height = options.canvas.clientHeight - 12 + "px";
+    }   
+
+    function evaluateActiveItems() {
+        var _items = {};
+        if (options.activeItems !== {}) {
+            _items = options.activeItems;
+        } else {
+            _items = options.items;
+        }
+
+        if (Object.entries(self.activeItems).length !== Object.entries(_items).length) {
+            self.rearrange(_items, false);
+            self.activeItems = _items;
+        } else {
+            self.showSelectedItems();
+        }
     }    
 }
 
@@ -561,7 +544,7 @@ MapView.prototype.setMarkerIcon = function (marker, icon) {
 MapView.prototype.setMarkers = function (_items, isFiltering) {
     var self = this;
 
-    if (self.map != null) {
+    if (self.map != null && self.map != undefined) {        
         function createMarker(latitude, longitude, dataRow, label, hint) {
             var marker = new L.marker([latitude, longitude]);
 
@@ -574,13 +557,14 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
                 marker.bindPopup(hint);
             }
 
-            self.setMarkerIcon(marker, self.defaultIcon);
+            if (self.highlightMarkersOnFilter) {
+                self.setMarkerIcon(marker, self.filteredIcon);
+            } else {
+                self.setMarkerIcon(marker, self.defaultIcon);
+            }
+            
             marker.options.dataRow = dataRow.facets;
             self.markers.push(marker);
-            
-            //var text = Array.isArray(dataRow.facets[PIVOT_PARAMETERS.nameElement]) ? dataRow.facets[PIVOT_PARAMETERS.nameElement][0] : dataRow.facets[PIVOT_PARAMETERS.nameElement];
-            //$('#dropdownA')[0].innerHTML += '<a href="javascript:void(0)" class="dropdownArow" onclick="dropdownArowClick(this)">' + text + '</a>';
-            //$('#dropdownB')[0].innerHTML += '<a href="javascript:void(0)" class="dropdownBrow" onclick="dropdownBrowClick(this)">' + text + '</a>';
 
             return marker;
         }
@@ -591,16 +575,14 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
             filteredData = Object.values(_items);
         } else if (Array.isArray(values)) {
             filteredData = _items;
-        }        
-       
+        }
+
         if (self.highlightMarkersOnFilter) {
             self.markers.forEach(function (marker) {
                 self.setMarkerIcon(marker, self.defaultIcon);
-            });            
+            });
         } else {
             self.markers = [];
-            //$('#dropdownA')[0].innerHTML = '';
-            //$('#dropdownB')[0].innerHTML = '';
         }
 
         function getFacet(dataRow, facetName) {
@@ -624,11 +606,12 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
                     })[0];
 
                     if (marker != undefined) {
-                        self.setMarkerIcon(marker, self.filteredIcon);
-                        self.filteredMarkers.push(marker);
+                        self.setMarkerIcon(marker, self.filteredIcon);                        
                     } else {
-                        createMarker(latitude, longitude, dataRow, label, hint);
+                        marker = createMarker(latitude, longitude, dataRow, label, hint);
                     }
+
+                    self.filteredMarkers.push(marker);
                 } else {
                     createMarker(latitude, longitude, dataRow, label, hint);
                 }
@@ -654,27 +637,23 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
         }
 
         for (var i = 0; i < self.markers.length; ++i) {
-            if (self.iconHTML != undefined && self.iconHTML != "") {
-                var popup = undefined;
+            var popup = undefined;
 
-                if (self.markers[i]._popup != undefined) {
-                    popup = self.markers[i]._popup._content;
-                }
-
-                var m = L.marker([self.markers[i]._latlng.lat, self.markers[i]._latlng.lng], { dataRow: self.markers[i].options.dataRow });
-
-                if (popup != undefined) {
-                    m.bindPopup(popup);
-                }
-
-                self.setMarkerIcon(m, self.defaultIcon)
-
-                self.markerLayer.addLayer(m);
-
-                self.mLayers.push(m);
-            } else {
-                self.markerLayer.addLayer(self.markers[i]);
+            if (self.markers[i]._popup != undefined) {
+                popup = self.markers[i]._popup._content;
             }
+
+            var m = L.marker([self.markers[i]._latlng.lat, self.markers[i]._latlng.lng], { dataRow: self.markers[i].options.dataRow });
+
+            if (popup != undefined) {
+                m.bindPopup(popup);
+            }
+
+            self.setMarkerIcon(m, self.markers[i].options.icon)
+
+            self.markerLayer.addLayer(m);
+
+            self.mLayers.push(m);
         }
 
         self.map.addLayer(self.markerLayer);
@@ -682,12 +661,14 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
         if (self.highlightMarkersOnFilter) {
             if (self.filteredMarkers.length > 0) {
                 setTimeout(function () { self.map.fitBounds(self.filteredMarkersLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
+            } else if (self.markers.length > 0) {
+                setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
             }
         } else {
             if (self.markers.length > 0) {
                 setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
             }
-        }        
+        }
 
         if (self.markers.length == 0) {
             self.map.setView([0, 0], 2);
@@ -733,7 +714,7 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
 
         self.markerLayer.addEventListener('click', clickListener, false);
         self.markerLayer.addEventListener("mouseover", mouseoverListener, false);
-        self.markerLayer.addEventListener("mouseout", mouseoutListener, false);
+        self.markerLayer.addEventListener("mouseout", mouseoutListener, false);      
     }
 }
 
