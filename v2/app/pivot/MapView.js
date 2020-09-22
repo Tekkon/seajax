@@ -247,7 +247,7 @@ MapView.prototype.createView = function (options) {
         self.mapDiv.style.height = "1000px";
 
         setTimeout(function () {
-            var map = L.map(self.mapDiv, { layers: [yndx] }).setView([0, 0], 2);
+            var map = L.map(self.mapDiv, { layers: [yndx], preferCanvas: true }).setView([0, 0], 2);
             self.map = map;
 
             L.Map.prototype.setCrs = function (newCrs) {
@@ -460,7 +460,7 @@ MapView.prototype.createView = function (options) {
         }
 
         if (Object.entries(self.activeItems).length !== Object.entries(_items).length) {
-            self.rearrange(_items, false);
+            self.rearrange(_items);
             self.activeItems = _items;
         } else {
             self.showSelectedItems();
@@ -470,11 +470,11 @@ MapView.prototype.createView = function (options) {
 
 MapView.prototype.filter = function (filterData) {
     this.container.selectedItems = [];
-    this.rearrange(filterData, true);
+    this.rearrange(filterData);
 }
 
-MapView.prototype.rearrange = function (filterData, isFiltering) {
-    this.setMarkers(filterData, isFiltering);
+MapView.prototype.rearrange = function (filterData) {
+    this.setMarkers(filterData);
 }
 
 MapView.prototype.showSelectedItems = function () {
@@ -541,7 +541,7 @@ MapView.prototype.setMarkerIcon = function (marker, icon) {
     marker.setIcon(icon);
 }
 
-MapView.prototype.setMarkers = function (_items, isFiltering) {
+MapView.prototype.setMarkers = function (_items) {
     var self = this;
 
     if (self.map != null && self.map != undefined) {        
@@ -572,7 +572,7 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
         var filteredData = [];
 
         if (typeof _items === "object") {
-            filteredData = Object.values(_items);
+            filteredData = Object.values(_items);            
         } else if (Array.isArray(values)) {
             filteredData = _items;
         }
@@ -602,7 +602,7 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
 
                 if (self.highlightMarkersOnFilter) {
                     var marker = self.markers.filter(function (marker) {
-                        return marker.options.dataRow === dataRow.facets
+                        return marker.options.dataRow[self.filterElement] === dataRow.facets[self.filterElement]
                     })[0];
 
                     if (marker != undefined) {
@@ -721,5 +721,5 @@ MapView.prototype.setMarkers = function (_items, isFiltering) {
 MapView.prototype.clearFilter = function () {
     var self = this;
 
-    self.rearrange(self.activeItems, false);
+    self.rearrange(self.activeItems);
 }
