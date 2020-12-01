@@ -3,7 +3,7 @@
     var self = this;    
 
     self.markers = [];
-    self.mLayers = [];
+    self.isCreated = false;
     self.highlightedMarkers = [];
     self.button = new Button("div", "pivot_sorttools mapButton pivot_activesort", $('.pivot_topbar')[0], i18n.t("mapView"));
     self.button.htmlElement.onclick = function () {
@@ -161,13 +161,10 @@ function dropdownBrowClick(row) {
 
 MapView.prototype.createView = function (options) {
     var self = this;
-    if (self.invokeCount == undefined) {
-        self.invokeCount = 0;
-    } else {
-        self.invokeCount += 1;
-    }
 
-    if (self.invokeCount == 0) {
+    if (!self.isCreated) {
+        self.isCreated = true;
+
         var setLayer = function (layer) {
             var centerPoint = self.map.getCenter();
 
@@ -246,7 +243,7 @@ MapView.prototype.createView = function (options) {
         self.mapDiv.style.width = width + "px";
         self.mapDiv.style.height = "1000px";
 
-        setTimeout(function () {
+        //setTimeout(function () {
             var map = L.map(self.mapDiv, { layers: [yndx], preferCanvas: true }).setView([0, 0], 2);
             self.map = map;
 
@@ -445,7 +442,7 @@ MapView.prototype.createView = function (options) {
             });
 
             evaluateActiveItems();
-        }, 10);            
+        //}, 10);            
     } else {
         evaluateActiveItems();
         self.mapDiv.style.height = options.canvas.clientHeight - 12 + "px";
@@ -628,41 +625,25 @@ MapView.prototype.setMarkers = function (_items) {
         if (self.enableClustering && self.markers.length >= self.startClusterLimit) {
             self.markerLayer = L.markerClusterGroup();
             self.markerLayer.options.maxClusterRadius = self.clusterRadius;
+
+            for (var i = 0; i < self.markers.length; ++i) {
+                self.markerLayer.addLayer(self.markers[i]);
+            }
         } else {
             self.markerLayer = new L.featureGroup(self.markers);
-        }
-
-        if (self.highlightMarkersOnFilter) {
-            self.filteredMarkersLayer = new L.featureGroup(self.filteredMarkers);
-        }
-
-        for (var i = 0; i < self.markers.length; ++i) {
-            var popup = undefined;
-
-            if (self.markers[i]._popup != undefined) {
-                popup = self.markers[i]._popup._content;
-            }
-
-            var m = L.marker([self.markers[i]._latlng.lat, self.markers[i]._latlng.lng], { dataRow: self.markers[i].options.dataRow });
-
-            if (popup != undefined) {
-                m.bindPopup(popup);
-            }
-
-            self.setMarkerIcon(m, self.markers[i].options.icon)
-
-            self.markerLayer.addLayer(m);
-
-            self.mLayers.push(m);
         }
 
         self.map.addLayer(self.markerLayer);
 
         if (self.highlightMarkersOnFilter) {
+            self.filteredMarkersLayer = new L.featureGroup(self.filteredMarkers);
+        }
+
+        if (self.highlightMarkersOnFilter) {
             if (self.filteredMarkers.length > 0) {
-                setTimeout(function () { self.map.fitBounds(self.filteredMarkersLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
+               setTimeout(function () { self.map.fitBounds(self.filteredMarkersLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
             } else if (self.markers.length > 0) {
-                setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
+               setTimeout(function () { self.map.fitBounds(self.markerLayer.getBounds()); setTimeout(function () { self.showSelectedItems(); }.bind(self), 100); }.bind(self), 100);
             }
         } else {
             if (self.markers.length > 0) {

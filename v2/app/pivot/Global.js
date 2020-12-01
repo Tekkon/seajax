@@ -3,7 +3,7 @@ function parseHTML(str) {
 }
 
 function isHTML(str) {
-    if (str !== "") {
+    if (str !== "" && str !== null && str !== undefined) {
         var doc = parseHTML(str);
         return Array.from(doc.body.childNodes).some(function (node) { return node.nodeType === 1 });
     }

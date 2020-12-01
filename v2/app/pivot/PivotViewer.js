@@ -80,11 +80,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     // Fields
     var self = this;
 
+    self.container = container;
+    self.backLayer = backLayer;
+    self.frontLayer = frontLayer;
     self.allSortedItems = undefined;
 
     self.facets = {};
     self.facet = {}
-    var items = [];
+    self.items = [];
     self.sortFacet = "";
 
     self.numPerRow = undefined;
@@ -100,28 +103,28 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     var viewport;
 
-    var animating = false;
-    var rearranging = false;
+    self.animating = false;
+    self.rearranging = false;
 
-    var activeItems = {}; // all items that are currently filtered in, by ID
-    var prevActiveItems = {}; // same thing, but before the current filter was applied
-    var rearrangingItems = {}; // items that are moving in the current rearrange step
-    var currentItems = {}; // any items that are onscreen after the current rearrange step
+    self.activeItems = {}; // all items that are currently filtered in, by ID
+    self.prevActiveItems = {}; // same thing, but before the current filter was applied
+    self.rearrangingItems = {}; // items that are moving in the current rearrange step
+    self.currentItems = {}; // any items that are onscreen after the current rearrange step
 
     var allItemsById = {}; // lets us look up any item in the collection by ID
 
     // it turns out iterating over properties in an object is pretty expensive,
     // so we'll optimize a bit by keeping track of the active items in an array too
     
-    var rearrangingItemsArr = [];
+    self.rearrangingItemsArr = [];
 
     var now = new Date().getTime();
 
     // like Springs constants, but for rearranging
-    var stiffness = 8;
-    var springConstant = 1 / (2 * (Math.exp(stiffness / 2) - 1));
+    self.stiffness = 8;
+    self.springConstant = 1 / (2 * (Math.exp(self.stiffness / 2) - 1));
 
-    var ctx = canvas.getContext("2d");
+    self.ctx = canvas.getContext("2d");
 
     var filters = [];
 
@@ -129,15 +132,15 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     self.contentMousePosition = undefined;
     self.lastHoveredBar = undefined;
     self.position = undefined;
-    var hoveredItem;
-    var hoveredItemIndex; // which of the hovered item's positions actually has the mouse
-    var selectedItem;
-    var selectedItemIndex;
-    var centerItem;
-    var centerItemIndex;
+    self.hoveredItem = undefined;
+    self.hoveredItemIndex = undefined; // which of the hovered item's positions actually has the mouse
+    self.selectedItem = undefined;
+    self.selectedItemIndex = undefined;
+    self.centerItem = undefined;
+    self.centerItemIndex = undefined;
     self.topLeftItemInfo = undefined; // item and index of top-left corner
     self.rightmostItemInfo = undefined; // item and index of last item
-    var zoomedIn; // whether we're zoomed close enough to need details pane
+    self.zoomedIn = undefined; // whether we're zoomed close enough to need details pane
     self.hoveredBar = undefined;
     self.barTemplate = undefined;
     self.bars = [];
@@ -151,23 +154,23 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     // references for performance
     var originPoint = new Seadragon2.Point(0, 0);
-    var drawImage = Seadragon2.Image.drawImage;
+    self.drawImage = Seadragon2.Image.drawImage;
     var transform = Seadragon2.Element.transform;
 
     // keep track of whether we can skip the next redraw
-    var anythingChanged = true;
+    self.anythingChanged = true;
 
     // keep track of click timing so we can ignore double-clicks
     var lastClickTime = 0;
     var doubleClickThreshold = 300;
 
     // HTML item templates for different zoom levels
-    var templates = [];
+    self.templates = [];
     // put in a default template type for if none are specified
-    templates[-1] = {type: "sdimg"};
+    self.templates[-1] = { type: "sdimg" };
 
     // the current level of HTML template being displayed (as an index into the templates array)
-    var currentTemplateLevel = -1;
+    self.currentTemplateLevel = -1;
     // the natural (maximum) width of the current template level
     var currentTemplateWidth;
     // the scale factor applied to the HTML overlay layer
@@ -176,15 +179,15 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     // the size of an item at home zoom, which is necessary for choosing the appropriate template size
     self.finalItemWidth = undefined;
 
-    var delayedFunction; // anything we need to run at the beginning of the next repaint
+    self.delayedFunction; // anything we need to run at the beginning of the next repaint
 
     // overlays
-    var domHoverBorder;
-    var domSelectedBorder;
+    self.domHoverBorder = undefined;
+    self.domSelectedBorder = undefined;
 
     // the color of outlines for selected and hovered items
-    var hoverBorderColor;
-    var selectedBorderColor;
+    self.hoverBorderColor = undefined;
+    self.selectedBorderColor = undefined;
 
     // standard options we'll use for any deep zoom images
     var sdimgOpts = { manualUpdates: true };
@@ -232,46 +235,33 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     function runFilters() {
         // clear the active items
-        var prevActiveItems = activeItems;
-        activeItems = {};
+        self.prevActiveItems = self.activeItems;
+        self.activeItems = {};
         self.activeItemsArr = [];
 
         // run all current filters, and put the array contents in a set.
         // if this method is slow, try moving the inner function out here and keeping
         // a current-item variable instead of a closure. this way looks cleaner though.
-        items.forEach(function (item) {
+        self.items.forEach(function (item) {
             if (filters.every(function (filter) { return filter(item); })) {
-                activeItems[item.id] = item;
+                self.activeItems[item.id] = item;
                 self.activeItemsArr.push(item);
             }
         });
 
-        var isActiveItemsChanged = !arraysEqual(Object.entries(activeItems).map(function (item) { return item[1].id }), Object.entries(prevActiveItems).map(function (item) { return item[1].id }));
-
-        /*if (!isActiveItemsChanged) {
-            Object.entries(activeItems).forEach(function (item) {
-                var prevItem = Object.entries(prevActiveItems).filter(function (prevItem) {
-                    return prevItem.id === item.id;
-                })[0];
-
-                isActiveItemsChanged = isActiveItemsChanged || (prevItem === null || undefined);
-            });
-        }*/
+        var isActiveItemsChanged = !arraysEqual(Object.entries(self.activeItems).map(function (item) { return item[1].id }), Object.entries(self.prevActiveItems).map(function (item) { return item[1].id }));
 
         if (isActiveItemsChanged || self.views[0].isSelected || self.views[1].isSelected) {
-            /*self.views.filter(function (view) {
-                return view.isSelected;
-            })[0].filter(activeItems);*/
 
             self.views.forEach(function (view) {
-                view.filter(activeItems);
+                view.filter(self.activeItems);
             });         
 
             if (self.detailsEnabled) {
                 self.trigger("hideDetails");
                 self.trigger("hideInfoButton");
             }
-            self.trigger('filterSet', activeItems);
+            self.trigger('filterSet', self.activeItems);
         }        
     }
 
@@ -281,11 +271,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     // second argument is supplied, wait that many cycles before calling the function.
     function delayFunction(func, delay) {
         if (!delay || delay < 0) {
-            if (!delayedFunction) {
-                delayedFunction = func;
+            if (!self.delayedFunction) {
+                self.delayedFunction = func;
             } else {
-                var otherFunc = delayedFunction;
-                delayedFunction = function () {
+                var otherFunc = self.delayedFunction;
+                self.delayedFunction = function () {
                     otherFunc();
                     func();
                 };
@@ -297,7 +287,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }
     }
 
-    function getLocationOutside(locArray) {
+    self.getLocationOutside = function(locArray) {
         var containerSize = viewport.getContainerSize(),
             containerCenter = containerSize.times(0.5),
             center,
@@ -318,7 +308,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     // put an HTML item template into the front layer of the viewer. if the HTML item hasn't been fully initialized
     // yet, finish it up. we do this to avoid loading images and such for items which haven't actually been put into
     // the DOM.
-    function addElementToFrontLayer(htmlContent) {
+    self.addElementToFrontLayer = function(htmlContent) {
         var unsetHTML = htmlContent.unsetHTML;
         if (unsetHTML) {
             htmlContent.innerHTML = unsetHTML;
@@ -334,7 +324,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         return result;
     }
 
-    function beginAnimate(item) {
+    self.beginAnimate = function(item) {
         var i,
             result = false,
             source = item.source,
@@ -346,7 +336,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             containerX = containerSize.x / 2,
             containerY = containerSize.y / 2,
             curDest,
-            sdimg = item.sdimg[currentTemplateLevel];
+            sdimg = item.sdimg[self.currentTemplateLevel];
 
         for (i = 0; i < n; i++) {
             curDest = dest[i];
@@ -360,10 +350,10 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 // put it in the list to receive updates.
                 // make sure we only add each item to the array once.
-                if (!hasOwnProperty.call(rearrangingItems, id)) {
-                    rearrangingItemsArr.push(item);
+                if (!hasOwnProperty.call(self.rearrangingItems, id)) {
+                    self.rearrangingItemsArr.push(item);
                 }
-                rearrangingItems[id] = item;
+                self.rearrangingItems[id] = item;
 
                 // let the sdimg know where it's going and how big it'll be.
                 // note that we need an offset so that foveation is to the middle.
@@ -385,14 +375,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         return result;
     }
 
-    function resetRearrangingItems() {
+    self.resetRearrangingItems = function() {
         // get all the items ready for their next move, whenever it may be
         var item, rect, rectString, rects, i, source, dest, n, j;
-        for (j = rearrangingItemsArr.length - 1; j >= 0; j--) {
+        for (j = self.rearrangingItemsArr.length - 1; j >= 0; j--) {
             // the item's destination property is an array of rects to which it has
             // just moved. some of them may be duplicates; we need to prune those out.
             rects = {};
-            item = rearrangingItemsArr[j];
+            item = self.rearrangingItemsArr[j];
             source = item.source = [];
             dest = item.destination;
             item.destination = undefined;
@@ -412,11 +402,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             // to the same length.
             n = source.length;
             item.html.forEach(function (templateArray, index) {
-                if (templates[index].type === "html") {
+                if (self.templates[index].type === "html") {
                     var removed = templateArray.splice(n, templateArray.length - n);
 
                     // if this layer of HTML templates is in the view, remove the extras.
-                    if (index === currentTemplateLevel) {
+                    if (index === self.currentTemplateLevel) {
                         removed.forEach(function (domNode) {
                             frontLayer.removeChild(domNode);
                             domNode.pvInDom = false;
@@ -425,11 +415,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 }
             });
         }
-        rearrangingItems = {};
-        rearrangingItemsArr = [];
+        self.rearrangingItems = {};
+        self.rearrangingItemsArr = [];
     }
 
-    function setTransform(html, position) {
+    self.setTransform = function(html, position) {
         if (position != undefined) {
             transform(
                 html,
@@ -441,160 +431,30 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     }
 
     // this step reenables mouse tracking, among other things
-    function finishRearrange() {
-        self.removeListener("animationfinish", finishRearrange);
-        innerTracker.setTracking(true);
-        rearranging = false;
-        resetRearrangingItems();
-
-        // raise an event to say that rearranging is done
-        self.trigger("finishedRearrange");
-
-        // raise an event if the collection just finished clearing
-        if (!items.length && !self.activeItemsArr.length) {
-            self.trigger("itemsCleared");
+    self.finishRearrange = function() {
+        if (!self.GridView.isSelected || self.GraphView.isSelected) {
+            self.GridView.finishRearrange();
         }
     }
 
     // this step adds new items
-    function rearrangePart4() {
-        self.removeListener("animationfinish", rearrangePart4);
-        resetRearrangingItems();
-        var id, anythingInserted = false, item, j;
-        for (j = self.activeItemsArr.length - 1; j >= 0; j--) {
-            item = self.activeItemsArr[j];
-            id = item.id;
-            if (!hasOwnProperty.call(prevActiveItems, id)) {
-                item.source = getLocationOutside(item.destination);
-                beginAnimate(item);
-                currentItems[id] = item;
-                anythingInserted = true;
-
-                // make additional copies of the HTML template if necessary
-                item.html.forEach(function (htmlArray, index) {
-                    if (templates[index].type === "html") {
-                        var i;
-                        for (i = item.source.length - 1; i > 0; i--) {
-                            htmlArray.push(self.clone(htmlArray[0]));
-                        }
-                    }
-                });
-
-                // append items to the DOM as necessary
-                if (templates[currentTemplateLevel].type === "html") {
-                    item.html[currentTemplateLevel].forEach(function (node, index) {
-                        setTransform(node, item.source[index]);
-                        addElementToFrontLayer(node);
-                        node.pvInDom = true;
-                    });
-                }
-            }
-        }
-
-        if (anythingInserted) {
-            // wait for rearrange to finish
-            self.addListener("animationfinish", finishRearrange);
-        } else {
-            // immediately mark completion
-            finishRearrange();
+    self.rearrangePart4 = function() {
+        if (!self.GridView.isSelected || self.GraphView.isSelected) {
+            self.GridView.rearrangePart4();
         }
     }
 
     // this step rearranges things that are still in view
-    function rearrangePart3() {
-        self.removeListener("animationfinish", rearrangePart3);
-        var id, item, anythingMoved = false, source, dest, sourceLength, destLength, i, html;
-
-        // first, remove HTML content from the view for any items that have moved offscreen
-        if (templates[currentTemplateLevel].type === "html") {
-            for (i = rearrangingItemsArr.length - 1; i >= 0; i--) {
-                html = rearrangingItemsArr[i].html[currentTemplateLevel];
-                html.forEach(function (domElement) {
-                    frontLayer.removeChild(domElement);
-                    domElement.pvInDom = false;
-                });
-                html.splice(1, html.length - 1);
-            }
-        }
-
-        resetRearrangingItems();
-
-        // recalculate template sizes and scaling for the front layer
-        if (self.finalItemWidth && templates.length) {
-            setupFrontLayer(1);
-        }
-
-        for (id in prevActiveItems) {
-            if (hasOwnProperty.call(prevActiveItems, id) && hasOwnProperty.call(activeItems, id)) {
-                item = prevActiveItems[id];
-                source = item.source;
-                dest = item.destination;
-                sourceLength = source.length;
-                destLength = dest.length;
-                html = item.html;
-
-                // make sure the source and destination arrays are the same length
-                // by inserting duplicates. we assume each has at least one entry.
-                for (i = sourceLength; i < destLength; i++) {
-                    if (source[0] !== undefined) {
-                        source.push(source[0]);
-                    }
-
-                    // we also must make duplicates of the HTML objects that represent this item, if
-                    // they are being used instead of drawing on a canvas.
-                    html.forEach(function (htmlArray, index) {
-                        if (templates[index].type === "html") {
-                            var first = htmlArray[0];
-                            var copy = self.clone(first);
-                            htmlArray.push(copy);
-                            if (index === currentTemplateLevel) {
-                                setTransform(copy, source[0]);
-                                addElementToFrontLayer(copy);
-                                copy.pvInDom = true;
-                            }
-                        }
-                    });
-                }
-                for (i = destLength; i < sourceLength; i++) {
-                    if (dest[0] !== undefined) {
-                        dest.push(dest[0]);
-                    }
-                }
-
-                if (beginAnimate(item)) {
-                    anythingMoved = true;
-                }
-            }
-        }
-
-        if (anythingMoved) {
-            // wait for rearrange to finish
-            self.addListener("animationfinish", rearrangePart4);
-        } else {
-            // move along to insertion phase
-            rearrangePart4();
+    self.rearrangePart3 = function() {
+        if (self.GridView.isSelected || self.GraphView.isSelected) {
+            self.GridView.rearrangePart3();
         }
     }
 
     // this step removes things that were filtered out
     function rearrangePart2() {
-        var id, item, anythingRemoved = false;
-        for (id in prevActiveItems) {
-            if (hasOwnProperty.call(prevActiveItems, id) && !hasOwnProperty.call(activeItems, id)) {
-                anythingRemoved = true;
-                item = prevActiveItems[id];
-                item.destination = getLocationOutside(item.source);
-                beginAnimate(item);
-                delete currentItems[id];
-            }
-        }
-
-        if (anythingRemoved) {
-            // wait for removal animation to finish before rearranging
-            self.addListener("animationfinish", rearrangePart3);
-        } else {
-            // move right along to rearrange phase
-            rearrangePart3();
+        if (self.GridView.isSelected || self.GraphView.isSelected) {
+            self.GridView.rearrangePart2()
         }
     }
 
@@ -1007,15 +867,15 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     // shape the items will be, or if they're all exactly the same shape. so we
     // take a geometric average of the height:width ratio for all items, and that
     // will be the space in which each item gets to draw itself.
-    function getAverageItemHeight() {
-        var sum = items.reduce(function (prev, item) {
+    self.getAverageItemHeight = function() {
+        var sum = self.items.reduce(function (prev, item) {
             var normHeight = item.normHeight;
             if (!normHeight) {
                 normHeight = item.normHeight = item.sdimg[-1].state.source.normHeight;
             }
             return prev + Math.log(normHeight);
         }, 1);
-        var avg = Math.exp(sum / items.length);
+        var avg = Math.exp(sum / self.items.length);
         // we'll add padding evenly to both directions
         if (avg < 1) {
             avg = (avg + 2 * itemBorder) / (1 + 2 * itemBorder);
@@ -1037,37 +897,37 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         return result;
     }
 
-    function clearHighlights() {
+    self.clearHighlights = function() {
         var temp;
-        temp = domHoverBorder.parentNode;
+        temp = self.domHoverBorder.parentNode;
         if (temp) {
-            temp.removeChild(domHoverBorder);
+            temp.removeChild(self.domHoverBorder);
         }
-        temp = domSelectedBorder.parentNode;
+        temp = self.domSelectedBorder.parentNode;
         if (temp) {
-            temp.removeChild(domSelectedBorder);
+            temp.removeChild(self.domSelectedBorder);
         }
     }
 
     // choose the template size to use
-    function setupFrontLayer(zoom, bounds) {
-        if (templates.length) {
-            var oldTemplateLevel = currentTemplateLevel,
+    self.setupFrontLayer = function(zoom, bounds) {
+        if (self.templates.length) {
+            var oldTemplateLevel = self.currentTemplateLevel,
                 id,
                 item;
 
-            currentTemplateLevel = 0;
-            while (templates[currentTemplateLevel] && templates[currentTemplateLevel].width < self.finalItemWidth * zoom) {
-                currentTemplateLevel++;
+            self.currentTemplateLevel = 0;
+            while (self.templates[self.currentTemplateLevel] && self.templates[self.currentTemplateLevel].width < self.finalItemWidth * zoom) {
+                self.currentTemplateLevel++;
             }
-            if (currentTemplateLevel > templates.length - 1) {
-                currentTemplateLevel = templates.length - 1;
+            if (self.currentTemplateLevel > self.templates.length - 1) {
+                self.currentTemplateLevel = self.templates.length - 1;
             }
 
-            if (currentTemplateLevel !== oldTemplateLevel) {
-                currentTemplateWidth = templates[currentTemplateLevel].width;
+            if (self.currentTemplateLevel !== oldTemplateLevel) {
+                currentTemplateWidth = self.templates[self.currentTemplateLevel].width;
 
-                clearHighlights();
+                self.clearHighlights();
 
                 // Remove the front layer contents (we'll repopulate it soon).
                 // note that trying to clear them all at once via frontLayer.innerHTML="" doesn't work in IE,
@@ -1075,10 +935,10 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 // its removeChild implementation is so painfully slow that we really have no choice. It
                 // seems that a single innerHTML="" plus a cloneNode per item is actually faster than
                 // calling removeChild for every item.
-                if (templates[oldTemplateLevel].type === "html") {
-                    for (id in currentItems) {
-                        if (hasOwnProperty.call(currentItems, id)) {
-                            item = currentItems[id];
+                if (self.templates[oldTemplateLevel].type === "html") {
+                    for (id in self.currentItems) {
+                        if (hasOwnProperty.call(self.currentItems, id)) {
+                            item = self.currentItems[id];
                             var htmlArr = item.html[oldTemplateLevel];
                             htmlArr.forEach(function (htmlContent, index) {
                                 if (htmlContent.pvInDom) {
@@ -1106,15 +966,15 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 // iterate over each position for each item, updating its location, and adding it to the DOM
                 // if necessary.
-                if (templates[currentTemplateLevel].type === "html") {
-                    for (id in currentItems) {
-                        if (hasOwnProperty.call(currentItems, id)) {
-                            item = currentItems[id];
-                            item.html[currentTemplateLevel].forEach(function (htmlContent, index) {
+                if (self.templates[self.currentTemplateLevel].type === "html") {
+                    for (id in self.currentItems) {
+                        if (hasOwnProperty.call(self.currentItems, id)) {
+                            item = self.currentItems[id];
+                            item.html[self.currentTemplateLevel].forEach(function (htmlContent, index) {
                                 var sourceLocation = item.source[index];
-                                setTransform(htmlContent, sourceLocation);
-                                if (currentTemplateLevel !== oldTemplateLevel && (!bounds || rectsOverlap(bounds, sourceLocation))) {
-                                    addElementToFrontLayer(htmlContent);
+                                self.setTransform(htmlContent, sourceLocation);
+                                if (self.currentTemplateLevel !== oldTemplateLevel && (!bounds || self.rectsOverlap(bounds, sourceLocation))) {
+                                    self.addElementToFrontLayer(htmlContent);
                                     htmlContent.pvInDom = true;
                                 }
                             });
@@ -1125,70 +985,28 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }
     }
 
-    function rearrangePart1() {
-        self.removeListener("animationfinish", rearrangePart1);
-
-        // hide the details pane before we get started
-        //self.trigger("hideDetails");
-        //self.trigger("hideInfoButton");
-
-        // make sure the update function will know what's going on
-        rearranging = true;
-        anythingChanged = true;
-
-        resetRearrangingItems();
-
-        // remember whatever is onscreen right now, since we'll need it during
-        // the rearrange steps
-        prevActiveItems = Seadragon2.Object.clone(currentItems);
+    self.rearrangePart1 = function() {
+        if (self.GridView.isSelected || self.GraphView.isSelected) {
+            self.GridView.rearrangePart1();
+        }
 
         // now that the viewport has zoomed to its default position, run the filters
         runFilters();
 
-        // get rid of any grid self.bars we've drawn before
-        backLayer.innerHTML = "";
-
-        // figure out the aspect ratio for grid boxes
-        self.avgHeight = getAverageItemHeight();
-
-        self.facet = self.facets[self.sortFacet] || {};
-
-        // either an array of items, or an array of {label:string, items:array}
-        //var self.allSortedItems;
-
-        var containerSize = viewport.getContainerSize();
-        self.containerRect = new Seadragon2.Rect(0, 0, containerSize.x, containerSize.y);
-
-        // regardless of the current view type, we need to reset the destination array
-        // for all current items
-        for (var i = self.activeItemsArr.length - 1; i >= 0; i--) {
-            self.activeItemsArr[i].destination = [];
+        if (self.GridView.isSelected || self.GraphView.isSelected) {
+            self.GridView.rearrangePart1_2();
         }
         
         self.views.filter(function (elem) {
             return elem.isSelected;
         })[0].createView({
             canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer,
-            leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems
-        });   
+            leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: self.items, activeItems: self.activeItems
+        });           
         
-        // initial creation of additional views 
-        /*if (!self.isAdditionalViewsCreated) {
-            self.views.forEach(function (view, index) {
-                if (index > 1) {
-                    view.createView({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt, items: items, activeItems: activeItems });
-                }
-            });
-            self.isAdditionalViewsCreated = true;
-        }*/
-        
-        // recalculate template sizes and scaling for the front layer
-        if (currentTemplateLevel === -1 && self.finalItemWidth && templates.length) {
-            setupFrontLayer(1);
+        if (self.GridView.isSelected || self.GraphView.isSelected) {
+            self.GridView.rearrangePart1_3();
         }
-
-        // each of these squares should be able to zoom in up to 2x width of the container
-        viewport.maxZoom = containerSize.x / self.widthPerItem * 2;
 
         // move on to part 2
         rearrangePart2();
@@ -1199,36 +1017,21 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     }
 
     function rearrange() {
-        // since we'll be animating a rearrange now, disable mouse tracking
-        innerTracker.setTracking(false);
-
-        // move the viewport to its home location
-        viewport.goHome();
-
         // deselect anything that was selected
-        selectedItem = undefined;
+        self.selectedItem = undefined;
 
-        // clear item borders
-        clearHighlights();
-
-        // if we're already at home zoom the animation won't start, so we'll fake it
-        // so that we can get a finish event.
-        animating = true;
-
-        // if we had a mouseover title for a graph bar, get rid of it
-        container.title = "";
-
-        // if anybody else is midway through a rearrange, they'll have to wait for us to catch up
-        self.clearListeners("animationfinish");
+        if (self.GridView.isSelected || self.GraphView.isSelected) {
+            self.GridView.rearrange();
+        }        
 
         // once it gets there, we'll start the rearrange.
         //self.addListener("animationfinish", rearrangePart1);
-        rearrangePart1();
+        self.rearrangePart1();
     }
 
     // Helpers -- CORE
 
-    function rectsOverlap(a, b) {
+    self.rectsOverlap = function(a, b) {
         if (b !== undefined && a !== undefined) {
             return (b.x + b.width > a.x) && (a.x + a.width > b.x) && (b.y + b.height > a.y) && (a.y + a.height > b.y);
         }
@@ -1248,26 +1051,26 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         };
     }());
 
-    function outlineItem(item, index, color, ctx, border, lineWidth) {
+    self.outlineItem = function(item, index, color, ctx, border, lineWidth) {
         var bounds,
             html;
         if (item) {
             bounds = item.source[index];
-            if (templates[currentTemplateLevel].type !== "html") {
+            if (self.templates[self.currentTemplateLevel].type !== "html") {
                 // draw it on canvas
                 ctx.lineWidth = lineWidth;
                 ctx.strokeStyle = color;
                 ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
             } else {
                 // we have to set the border element as the parent of the hovered item
-                html = item.html[currentTemplateLevel][index];
+                html = item.html[self.currentTemplateLevel][index];
                 html.appendChild(border);
                 // adjust line width so it doesn't scale with content
                 lineWidth = lineWidth * templateScale + "px";
                 border.pvtop.style.height = border.pvright.style.width =
                     border.pvbottom.style.height = border.pvleft.style.width = lineWidth;
             }
-        } else if (currentTemplateLevel !== -1) {
+        } else if (self.currentTemplateLevel !== -1) {
             // remove the border from its current location
             html = border.parentNode;
             if (html) {
@@ -1276,11 +1079,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }
     }
 
-    function drawCanvasItem(ctx, x, y, width, height, item) {
+    self.drawCanvasItem = function(ctx, x, y, width, height, item) {
         ctx.save();
         var result;
         try {
-            result = item.canvas[currentTemplateLevel](ctx, x, y, width, height, item);
+            result = item.canvas[self.currentTemplateLevel](ctx, x, y, width, height, item);
         } catch (e) {
             // do nothing - it might have failed if a required self.facet isn't available or something
         }
@@ -1289,284 +1092,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
     }
 
     function updateOnce(arg, curTime) {
-        var containerSize = viewport.getContainerSize();
-        now = curTime || new Date().getTime();
-        var id, item, i, sdimg, j;
-
-        if (delayedFunction) {
-            var delayedFunctionCopy = delayedFunction;
-            delayedFunction = undefined;
-            delayedFunctionCopy();
-        }
-
-        // we'll need to know what kind of repaint to do, depending on the zoom level
-        var currentTemplateType, usingSdimg, usingHtml, usingCanvas;
-
-        if (rearranging) {
-            // the viewport can't move during a rearrange, so don't waste time
-            // trying to update it. We will have to clear the canvas though, which is done here:
-            self.redraw();
-
-            currentTemplateType = templates[currentTemplateLevel].type;
-            usingSdimg = currentTemplateType === "sdimg" || currentTemplateType === "fakehtml";
-            usingHtml = currentTemplateType === "html";
-            usingCanvas = currentTemplateType === "canvas" ||
-                currentTemplateType === "color" ||
-                currentTemplateType === "img";
-
-            // update current position of all items, draw them
-
-            var progress, regress, source, dest, done = true, x, y, width, height, curSource, curDest, curStartTime, startTime;
-
-            // Note that redraws are only done at 100% size (home zoom), so we don't
-            // have to bother with transforming coordinates: the item's coordinates
-            // are actually its coordinates in the canvas!
-
-            // first draw any items that are staying put
-            if (usingSdimg || usingCanvas) {
-                for (j = self.activeItemsArr.length - 1; j >= 0; j--) {
-                    item = self.activeItemsArr[j];
-                    id = item.id;
-                    if (!hasOwnProperty.call(rearrangingItems, id)) {
-                        source = item.source;
-                        // if the source property isn't set, it means this a newly added item that hasn't yet been
-                        // placed out of bounds. just ignore it.
-                        if (source) {
-                            sdimg = item.sdimg[currentTemplateLevel];
-                            for (i = source.length - 1; i >= 0; i--) {
-                                curSource = source[i];
-                                if (usingSdimg && sdimg) {
-                                    drawImage(ctx, sdimg, curSource.x, curSource.y, curSource.width, curSource.height);
-                                } else {
-                                    drawCanvasItem(
-                                        ctx,
-                                        curSource.x,
-                                        curSource.y,
-                                        curSource.width,
-                                        curSource.height,
-                                        item
-                                    );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // then draw the moving items (they'll go on top)
-            for (j = rearrangingItemsArr.length - 1; j >= 0; j--) {
-                item = rearrangingItemsArr[j];
-                source = item.source;
-                dest = item.destination;
-                startTime = item.startTime;
-                sdimg = item.sdimg[currentTemplateLevel];
-                for (i = source.length - 1; i >= 0; i--) {
-                    curSource = source[i];
-                    curDest = dest[i];
-                    curStartTime = startTime[i];
-                    progress = curStartTime === undefined ? 1 : Math.max((now - curStartTime) / 700, 0);
-                    if (progress >= 1) {
-                        progress = 1;
-                        regress = 0;
-                    } else {
-                        done = false;
-                        // transform to springy progress
-                        progress = (progress < 0.5) ?
-                            (Math.exp(progress * stiffness) - 1) * springConstant :
-                            1 - (Math.exp((1 - progress) * stiffness) - 1) * springConstant;
-                        regress = 1 - progress;
-                    }
-                    x = curSource.x * regress + curDest.x * progress;
-                    y = curSource.y * regress + curDest.y * progress;
-                    width = curSource.width * regress + curDest.width * progress;
-                    height = curSource.height * regress + curDest.height * progress;
-                    if (usingSdimg && sdimg) {
-                        drawImage(ctx, sdimg, x, y, width, height);
-                    } else if (usingHtml) {
-                        setTransform(
-                            item.html[currentTemplateLevel][i],
-                            new Seadragon2.Rect(x, y, width, height)
-                        );
-                    } else { // if usingCanvas, or fallback for sdimg that's not ready
-                        drawCanvasItem(ctx, x, y, width, height, item);
-                    }
-                }
-            }
-
-            // we have to trigger an animationfinish event when we're done, so the next
-            // phase of rearranging can get started
-            if (done) {
-                self.trigger("animationfinish", self);
-            }
-        } else {
-
-            var animated = viewport.update();
-
-            if (!animating && animated) {
-                // we weren't animating, and now we did ==> animation start
-                self.trigger("animationstart", self);
-            }
-
-            anythingChanged = anythingChanged || animated;
-
-            if (anythingChanged) {
-                anythingChanged = false;
-
-                // since we're redrawing everything, we can re-detect what the mouse pointer is on
-                hoveredItem = undefined;
-                self.lastHoveredBar = self.hoveredBar;
-                self.hoveredBar = undefined;
-
-                var viewportBounds, targetViewportBounds, itemBounds, location, zoomPercent, centerItemBounds, currentBest = Infinity, distToCenter;
-                viewportBounds = self.getBounds(true);
-
-                // choose the appropriate template level, since the zoom may have changed
-                setupFrontLayer(viewport.getZoom(true), viewportBounds);
-
-                currentTemplateType = templates[currentTemplateLevel].type;
-                usingSdimg = currentTemplateType === "sdimg" || currentTemplateType === "fakehtml";
-                usingHtml = currentTemplateType === "html";
-                usingCanvas = currentTemplateType === "canvas" ||
-                    currentTemplateType === "color" ||
-                    currentTemplateType === "img";
-
-                // update the canvas transform and clear it
-                self.redraw();
-
-                targetViewportBounds = self.getBounds();
-                zoomPercent = viewport.getZoomPercent();
-
-                // update the UI slider
-                self.trigger("zoom", zoomPercent);
-
-                // find the mouse position in content coordinates                
-                if (self.lastMousePosition) {
-                    self.contentMousePosition = viewport.pointFromPixel(self.lastMousePosition.minus(new Seadragon2.Point(self.padding.left, self.padding.top)), true);
-                }
-
-                self.views.filter(function (elem) {
-                    return elem.isSelected;
-                })[0].update({ canvas: canvas, container: container, frontLayer: frontLayer, backLayer: backLayer, mapLayer: mapLayer, tableLayer: tableLayer, leftRailWidth: leftRailWidth, rightRailWidth: rightRailWidth, inputElmt: inputElmt });
-
-                var wideEnough = (containerSize.x - rightRailWidth) * 0.5,
-                    tallEnough = containerSize.y * 0.5,
-                    itemBoundsArray,
-                    adjustedCenter = new Seadragon2.Point(-rightRailWidth / 2, 0),
-                    html;
-
-                centerItem = undefined;
-                zoomedIn = false;
-
-                // draw every item on the canvas
-                for (j = self.activeItemsArr.length - 1; j >= 0; j--) {
-                    item = self.activeItemsArr[j];
-                    itemBoundsArray = item.source;
-                    sdimg = item.sdimg[currentTemplateLevel];
-                    for (i = itemBoundsArray.length - 1; i >= 0; i--) {
-                        itemBounds = itemBoundsArray[i];
-                        if (itemBounds) {
-                            if (rectsOverlap(viewportBounds, itemBounds)) {
-                                // we have to draw every item, but we only need to bother with updating the ones
-                                // that will stay in the viewport after this movement.
-                                if (rectsOverlap(targetViewportBounds, itemBounds)) {
-                                    location = viewport.rectPixelsFromPoints(itemBounds, false, true);
-                                    if (usingSdimg && sdimg) {
-                                        sdimg.update(location);
-                                    }
-                                    if (location.width > wideEnough || location.height > tallEnough) {
-                                        zoomedIn = true;
-                                    }
-                                    distToCenter = location.getCenter().distanceTo(adjustedCenter);
-                                    if (distToCenter < currentBest) {
-                                        currentBest = distToCenter;
-                                        centerItem = item;
-                                        centerItemIndex = i;
-                                        centerItemBounds = itemBounds;
-                                    }
-                                }
-
-                                // redraw the image at its new location, if the item is represented as a sdimg.
-                                // if it's an HTML template, make sure it's in the DOM.
-                                if (usingSdimg && sdimg) {
-                                    anythingChanged =
-                                        !drawImage(ctx, sdimg,
-                                            itemBounds.x, itemBounds.y,
-                                            itemBounds.width, itemBounds.height) ||
-                                        anythingChanged;
-                                } else if (usingHtml) {
-                                    html = item.html[currentTemplateLevel][i];
-                                    if (!html.pvInDom) {
-                                        addElementToFrontLayer(html);
-                                        html.pvInDom = true;
-                                    }
-                                } else { // if usingCanvas, or fallback for sdimg that's not ready
-                                    anythingChanged =
-                                        !drawCanvasItem(
-                                            ctx,
-                                            itemBounds.x,
-                                            itemBounds.y,
-                                            itemBounds.width,
-                                            itemBounds.height,
-                                            item
-                                        ) ||
-                                        anythingChanged;
-                                }
-
-                                // check whether the mouse is over the current item
-                                if (self.lastMousePosition && itemBounds.contains(self.contentMousePosition)) {
-                                    hoveredItem = item;
-                                    hoveredItemIndex = i;
-                                }
-                            } else if (usingHtml) {
-                                // if we're using HTML templates, make sure this item isn't in the DOM for performance.
-                                html = item.html[currentTemplateLevel][i];
-                                if (html.pvInDom) {
-                                    frontLayer.removeChild(html);
-                                    html.pvInDom = false;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // prepare to draw outlines
-                var lineWidth = viewport.deltaPointsFromPixels(new Seadragon2.Point(3, 0)).x; // 3px regardless of zoom
-
-                // draw an outline for hovered item
-                outlineItem(hoveredItem, hoveredItemIndex, hoverBorderColor, ctx, domHoverBorder, lineWidth);
-
-                // show or hide the details pane as necessary
-                if (centerItem && zoomedIn) {
-                    if (self.detailsEnabled) {
-                        self.trigger("showDetails", centerItem, self.facets);
-                        self.trigger("showInfoButton");
-                    }
-
-                    self.trigger("filterItem", centerItem, self.facets);
-
-                    // relax the pan constraints so that we can see stuff on the far right side
-                    // without the details pane getting in the way.
-                    viewport.visibilityRatio = (containerSize.x - rightRailWidth) / containerSize.x;
-                } else {
-                    /*if (self.detailsEnabled) {
-                        self.trigger("hideDetails");
-                        self.trigger("hideInfoButton");
-                    }*/
-
-                    //self.trigger("clearFilter");
-                    viewport.visibilityRatio = 1;
-                }
-
-                // draw an outline for selected item
-                outlineItem(selectedItem, selectedItemIndex, selectedBorderColor, ctx, domSelectedBorder, lineWidth);
-            }
-
-            if (animating && !animated) {
-                // we were animating, and now we're not anymore ==> animation finish
-                self.trigger("animationfinish", self);
-            }
-
-            animating = animated;
+        if (self.GridView.isSelected || self.GraphView.isSelected) {
+            self.GridView.updateOnce(arg, curTime);
         }
 
         return true;
@@ -1576,13 +1103,13 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
     function onExit() {
         self.lastMousePosition = undefined;
-        anythingChanged = true;
+        self.anythingChanged = true;
     }
 
     function onMove(e) {
         e = e || window.event;
         self.lastMousePosition = Seadragon2.Mouse.getPosition(e).minus(Seadragon2.Element.getPosition(container));
-        anythingChanged = true;
+        self.anythingChanged = true;
     }
 
     function onClick(tracker, id, position, quick, shift, isInputElmt) {
@@ -1609,8 +1136,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     if (itemBounds) {
                         // check whether the mouse is over the current item
                         if (itemBounds.contains(self.position)) {
-                            hoveredItem = item;
-                            hoveredItemIndex = i;
+                            self.hoveredItem = item;
+                            self.hoveredItemIndex = i;
                         }
                     }
                 }
@@ -1618,14 +1145,14 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }
 
         if (!isInputElmt && quick && now - lastClickTime > doubleClickThreshold) {
-            if (hoveredItem && (selectedItem !== hoveredItem || selectedItemIndex !== hoveredItemIndex)) {
+            if (self.hoveredItem && (self.selectedItem !== self.hoveredItem || self.selectedItemIndex !== self.hoveredItemIndex)) {
                 // select the currently hovered item
-                selectedItem = hoveredItem;
-                selectedItemIndex = hoveredItemIndex;
+                self.selectedItem = self.hoveredItem;
+                self.selectedItemIndex = self.hoveredItemIndex;
 
                 // zoom to fit the hovered item. this overrides the default
                 // zoom that would happen if you click on the background.
-                itemBounds = hoveredItem.source[hoveredItemIndex];
+                itemBounds = self.hoveredItem.source[self.hoveredItemIndex];
                 var containerSize = viewport.getContainerSize(),
                     containerWidth = containerSize.x,
                     containerHeight = containerSize.y,
@@ -1646,7 +1173,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
 
                 // move there
                 viewport.fitBounds(itemBounds);
-            } else if (!hoveredItem && self.hoveredBar) {
+            } else if (!self.hoveredItem && self.hoveredBar) {
                 // add a filter
                 self.trigger("filterrequest", {
                     facet: self.sortFacet,
@@ -1655,7 +1182,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 });
             } else {
                 // to mimic the functionality of real PivotViewer, most clicks go home
-                selectedItem = undefined;
+                self.selectedItem = undefined;
                 viewport.goHome();
             }
 
@@ -1687,12 +1214,12 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         }
 
         // since the user is moving the viewport, we no longer have a selected item
-        selectedItem = undefined;
+        self.selectedItem = undefined;
     }
 
     function onScroll() {
         // since the user is moving the viewport, we no longer have a selected item
-        selectedItem = undefined;
+        self.selectedItem = undefined;
 
         // now that the user is interacting with the canvas, we'll try to catch their keystrokes
         inputElmt.focus();
@@ -1717,7 +1244,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                 }
             } else {
                 // from any other zoom, base movement on the item closest to the center of the viewer
-                location = centerItem.source[centerItemIndex];
+                location = self.centerItem.source[self.centerItemIndex];
                 switch (keyCode) {
                 case 37:
                     newItemInfo = location.left;
@@ -1736,9 +1263,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             if (newItemInfo) {
                 // center the view on the new item, just like we do for a click.
                 // if we're already moving there (due to fast repeated key-presses), don't bother.
-                if (selectedItem !== newItemInfo.item || selectedItemIndex !== newItemInfo.index) {
-                    hoveredItem = newItemInfo.item;
-                    hoveredItemIndex = newItemInfo.index;
+                if (self.selectedItem !== newItemInfo.item || self.selectedItemIndex !== newItemInfo.index) {
+                    self.hoveredItem = newItemInfo.item;
+                    self.hoveredItemIndex = newItemInfo.index;
                     onClick(undefined, 0, undefined, true);
                 }
             }
@@ -1828,26 +1355,24 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         // replace the default click handler, since we want to do other stuff
         innerTracker.clearListeners("click");
 
-        // we need a bit of mouse tracking that the viewer doesn't provide already
-        innerTracker.addListener("exit", onExit);
-        Seadragon2.Event.add(container, "mousemove", onMove, false);
-        innerTracker.addListener("click", onClick);
-        innerTracker.addListener("press", onPress);
-        innerTracker.addListener("release", onRelease);
-        innerTracker.addListener("drag", onDrag);
-        innerTracker.addListener("scroll", onScroll);
+        if (self.GridView.isSelected || self.GraphView.isSelected) {
+            // we need a bit of mouse tracking that the viewer doesn't provide already
+            innerTracker.addListener("exit", onExit);
+            Seadragon2.Event.add(container, "mousemove", onMove, false);
+            innerTracker.addListener("click", onClick);
+            innerTracker.addListener("press", onPress);
+            innerTracker.addListener("release", onRelease);
+            innerTracker.addListener("drag", onDrag);
+            innerTracker.addListener("scroll", onScroll);
 
-        // and keyboard tracking for navigating with arrows
-        inputElmt.addEventListener("keydown", onKeyDown, false);
+            // and keyboard tracking for navigating with arrows
+            inputElmt.addEventListener("keydown", onKeyDown, false);
+        }
 
         // add a listener to update stuff if the viewer size changes onscreen
         self.addListener("resize", onResize);
 
         self.addListener("clearFilter", function () {
-            /*self.views.filter(function (view) {
-                return view.isSelected;
-            })[0].clearFilter();*/
-
             if (self.detailsEnabled) {
                 self.trigger("hideDetails");
                 self.trigger("hideInfoButton");
@@ -1868,16 +1393,16 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         makeElement("div", "pivot_barlabel", self.barTemplate);
 
         // make HTML overlay elements for the boxes that overlay selected or hovered items
-        domHoverBorder = buildFakeBorder("pivot_hoverborder");
-        domSelectedBorder = buildFakeBorder("pivot_selectedborder");
+        self.domHoverBorder = buildFakeBorder("pivot_hoverborder");
+        self.domSelectedBorder = buildFakeBorder("pivot_selectedborder");
 
         // temporarily add them to the DOM so we can measure their color
-        frontLayer.appendChild(domHoverBorder);
-        frontLayer.appendChild(domSelectedBorder);
-        hoverBorderColor = Seadragon2.Element.getStyle(domHoverBorder.pvtop).backgroundColor;
-        selectedBorderColor = Seadragon2.Element.getStyle(domSelectedBorder.pvtop).backgroundColor;
-        frontLayer.removeChild(domHoverBorder);
-        frontLayer.removeChild(domSelectedBorder);
+        frontLayer.appendChild(self.domHoverBorder);
+        frontLayer.appendChild(self.domSelectedBorder);
+        self.hoverBorderColor = Seadragon2.Element.getStyle(self.domHoverBorder.pvtop).backgroundColor;
+        self.selectedBorderColor = Seadragon2.Element.getStyle(self.domSelectedBorder.pvtop).backgroundColor;
+        frontLayer.removeChild(self.domHoverBorder);
+        frontLayer.removeChild(self.domSelectedBorder);
     }
 
     // Methods -- UI
@@ -1922,13 +1447,13 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         if (!innerTracker.isTracking()) {
             throw "setCenterItem: Can't execute during rearrange.";
         }
-        if (!hasOwnProperty.call(activeItems, id)) {
+        if (!hasOwnProperty.call(self.activeItems, id)) {
             throw "setCenterItem: Item is currently not filtered in.";
         }
         var item = allItemsById[id];
-        if (item !== selectedItem) {
-            hoveredItem = item;
-            hoveredItemIndex = 0;
+        if (item !== self.selectedItem) {
+            self.hoveredItem = item;
+            self.hoveredItemIndex = 0;
             onClick(undefined, 0, undefined, true);
         }
     };
@@ -1939,11 +1464,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      */
     self.collapseDetails = function () {
         self.detailsEnabled = false;
-        if (selectedItem) {
+        if (self.selectedItem) {
             // move the viewport so the selected item stays centered
-            hoveredItem = selectedItem;
-            hoveredItemIndex = selectedItemIndex;
-            selectedItem = undefined;
+            self.hoveredItem = self.selectedItem;
+            self.hoveredItemIndex = self.selectedItemIndex;
+            self.selectedItem = undefined;
             onClick(undefined, 0, undefined, true);
         }
         self.trigger("hideDetails");
@@ -1957,16 +1482,16 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      */
     self.expandDetails = function () {
         self.detailsEnabled = true;
-        if (selectedItem) {
+        if (self.selectedItem) {
             // move the viewport so the selected item stays centered
-            hoveredItem = selectedItem;
-            hoveredItemIndex = selectedItemIndex;
-            selectedItem = undefined;
+            self.hoveredItem = self.selectedItem;
+            self.hoveredItemIndex = self.selectedItemIndex;
+            self.selectedItem = undefined;
             onClick(undefined, 0, undefined, true);
         }
         self.trigger("hideInfoButton");
-        self.trigger("showDetails", centerItem, self.facets);
-        self.trigger("filterItem", centerItem, self.facets);
+        self.trigger("showDetails", self.centerItem, self.facets);
+        self.trigger("filterItem", self.centerItem, self.facets);
     };
 
     // Methods -- SORTING & FILTERING
@@ -2047,7 +1572,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * </dl>
      */
     self.setFacets = function (newFacets) {
-        if (items.length) {
+        if (self.items.length) {
             throw "You must set self.facet categories before adding items.";
         }
 
@@ -2132,8 +1657,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                             contentPollingCount--;
 
                             // make sure we update the view now that there is new content
-                            if (level === currentTemplateLevel.toString()) {
-                                anythingChanged = true;
+                            if (level === self.currentTemplateLevel.toString()) {
+                                self.anythingChanged = true;
                             }
 
                             // calculate some properties that we'll need for setting up tile sources
@@ -2213,7 +1738,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         for (index in serverSideItems) {
             if (hasOwnProperty.call(serverSideItems, index)) {
                 itemsArray = serverSideItems[index];
-                template = templates[index];
+                template = self.templates[index];
                 serverName = template.renderer + "pivot/";
                 jsonObject.width = template.width;
                 jsonObject.height = template.height || template.width;
@@ -2295,7 +1820,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         if (oldSdimgArray) {
             sdimgArray[-1] = oldSdimgArray[-1];
         }
-        templates.forEach(function (template, index) {
+        self.templates.forEach(function (template, index) {
             switch (template.type) {
             case "canvas":
                 htmlArray.push([]);
@@ -2374,8 +1899,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         // find and set the aspect ratio for the item. we assume that the aspect ratio
         // of all template levels will match (or at least approximate) the ratio of
         // the top level.
-        if (templates.length) {
-            var biggestTemplate = templates[templates.length - 1];
+        if (self.templates.length) {
+            var biggestTemplate = self.templates[self.templates.length - 1];
             item.normHeight = (biggestTemplate.height || biggestTemplate.width) / biggestTemplate.width;
         }
     }
@@ -2406,7 +1931,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         // if we're busy clearing a previous collection, wait until it's done before adding new items.
         // this helps protect against cases where IDs in the new collection collide with the old collection
         // and produce unintended results.
-        if (!items.length && (self.activeItemsArr.length || rearrangingItemsArr.length)) {
+        if (!self.items.length && (self.activeItemsArr.length || self.rearrangingItemsArr.length)) {
             // delay it
             delayFunction(function () {
                 self.addItems(newItems);
@@ -2420,7 +1945,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             waitingItems--;
             if (!waitingItems) {
                 // all items have loaded, add them to the view
-                items = items.concat(actuallyNewItems);
+                self.items = self.items.concat(actuallyNewItems);
 
                 // set up templates for the new items, if necessary.
                 // note that existing items may need their templates updated, since
@@ -2475,7 +2000,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             }
 
             // refresh the details pane if necessary
-            if (centerItem === item && zoomedIn && self.detailsEnabled) {
+            if (self.centerItem === item && self.zoomedIn && self.detailsEnabled) {
                 self.trigger("hideDetails");
                 self.trigger("showDetails", item, self.facets);
                 self.trigger("filterItem", item, self.facets);
@@ -2507,18 +2032,18 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      */
     self.setTemplates = function (newTemplates) {
         // we disallow changing the template types while there are items in the view
-        if (items.length || self.activeItemsArr.length || rearrangingItemsArr.length) {
+        if (self.items.length || self.activeItemsArr.length || self.rearrangingItemsArr.length) {
             throw "You must set templates before adding items!";
         }
 
         // note that this does modify the input array
-        templates = newTemplates.sort(function (a, b) {
+        self.templates = newTemplates.sort(function (a, b) {
             return a.width - b.width;
         });
-        templates[-1] = {type: "sdimg"};
+        self.templates[-1] = { type: "sdimg" };
 
         // set up templates that draw directly on canvas
-        templates.forEach(function (template) {
+        self.templates.forEach(function (template) {
             if (template.type === "canvas") {
                 template.func = makeTemplate(template);
             }
@@ -2530,7 +2055,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         });
 
         // reset current level
-        currentTemplateLevel = -1;
+        self.currentTemplateLevel = -1;
     };
 
     /**
@@ -2538,7 +2063,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @method clearItems
      */
     self.clearItems = function () {
-        items = [];
+        self.items = [];
         allItemsById = {};
 
         self.filter();
@@ -2588,7 +2113,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      */
     self.runFiltersWithout = function (filter) {
         self.removeFilter(filter);
-        var result = items.filter(function (item) {
+        var result = self.items.filter(function (item) {
             return filters.every(function (filter2) {
                 return filter2(item);
             });
@@ -2652,7 +2177,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             }
         }
         if (searchTerm) {
-            items.forEach(function (item) {
+            self.items.forEach(function (item) {
                 var facets = item.facets,
                     facetName;
                 for (facetName in facets) {

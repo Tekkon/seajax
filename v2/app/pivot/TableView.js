@@ -113,13 +113,6 @@ TableView.prototype.createView = function (options) {
         var skeepHeader = false;
         self.gridOptions.columnApi.autoSizeColumns(allColumnIds, skeepHeader);
     }
-
-    //self.div.childNodes[0].childNodes[1].focus();
-
-    /*if (options.activeItems !== {} && Object.entries(options.activeItems).length !== Object.entries(self.activeItems).length) {
-        self.rearrange(options.activeItems);
-        self.activeItems = options.activeItems;
-    }*/
        
     self.showSelectedItems();    
 }
@@ -163,14 +156,6 @@ TableView.prototype.rearrange = function (filterData) {
             return dataObj;
         });
         self.gridOptions.api.setDatasource(self.getDataSource(data));
-
-        /*self.gridOptions.api.setRowData(Object.entries(filterData).map(function (item) {
-            var dataObj = {};
-            Object.entries(deleteAdditionalProperties(item[1])).forEach(function (item1) {
-                dataObj[item1[0]] = item1[1][0];
-            });
-            return dataObj;
-        }));*/
     }
 }
 

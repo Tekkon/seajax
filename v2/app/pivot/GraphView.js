@@ -1,5 +1,5 @@
 var GraphView = function (container, isSelected) {
-    BaseView.call(this, container, isSelected);
+    GridView.call(this, container, isSelected);
     var self = this;
 
     self.button = new Button("div", "pivot_sorttools graphButton pivot_hoverable", $('.pivot_topbar')[0], i18n.t("graphView"));
@@ -13,7 +13,7 @@ var GraphView = function (container, isSelected) {
     }
 }
 
-GraphView.prototype = Object.create(BaseView.prototype);
+GraphView.prototype = Object.create(GridView.prototype);
 GraphView.prototype.constructor = GraphView;
 
 GraphView.prototype.createView = function (options) {
