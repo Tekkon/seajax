@@ -5,7 +5,11 @@ function parseHTML(str) {
 function isHTML(str) {
     if (str !== "" && str !== null && str !== undefined) {
         var doc = parseHTML(str);
-        return Array.from(doc.body.childNodes).some(function (node) { return node.nodeType === 1 });
+
+        if (doc !== null && doc.body !== null && doc.body.childNodes != null
+            && doc !== undefined && doc.body !== undefined && doc.body.childNodes != undefined) {
+            return Array.from(doc.body.childNodes).some(function (node) { return node.nodeType === 1 });
+        }
     }
     
     return false;

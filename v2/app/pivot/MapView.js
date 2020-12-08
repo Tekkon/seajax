@@ -591,7 +591,7 @@ MapView.prototype.setMarkers = function (_items) {
             var latitude = getFacet(dataRow, "LATITUDE") || getFacet(dataRow, "LAT") || getFacet(dataRow, "Широта") || getFacet(dataRow, "ШИРОТА");
             var longitude = getFacet(dataRow, "LONGITUDE") || getFacet(dataRow, "LONG") || getFacet(dataRow, "Долгота") || getFacet(dataRow, "ДОЛГОТА");
             var label = getFacet(dataRow, "NAME") || getFacet(dataRow, "FULLNAME") || getFacet(dataRow, "SHORTNAME") || getFacet(dataRow, "FULL_NAME") || getFacet(dataRow, "SHORT_NAME")
-                || getFacet(dataRow, "Наименование") || getFacet(dataRow, "Короткое наименование");
+                || getFacet(dataRow, "Наименование") || getFacet(dataRow, "Короткое наименование") || getFacet(dataRow, PIVOT_PARAMETERS.nameElement);
             var hint = label;
 
             if (typeof latitude != 'undefined' && latitude != null && latitude != 0 &&

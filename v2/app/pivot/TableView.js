@@ -162,7 +162,9 @@ TableView.prototype.rearrange = function (filterData) {
 TableView.prototype.showSelectedItems = function () {
     var self = this;
 
-    self.gridOptions.api.deselectAll();
+    if (self.gridOptions !== undefined) {
+        self.gridOptions.api.deselectAll();
+    }
 
     self.container.selectedItems.forEach(function (item, index) {
         if (item != undefined) {
