@@ -353,11 +353,21 @@ MapView.prototype.createView = function (options) {
         }
 
         function getLatitude(marker) {
-            return getValue(marker.options.dataRow, "LATITUDE") || getValue(marker.options.dataRow, "LAT") || getValue(marker.options.dataRow, "Широта") || getValue(marker.options.dataRow, "ШИРОТА");
+            var val = getValue(marker.options.dataRow, "LATITUDE") || getValue(marker.options.dataRow, "LAT") || getValue(marker.options.dataRow, "Широта") || getValue(marker.options.dataRow, "ШИРОТА");         
+            return getFloat(val);
         }
 
         function getLongitude(marker) {
-            return getValue(marker.options.dataRow, "LONGITUDE") || getValue(marker.options.dataRow, "LONG") || getValue(marker.options.dataRow, "Долгота") || getValue(marker.options.dataRow, "ДОЛГОТА");
+            val = getValue(marker.options.dataRow, "LONGITUDE") || getValue(marker.options.dataRow, "LONG") || getValue(marker.options.dataRow, "Долгота") || getValue(marker.options.dataRow, "ДОЛГОТА");
+            return getFloat(val);
+        }
+
+        function getFloat(val) {
+            if (typeof (val) === 'string') {
+                return parseFloat(val);
+            }
+
+            return val;
         }
 
         $('#routeHeader').click(function (e) {
