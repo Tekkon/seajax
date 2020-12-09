@@ -12833,6 +12833,8 @@ var MapView = function (container, isSelected) {
 
     img3 = document.createElement('img');
     img3.src = this.routeMarkerShadowUrl;
+
+    self.isRouteHeaderClicked = false;
 }
 
 MapView.prototype = Object.create(BaseView.prototype);
@@ -13006,206 +13008,167 @@ MapView.prototype.createView = function (options) {
         self.mapDiv.style.width = width + "px";
         self.mapDiv.style.height = "1000px";
 
-        //setTimeout(function () {
-            var map = L.map(self.mapDiv, { layers: [yndx], preferCanvas: true }).setView([0, 0], 2);
-            self.map = map;
+        var map = L.map(self.mapDiv, { layers: [yndx], preferCanvas: true }).setView([0, 0], 2);
+        self.map = map;
 
-            L.Map.prototype.setCrs = function (newCrs) {
-                this.options.crs = newCrs;
-            }
+        L.Map.prototype.setCrs = function (newCrs) {
+            this.options.crs = newCrs;
+        }
 
-            var baseMaps = {
-                "Яндекс": yndx,
-                "Яндекс спутник": ysat,
-                //"Яндекс пробки": ytraffic,
-                "Google": googleMap,
-                "Google спутник": googleMapSat,
-                "Open Streets": openStreetsMap
-            }
+        var baseMaps = {
+            "Яндекс": yndx,
+            "Яндекс спутник": ysat,
+            //"Яндекс пробки": ytraffic,
+            "Google": googleMap,
+            "Google спутник": googleMapSat,
+            "Open Streets": openStreetsMap
+        }
 
-            map.on('baselayerchange', setLayer);
+        map.on('baselayerchange', setLayer);
 
-            map.on('click', function (event) {
+        map.on('click', function (event) {
+            if (!self.isRouteHeaderClicked) {
                 self.resetHighlightedMarkers();
                 self.container.trigger("filterSet", self.container.activeItemsArr);
-            });
+            }
+            self.isRouteHeaderClicked = false;
+        });
 
-            L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
+        L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
 
-            if (this.multipleClusterColors) {
-                loadjscssfile("Content/MarkerCluster.Default.css", "css");
-            } else {
-                loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
+        if (this.multipleClusterColors) {
+            loadjscssfile("Content/MarkerCluster.Default.css", "css");
+        } else {
+            loadjscssfile("Content/MarkerCluster.Redefined.css", "css");
+        }
+
+        // ***** Routing *****
+        L.Control.RouteInput = L.Control.extend({
+            onAdd: function (map) {
+                var div = L.DomUtil.create('div');
+                div.classList.add("route-control");
+                div.innerHTML = "<div id='routeHeader'><h7>Маршрут</h7><img id='toggleImage' src='" + PIVOT_PARAMETERS.map.toggleDownImage + "' class='toggleImage' /></div></div>";
+                return div;
+            },
+            onRemove: function (map) {
+            }
+        });
+
+        L.control.routeInput = function (opts) {
+            return new L.Control.RouteInput(opts);
+        }
+
+        var routeInput = L.control.routeInput({ position: 'topright' }).addTo(map);
+
+        var routeControl;
+        function createRoute(locations) {
+            if (routeControl != undefined) {
+                removeRouteControl();
             }
 
-            // ***** Routing *****
-            L.Control.RouteInput = L.Control.extend({
-                onAdd: function (map) {
-                    var div = L.DomUtil.create('div');
-                    div.classList.add("route-control");
-                    div.innerHTML = "<div id='routeHeader'><h7>Маршрут</h7><img id='toggleImage' src='" + PIVOT_PARAMETERS.map.toggleDownImage + "' class='toggleImage' /></div></div>";
-                    return div;
+            routeControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(locations[0].latLng.lat, locations[0].latLng.lng),
+                    L.latLng(locations[1].latLng.lat, locations[1].latLng.lng)
+                ],
+                createMarker: function (i, wp, nWps) {
+                    var m = L.marker(wp.latLng);
+                    m.setForceZIndex(2000);
+                    m.options.draggable = true;
+                    m.options.icon = self.routeIcon;
+                    return m;
                 },
-                onRemove: function (map) {
-                }
+                routeWhileDragging: true,
+                geocoder: L.Control.Geocoder.nominatim(),
+                language: 'ru',
+                fitSelectedRoutes: false
+            }).addTo(map);
+
+            routeControl.on('routesfound', function (e) {
+                var routes = e.routes;
+                var summary = routes[0].summary;
+                addLeafletRoutingGeocoderOnClick();
+                addLeafletRoutingAddWaypointOnClick();
             });
+        }
 
-            L.control.routeInput = function (opts) {
-                return new L.Control.RouteInput(opts);
-            }
+        var removeRouteControl = function () {
+            routeControl.spliceWaypoints(0, 2);
+            $(".leaflet-routing-container").remove();
+        }
 
-            var routeInput = L.control.routeInput({ position: 'topright' }).addTo(map);
+        function getValue(dataRow, facetName) {
+            return dataRow[facetName] != undefined ? dataRow[facetName][0] : undefined;
+        }
 
-            var routeControl;
-            function createRoute(locations) {
-                if (routeControl != undefined) {
-                    removeRouteControl();
-                }
+        function addLeafletRoutingGeocoderOnClick() {
+            $('.leaflet-routing-geocoder').find("input").off();
+            $('.leaflet-routing-geocoder').find("input").on("click", function (event) {
+                setTimeout(function () { event.originalEvent.target.focus(); }, 10);
+            });
+        }
 
-                routeControl = L.Routing.control({
-                    waypoints: [
-                        L.latLng(locations[0].latLng.lat, locations[0].latLng.lng),
-                        L.latLng(locations[1].latLng.lat, locations[1].latLng.lng)
-                    ],
-                    createMarker: function (i, wp, nWps) {
-                        var m = L.marker(wp.latLng);
-                        m.setForceZIndex(2000);
-                        m.options.draggable = true;
-                        m.options.icon = self.routeIcon;
-                        return m;
-                    },
-                    routeWhileDragging: true,
-                    geocoder: L.Control.Geocoder.nominatim(),
-                    language: 'ru'
-                }).addTo(map);
+        function addLeafletRoutingAddWaypointOnClick() {
+            $('.leaflet-routing-add-waypoint').off();
+            $('.leaflet-routing-add-waypoint').click(function (event) {
+                addLeafletRoutingGeocoderOnClick();
+            });
+        }
 
-                routeControl.on('routesfound', function (e) {
-                    var routes = e.routes;
-                    var summary = routes[0].summary;
-                    addLeafletRoutingGeocoderOnClick();
-                    addLeafletRoutingAddWaypointOnClick();
-                });
-            }
+        function getLatitude(marker) {
+            return getValue(marker.options.dataRow, "LATITUDE") || getValue(marker.options.dataRow, "LAT") || getValue(marker.options.dataRow, "Широта") || getValue(marker.options.dataRow, "ШИРОТА");
+        }
 
-            var removeRouteControl = function () {
-                routeControl.spliceWaypoints(0, 2);
-                $(".leaflet-routing-container").remove();
-            }
+        function getLongitude(marker) {
+            return getValue(marker.options.dataRow, "LONGITUDE") || getValue(marker.options.dataRow, "LONG") || getValue(marker.options.dataRow, "Долгота") || getValue(marker.options.dataRow, "ДОЛГОТА");
+        }
 
-            function getValue(dataRow, facetName) {
-                return dataRow[facetName] != undefined ? dataRow[facetName][0] : undefined;
-            }
+        $('#routeHeader').click(function (e) {
+            self.isRouteHeaderClicked = true;
 
-            function addLeafletRoutingGeocoderOnClick() {
-                $('.leaflet-routing-geocoder').find("input").off();
-                $('.leaflet-routing-geocoder').find("input").on("click", function (event) {
-                    setTimeout(function () { event.originalEvent.target.focus(); }, 10);
-                });
-            }
+            if ($('#toggleImage')[0].src.includes('toggle-down.png')) {
+                $('#toggleImage')[0].src = PIVOT_PARAMETERS.map.toggleUpImage;
 
-            function addLeafletRoutingAddWaypointOnClick() {
-                $('.leaflet-routing-add-waypoint').off();
-                $('.leaflet-routing-add-waypoint').click(function (event) {
-                    addLeafletRoutingGeocoderOnClick();
-                });
-            }
+                var latitudeA;
+                var longitudeA
+                var latitudeB;
+                var longitudeB;
 
-            $('#routeHeader').click(function (e) {
-                if ($('#toggleImage')[0].src.includes('toggle-down.png')) {
-                    $('#toggleImage')[0].src = PIVOT_PARAMETERS.map.toggleUpImage;
-
-                    var pointA;
-                    var pointB;
-
-                    if (self.filteredMarkers.length > 1) {
-                        pointA = self.filteredMarkers[0];
-                        pointB = self.filteredMarkers[1];
-                    } else if (self.filteredMarkers.length > 0 && self.markers.length > 0) {
-                        pointA = self.filteredMarkers[0];
-                        pointB = self.markers[0];
-                    } else if (self.markers.length > 0) {
-                        pointA = self.markers[0];
-                        pointB = self.markers[1];
-                    }
-
-                    if (pointA != undefined && pointB != undefined) {
-                        var latitudeA = getValue(pointA.options.dataRow, "LATITUDE") || getValue(pointA.options.dataRow, "LAT") || getValue(pointA.options.dataRow, "Широта") || getValue(pointA.options.dataRow, "ШИРОТА");
-                        var longitudeA = getValue(pointA.options.dataRow, "LONGITUDE") || getValue(pointA.options.dataRow, "LONG") || getValue(pointA.options.dataRow, "Долгота") || getValue(pointA.options.dataRow, "ДОЛГОТА");
-                        var latitudeB = getValue(pointB.options.dataRow, "LATITUDE") || getValue(pointB.options.dataRow, "LAT") || getValue(pointB.options.dataRow, "Широта") || getValue(pointB.options.dataRow, "ШИРОТА");
-                        var longitudeB = getValue(pointB.options.dataRow, "LONGITUDE") || getValue(pointB.options.dataRow, "LONG") || getValue(pointB.options.dataRow, "Долгота") || getValue(pointB.options.dataRow, "ДОЛГОТА");
-
-                        var locations = [
-                            {
-                                latLng: {
-                                    lat: latitudeA,
-                                    lng: longitudeA
-                                }
-                            },
-                            {
-                                latLng: {
-                                    lat: latitudeB,
-                                    lng: longitudeB
-                                }
-                            }
-                        ]
-
-                        createRoute(locations);
-                    }
+                if (self.selectedMarker != undefined) {
+                    latitudeA = getLatitude(self.selectedMarker);
+                    longitudeA = getLongitude(self.selectedMarker);
                 } else {
-                    $('#toggleImage')[0].src = PIVOT_PARAMETERS.map.toggleDownImage;
-                    removeRouteControl();
+                    var mapCenter = self.map.getCenter();
+                    latitudeA = mapCenter.lat;
+                    longitudeA = mapCenter.lng;
                 }
-            });
 
-            $('#routeRemove').click(function (e) {
-                if (routeControl != undefined) {
-                    $("#routeInputA").val("");
-                    $("#routeInputB").val("");
-                    filterDropdownA();
-                    filterDropdownB();
-                    removeRouteControl();
-                }
-            });
-
-            $('#routeSubmit').click(function (e) {
-                if ($('#routeInputA').val().length > 0 && $('#routeInputB').val().length > 0) {
-                    var pointA = self.markers.filter(function (item) {
-                        var itemValue = Array.isArray(item.options.dataRow[PIVOT_PARAMETERS.nameElement]) ? item.options.dataRow[PIVOT_PARAMETERS.nameElement][0] : item.options.dataRow[PIVOT_PARAMETERS.nameElement];
-                        return itemValue === $('#routeInputA').val();
-                    })[0];
-                    var pointB = self.markers.filter(function (item) {
-                        var itemValue = Array.isArray(item.options.dataRow[PIVOT_PARAMETERS.nameElement]) ? item.options.dataRow[PIVOT_PARAMETERS.nameElement][0] : item.options.dataRow[PIVOT_PARAMETERS.nameElement];
-                        return itemValue === $('#routeInputB').val();
-                    })[0];
-
-                    if (pointA != undefined && pointB != undefined) {
-                        var latitudeA = getValue(pointA.options.dataRow, "LATITUDE") || getValue(pointA.options.dataRow, "LAT") || getValue(pointA.options.dataRow, "Широта") || getValue(pointA.options.dataRow, "ШИРОТА");
-                        var longitudeA = getValue(pointA.options.dataRow, "LONGITUDE") || getValue(pointA.options.dataRow, "LONG") || getValue(pointA.options.dataRow, "Долгота") || getValue(pointA.options.dataRow, "ДОЛГОТА");
-                        var latitudeB = getValue(pointB.options.dataRow, "LATITUDE") || getValue(pointB.options.dataRow, "LAT") || getValue(pointB.options.dataRow, "Широта") || getValue(pointB.options.dataRow, "ШИРОТА");
-                        var longitudeB = getValue(pointB.options.dataRow, "LONGITUDE") || getValue(pointB.options.dataRow, "LONG") || getValue(pointB.options.dataRow, "Долгота") || getValue(pointB.options.dataRow, "ДОЛГОТА");
-
-                        var locations = [
-                            {
-                                latLng: {
-                                    lat: latitudeA,
-                                    lng: longitudeA
-                                }
-                            },
-                            {
-                                latLng: {
-                                    lat: latitudeB,
-                                    lng: longitudeB
-                                }
-                            }
-                        ]
-
-                        createRoute(locations);
+                latitudeB = latitudeA + 0.1;
+                longitudeB = longitudeA + 0.1
+                  
+                var locations = [
+                    {
+                        latLng: {
+                            lat: latitudeA,
+                            lng: longitudeA
+                        }
+                    },
+                    {
+                        latLng: {
+                            lat: latitudeB,
+                            lng: longitudeB
+                        }
                     }
-                }
-            });
+                ]
 
-            evaluateActiveItems();
-        //}, 10);            
+                createRoute(locations);                    
+            } else {
+                $('#toggleImage')[0].src = PIVOT_PARAMETERS.map.toggleDownImage;
+                removeRouteControl();
+            }
+        });
+
+        evaluateActiveItems();            
     } else {
         evaluateActiveItems();
         self.mapDiv.style.height = options.canvas.clientHeight - 12 + "px";
@@ -13268,6 +13231,7 @@ MapView.prototype.resetHighlightedMarkers = function () {
         }        
     }
 
+    self.selectedMarker = undefined;
     self.highlightedMarkers = [];
 }
 
@@ -13378,25 +13342,68 @@ MapView.prototype.setMarkers = function (_items) {
             }
         });
 
-        if (self.markerLayer != null) {
+        if (self.markerLayer != null && self.markerLayer != undefined) {
             self.markerLayer.removeEventListener('click', clickListener, false);
             self.markerLayer.removeEventListener("mouseover", mouseoverListener, false);
             self.markerLayer.removeEventListener("mouseout", mouseoutListener, false);
             self.map.removeLayer(self.markerLayer);
         }
 
-        if (self.enableClustering && self.markers.length >= self.startClusterLimit) {
-            self.markerLayer = L.markerClusterGroup();
-            self.markerLayer.options.maxClusterRadius = self.clusterRadius;
-
-            for (var i = 0; i < self.markers.length; ++i) {
-                self.markerLayer.addLayer(self.markers[i]);
-            }
-        } else {
-            self.markerLayer = new L.featureGroup(self.markers);
+        if (self.commonClusterLayer != null && self.commonClusterLayer != undefined) {
+            self.commonClusterLayer.removeEventListener('click', clickListener, false);
+            self.commonClusterLayer.removeEventListener("mouseover", mouseoverListener, false);
+            self.commonClusterLayer.removeEventListener("mouseout", mouseoutListener, false);
+            self.map.removeLayer(self.commonClusterLayer);
         }
 
-        self.map.addLayer(self.markerLayer);
+        if (self.filteredClusterLayer != null && self.filteredClusterLayer != undefined) {
+            self.filteredClusterLayer.removeEventListener('click', clickListener, false);
+            self.filteredClusterLayer.removeEventListener("mouseover", mouseoverListener, false);
+            self.filteredClusterLayer.removeEventListener("mouseout", mouseoutListener, false);
+            self.map.removeLayer(self.filteredClusterLayer);
+        }
+
+        if (self.enableClustering && self.markers.length >= self.startClusterLimit) {
+            self.commonClusterLayer = L.markerClusterGroup({
+                iconCreateFunction: function (cluster) {
+                    var icon = self.commonClusterLayer._defaultIconCreateFunction(cluster);
+                    icon.options.className += ' common-group';
+                    return icon;
+                },
+                maxClusterRadius: self.clusterRadius
+            });
+
+            self.filteredClusterLayer = L.markerClusterGroup({
+                iconCreateFunction: function (cluster) {
+                    var icon = self.commonClusterLayer._defaultIconCreateFunction(cluster);
+                    icon.options.className += ' filtered-group';
+                    return icon;
+                },
+                maxClusterRadius: self.clusterRadius
+            });
+
+            if (self.filteredMarkers.length == self.markers.length) {
+                for (var i = 0; i < self.markers.length; ++i) {
+                    self.filteredClusterLayer.addLayer(self.markers[i]);
+                }
+            } else {
+                for (var i = 0; i < self.filteredMarkers.length; ++i) {
+                    self.filteredClusterLayer.addLayer(self.filteredMarkers[i]);
+                }
+
+                for (var i = 0; i < self.markers.length; ++i) {
+                    if (!self.filteredMarkers.includes(self.markers[i])) {
+                        self.commonClusterLayer.addLayer(self.markers[i]);
+                    }
+                }                
+            }
+
+            self.map.addLayer(self.filteredClusterLayer);
+            self.map.addLayer(self.commonClusterLayer);
+        } else {
+            self.markerLayer = new L.featureGroup(self.markers);
+            self.map.addLayer(self.markerLayer);
+        }
 
         if (self.highlightMarkersOnFilter) {
             self.filteredMarkersLayer = new L.featureGroup(self.filteredMarkers);
@@ -13423,29 +13430,32 @@ MapView.prototype.setMarkers = function (_items) {
         var clickListener = function (event) {
             var clickedMarker = event.layer;
 
-            self.resetHighlightedMarkers();
-            self.setMarkerIcon(clickedMarker, self.highlightedIcon);
-            self.highlightedMarkers.push(clickedMarker);
+            if (self.filteredMarkers.includes(clickedMarker)) {
+                self.resetHighlightedMarkers();
+                self.setMarkerIcon(clickedMarker, self.highlightedIcon);
+                self.highlightedMarkers.push(clickedMarker);
+                self.selectedMarker = clickedMarker;
 
-            var itemsArr;
-            if (typeof _items === "object") {
-                itemsArr = Object.values(_items);
-            } else {
-                itemsArr = _items;
+                var itemsArr;
+                if (typeof _items === "object") {
+                    itemsArr = Object.values(_items);
+                } else {
+                    itemsArr = _items;
+                }
+
+                var clickedItem = itemsArr.filter(function (item) {
+                    return item.facets === clickedMarker.options.dataRow;
+                })[0];
+
+                if (self.detailsEnabled) {
+                    self.container.trigger("showDetails", clickedItem, self.container.facets);
+                    self.container.trigger("showInfoButton");
+                }
+                self.container.trigger("filterItem", clickedItem, self.container.facets);
+
+                self.container.selectedItems = [];
+                self.container.selectedItems.push(clickedItem);
             }
-
-            var clickedItem = itemsArr.filter(function (item) {
-                return item.facets === clickedMarker.options.dataRow;
-            })[0];
-
-            if (self.detailsEnabled) {
-                self.container.trigger("showDetails", clickedItem, self.container.facets);
-                self.container.trigger("showInfoButton");
-            }
-            self.container.trigger("filterItem", clickedItem, self.container.facets);
-
-            self.container.selectedItems = [];
-            self.container.selectedItems.push(clickedItem);
         }
 
         var mouseoverListener = function (event) {
@@ -13456,9 +13466,23 @@ MapView.prototype.setMarkers = function (_items) {
             event.layer.closePopup();
         }
 
-        self.markerLayer.addEventListener('click', clickListener, false);
-        self.markerLayer.addEventListener("mouseover", mouseoverListener, false);
-        self.markerLayer.addEventListener("mouseout", mouseoutListener, false);      
+        if (self.markerLayer != null && self.markerLayer != undefined) {
+            self.markerLayer.addEventListener('click', clickListener, false);
+            self.markerLayer.addEventListener("mouseover", mouseoverListener, false);
+            self.markerLayer.addEventListener("mouseout", mouseoutListener, false);
+        }
+
+        if (self.filteredClusterLayer != null && self.filteredClusterLayer != undefined) {
+            self.filteredClusterLayer.addEventListener('click', clickListener, false);
+            self.filteredClusterLayer.addEventListener("mouseover", mouseoverListener, false);
+            self.filteredClusterLayer.addEventListener("mouseout", mouseoutListener, false);
+        }
+
+        if (self.commonClusterLayer != null && self.commonClusterLayer != undefined) {
+            self.commonClusterLayer.addEventListener('click', clickListener, false);
+            self.commonClusterLayer.addEventListener("mouseover", mouseoverListener, false);
+            self.commonClusterLayer.addEventListener("mouseout", mouseoutListener, false);
+        }
     }
 }
 
