@@ -15942,7 +15942,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
      * @return {object} The results of the search. Property names are the
      * matching strings; property values are the number of matches with that string.
      */
-    self.runSearch = function (searchTerm, splitResults) {
+    self.runSearch = function (searchTerm, wordwheelFacets, splitResults) {
         var frontResults,
             restResults,
             result;
@@ -15977,11 +15977,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             self.items.forEach(function (item) {
                 var facets = item.facets,
                     facetName;
-                for (facetName in facets) {
+                wordwheelFacets.forEach(function (facetName) {
                     if (hasOwnProperty.call(facets, facetName)) {
                         facets[facetName].forEach(checkResult);
                     }
-                }
+                });
                 checkResult(item.name);
             });
         }
@@ -17164,7 +17164,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                 break;
             default:
                 nextSearch = searchBox.value;
-                var searchResults = viewer.runSearch(nextSearch, true);
+                var searchResults = viewer.runSearch(nextSearch, wordwheelFacets, true);
                 searchSuggestions.innerHTML = "";
                 currentSuggestion = -1;
                 suggestionsCount = 0;

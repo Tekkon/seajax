@@ -901,7 +901,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                 break;
             default:
                 nextSearch = searchBox.value;
-                var searchResults = viewer.runSearch(nextSearch, true);
+                var searchResults = viewer.runSearch(nextSearch, wordwheelFacets, true);
                 searchSuggestions.innerHTML = "";
                 currentSuggestion = -1;
                 suggestionsCount = 0;
