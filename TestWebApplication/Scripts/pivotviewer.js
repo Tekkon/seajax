@@ -221,6 +221,78 @@ if (!Array.prototype.indexOf) {
         };
     })(Object, Math.max, Math.min);
 }
+
+(function () {
+    if (!Event.prototype.preventDefault) {
+        Event.prototype.preventDefault = function () {
+            this.returnValue = false;
+        };
+    }
+    if (!Event.prototype.stopPropagation) {
+        Event.prototype.stopPropagation = function () {
+            this.cancelBubble = true;
+        };
+    }
+    if (!Element.prototype.addEventListener) {
+        var eventListeners = [];
+
+        var addEventListener = function (type, listener /*, useCapture (will be ignored) */) {
+            var self = this;
+            var wrapper = function (e) {
+                e.target = e.srcElement;
+                e.currentTarget = self;
+                if (listener.handleEvent) {
+                    listener.handleEvent(e);
+                } else {
+                    listener.call(self, e);
+                }
+            };
+            if (type == "DOMContentLoaded") {
+                var wrapper2 = function (e) {
+                    if (document.readyState == "complete") {
+                        wrapper(e);
+                    }
+                };
+                document.attachEvent("onreadystatechange", wrapper2);
+                eventListeners.push({ object: this, type: type, listener: listener, wrapper: wrapper2 });
+
+                if (document.readyState == "complete") {
+                    var e = new Event();
+                    e.srcElement = window;
+                    wrapper2(e);
+                }
+            } else {
+                this.attachEvent("on" + type, wrapper);
+                eventListeners.push({ object: this, type: type, listener: listener, wrapper: wrapper });
+            }
+        };
+        var removeEventListener = function (type, listener /*, useCapture (will be ignored) */) {
+            var counter = 0;
+            while (counter < eventListeners.length) {
+                var eventListener = eventListeners[counter];
+                if (eventListener.object == this && eventListener.type == type && eventListener.listener == listener) {
+                    if (type == "DOMContentLoaded") {
+                        this.detachEvent("onreadystatechange", eventListener.wrapper);
+                    } else {
+                        this.detachEvent("on" + type, eventListener.wrapper);
+                    }
+                    break;
+                }
+                ++counter;
+            }
+        };
+        Element.prototype.addEventListener = addEventListener;
+        Element.prototype.removeEventListener = removeEventListener;
+        if (HTMLDocument) {
+            HTMLDocument.prototype.addEventListener = addEventListener;
+            HTMLDocument.prototype.removeEventListener = removeEventListener;
+        }
+        if (Window) {
+            Window.prototype.addEventListener = addEventListener;
+            Window.prototype.removeEventListener = removeEventListener;
+        }
+    }
+})();
 // Copyright (c) Microsoft Corporation
 // All rights reserved. 
 // BSD License
@@ -10516,6 +10588,7 @@ var PIVOT_PARAMETERS = {
         markerUrl: 'Content/images/azs-small-grey.png',
         highlightedMarkerUrl: 'Content/images/azs-small-red.png',
         filteredMarkerUrl: 'Content/images/azs-small-blue.png',
+        filtered2ndMarkerUrl: 'Content/images/azs-small-darkgrey.png',
         toggleDownImage: 'Content/images/toggle-down.png',
         toggleUpImage: 'Content/images/toggle-up.png',
         routeMarkerUrl: 'Content/images/marker-icon.png',
@@ -10523,7 +10596,8 @@ var PIVOT_PARAMETERS = {
     },
     detailsEnabled: true,
     filterElement: "ID",
-    nameElement: "ORG_NAME"
+    nameElement: "ORG_NAME",
+    name2ndElement: "SOST"
 }
 // Copyright (c) Microsoft Corporation
 // All rights reserved. 
@@ -12814,6 +12888,7 @@ var MapView = function (container, isSelected) {
     this.markerUrl = PIVOT_PARAMETERS.map.markerUrl;
     this.highlightedMarkerUrl = PIVOT_PARAMETERS.map.highlightedMarkerUrl;
     this.filteredMarkerUrl = PIVOT_PARAMETERS.map.filteredMarkerUrl;
+    this.filtered2ndMarkerUrl = PIVOT_PARAMETERS.map.filtered2ndMarkerUrl;
     this.routeMarkerUrl = PIVOT_PARAMETERS.map.routeMarkerUrl;
     this.routeMarkerShadowUrl = PIVOT_PARAMETERS.map.routeMarkerShadowUrl;
 
@@ -12843,6 +12918,13 @@ var MapView = function (container, isSelected) {
         iconSize: [32, 32]
     });
 
+    this.filtered2ndIcon = new L.Icon({
+        iconUrl: this.filtered2ndMarkerUrl,
+        iconAnchor: [12, 41],
+        popupAnchor: [0, -41],
+        iconSize: [32, 32]
+    });
+
     this.routeIcon = new L.Icon({
         iconUrl: this.routeMarkerUrl,
         shadowUrl: this.routeMarkerShadowUrl,
@@ -12860,6 +12942,9 @@ var MapView = function (container, isSelected) {
 
     img3 = document.createElement('img');
     img3.src = this.routeMarkerShadowUrl;
+
+    img4 = document.createElement('img');
+    img4.src = this.filtered2ndMarkerUrl;
 
     self.isRouteHeaderClicked = false;
 }
@@ -13034,6 +13119,10 @@ MapView.prototype.createView = function (options) {
         self.mapDiv.style.position = "relative";
         self.mapDiv.style.width = width + "px";
         self.mapDiv.style.height = "1000px";
+        //self.mapDiv.style.width = "85%";
+        //self.mapDiv.style.height = "110%";
+        //self.mapDiv.style.resize = "both";
+        //self.mapDiv.style.overflow = "auto";
 
         var map = L.map(self.mapDiv, { layers: [yndx], preferCanvas: true }).setView([0, 0], 2);
         self.map = map;
@@ -13356,6 +13445,8 @@ MapView.prototype.setMarkers = function (_items) {
             var longitude = getFacet(dataRow, "LONGITUDE") || getFacet(dataRow, "LONG") || getFacet(dataRow, "Долгота") || getFacet(dataRow, "ДОЛГОТА");
             var label = getFacet(dataRow, "NAME") || getFacet(dataRow, "FULLNAME") || getFacet(dataRow, "SHORTNAME") || getFacet(dataRow, "FULL_NAME") || getFacet(dataRow, "SHORT_NAME")
                 || getFacet(dataRow, "Наименование") || getFacet(dataRow, "Короткое наименование") || getFacet(dataRow, PIVOT_PARAMETERS.nameElement);
+            var label2 = getFacet(dataRow, "LABEL2");
+
             var hint = label;
 
             if (typeof latitude != 'undefined' && latitude != null && latitude != 0 &&
@@ -13366,8 +13457,12 @@ MapView.prototype.setMarkers = function (_items) {
                         return marker.options.dataRow[self.filterElement] === dataRow.facets[self.filterElement]
                     })[0];
 
-                    if (marker != undefined) {
-                        self.setMarkerIcon(marker, self.filteredIcon);                        
+                    if (marker != undefined) {                        
+                        if (label2 != undefined && (label2 === 1 || label2 === "1")) {
+                            self.setMarkerIcon(marker, self.filtered2ndIcon);
+                        } else {
+                            self.setMarkerIcon(marker, self.filteredIcon);
+                        }
                     } else {
                         marker = createMarker(latitude, longitude, dataRow, label, hint);
                     }
@@ -16548,7 +16643,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
 
     var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, i18n.t("exportCSV"));
     exportButton.htmlElement.onclick = function () {
-        (new CSVExporter(".", ",", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return deleteAdditionalProperties(item); }));
+        (new CSVExporter(".", ";", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return deleteAdditionalProperties(item); }));
     };
 
     var clearFilterButton = new Button("div", "pivot_sorttools pivot_clear_filter pivot_hoverable", topBar, i18n.t("clearFilters"));

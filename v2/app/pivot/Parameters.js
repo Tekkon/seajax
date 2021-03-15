@@ -9,6 +9,7 @@ var PIVOT_PARAMETERS = {
         markerUrl: 'Content/images/azs-small-grey.png',
         highlightedMarkerUrl: 'Content/images/azs-small-red.png',
         filteredMarkerUrl: 'Content/images/azs-small-blue.png',
+        filtered2ndMarkerUrl: 'Content/images/azs-small-darkgrey.png',
         toggleDownImage: 'Content/images/toggle-down.png',
         toggleUpImage: 'Content/images/toggle-up.png',
         routeMarkerUrl: 'Content/images/marker-icon.png',
@@ -16,5 +17,6 @@ var PIVOT_PARAMETERS = {
     },
     detailsEnabled: true,
     filterElement: "ID",
-    nameElement: "ORG_NAME"
+    nameElement: "ORG_NAME",
+    name2ndElement: "SOST"
 }

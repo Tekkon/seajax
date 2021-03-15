@@ -134,7 +134,9 @@ L.Yandex = L.Layer.extend({
     },
 
     _initApi: function () { // to be extended in addons
-        ymaps.ready(this._initMapObject, this);
+        if (typeof ymaps !== 'undefined') {
+            ymaps.ready(this._initMapObject, this);
+        }        
     },
 
     _mapType: function () {
@@ -146,22 +148,24 @@ L.Yandex = L.Layer.extend({
     },
 
     _initMapObject: function () {
-        ymaps.mapType.storage.add('yandex#overlay', new ymaps.MapType('overlay', []));
-        ymaps.mapType.storage.add('yandex#skeleton', new ymaps.MapType('skeleton', ['yandex#skeleton']));
-        ymaps.mapType.storage.add('yandex#map~vector', new ymaps.MapType('map~vector', ['yandex#map~vector']));
-        var ymap = new ymaps.Map(this._container, {
-            center: [0, 0], zoom: 0, behaviors: [], controls: [],
-            type: this._mapType()
-        }, this.options.mapOptions);
+        if (typeof ymaps !== 'undefined') {
+            ymaps.mapType.storage.add('yandex#overlay', new ymaps.MapType('overlay', []));
+            ymaps.mapType.storage.add('yandex#skeleton', new ymaps.MapType('skeleton', ['yandex#skeleton']));
+            ymaps.mapType.storage.add('yandex#map~vector', new ymaps.MapType('map~vector', ['yandex#map~vector']));
+            var ymap = new ymaps.Map(this._container, {
+                center: [0, 0], zoom: 0, behaviors: [], controls: [],
+                type: this._mapType()
+            }, this.options.mapOptions);
 
-        if (this._isOverlay) {
-            ymap.container.getElement().style.background = 'transparent';
+            if (this._isOverlay) {
+                ymap.container.getElement().style.background = 'transparent';
+            }
+            this._container.remove();
+            this._yandex = ymap;
+            if (this._map) { this.onAdd(this._map); }
+
+            this.fire('load');
         }
-        this._container.remove();
-        this._yandex = ymap;
-        if (this._map) { this.onAdd(this._map); }
-
-        this.fire('load');
     }
 });
 

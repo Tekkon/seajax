@@ -24,6 +24,7 @@
     this.markerUrl = PIVOT_PARAMETERS.map.markerUrl;
     this.highlightedMarkerUrl = PIVOT_PARAMETERS.map.highlightedMarkerUrl;
     this.filteredMarkerUrl = PIVOT_PARAMETERS.map.filteredMarkerUrl;
+    this.filtered2ndMarkerUrl = PIVOT_PARAMETERS.map.filtered2ndMarkerUrl;
     this.routeMarkerUrl = PIVOT_PARAMETERS.map.routeMarkerUrl;
     this.routeMarkerShadowUrl = PIVOT_PARAMETERS.map.routeMarkerShadowUrl;
 
@@ -53,6 +54,13 @@
         iconSize: [32, 32]
     });
 
+    this.filtered2ndIcon = new L.Icon({
+        iconUrl: this.filtered2ndMarkerUrl,
+        iconAnchor: [12, 41],
+        popupAnchor: [0, -41],
+        iconSize: [32, 32]
+    });
+
     this.routeIcon = new L.Icon({
         iconUrl: this.routeMarkerUrl,
         shadowUrl: this.routeMarkerShadowUrl,
@@ -70,6 +78,9 @@
 
     img3 = document.createElement('img');
     img3.src = this.routeMarkerShadowUrl;
+
+    img4 = document.createElement('img');
+    img4.src = this.filtered2ndMarkerUrl;
 
     self.isRouteHeaderClicked = false;
 }
@@ -244,6 +255,10 @@ MapView.prototype.createView = function (options) {
         self.mapDiv.style.position = "relative";
         self.mapDiv.style.width = width + "px";
         self.mapDiv.style.height = "1000px";
+        //self.mapDiv.style.width = "85%";
+        //self.mapDiv.style.height = "110%";
+        //self.mapDiv.style.resize = "both";
+        //self.mapDiv.style.overflow = "auto";
 
         var map = L.map(self.mapDiv, { layers: [yndx], preferCanvas: true }).setView([0, 0], 2);
         self.map = map;
@@ -566,6 +581,8 @@ MapView.prototype.setMarkers = function (_items) {
             var longitude = getFacet(dataRow, "LONGITUDE") || getFacet(dataRow, "LONG") || getFacet(dataRow, "Долгота") || getFacet(dataRow, "ДОЛГОТА");
             var label = getFacet(dataRow, "NAME") || getFacet(dataRow, "FULLNAME") || getFacet(dataRow, "SHORTNAME") || getFacet(dataRow, "FULL_NAME") || getFacet(dataRow, "SHORT_NAME")
                 || getFacet(dataRow, "Наименование") || getFacet(dataRow, "Короткое наименование") || getFacet(dataRow, PIVOT_PARAMETERS.nameElement);
+            var label2 = getFacet(dataRow, "LABEL2");
+
             var hint = label;
 
             if (typeof latitude != 'undefined' && latitude != null && latitude != 0 &&
@@ -576,8 +593,12 @@ MapView.prototype.setMarkers = function (_items) {
                         return marker.options.dataRow[self.filterElement] === dataRow.facets[self.filterElement]
                     })[0];
 
-                    if (marker != undefined) {
-                        self.setMarkerIcon(marker, self.filteredIcon);                        
+                    if (marker != undefined) {                        
+                        if (label2 != undefined && (label2 === 1 || label2 === "1")) {
+                            self.setMarkerIcon(marker, self.filtered2ndIcon);
+                        } else {
+                            self.setMarkerIcon(marker, self.filteredIcon);
+                        }
                     } else {
                         marker = createMarker(latitude, longitude, dataRow, label, hint);
                     }
