@@ -30,3 +30,4 @@ C:\Projects\seajax\TestWebApplication\bin\Microsoft.ApplicationInsights.xml
 C:\Projects\seajax\TestWebApplication\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
 C:\Projects\seajax\TestWebApplication\obj\Debug\TestWebApplication.dll
 C:\Projects\seajax\TestWebApplication\obj\Debug\TestWebApplication.pdb
+C:\Projects\seajax\TestWebApplication\obj\Debug\TestWebApplication.csprojResolveAssemblyReference.cache
