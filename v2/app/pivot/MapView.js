@@ -168,11 +168,11 @@ MapView.prototype.createView = function (options) {
 
         L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(self.map);
 
-        if (this.multipleClusterColors) {
+        /*if (this.multipleClusterColors) {
             loadjscssfile(self, "Content/MarkerCluster.Default.css", "css");
         } else {
             loadjscssfile(self, "Content/MarkerCluster.Redefined.css", "css");
-        }
+        }*/
 
         addRouting(self);
     }
