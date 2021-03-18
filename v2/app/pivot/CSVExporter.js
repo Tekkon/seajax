@@ -25,7 +25,7 @@ CSVExporter.prototype.export = function (rows) {
                 } else if (val instanceof Date) {
                     val = self.quote + val.toLocaleString(self.culture) + self.quote;
                 } else if (typeof val === "number") {
-                    val = self.quote + val.toString().replaceAll(self.fieldSeparator, self.decimalSeparator) + self.quote;
+                    val = val.toString().replaceAll(self.fieldSeparator, self.decimalSeparator);
                 } else if (typeof val === "string") {
                     var href = getHrefFromHTML(val);
                     var text = getTextFromHTML(val);

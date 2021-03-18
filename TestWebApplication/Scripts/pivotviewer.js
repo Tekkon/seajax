@@ -13818,7 +13818,7 @@ CSVExporter.prototype.export = function (rows) {
                 } else if (val instanceof Date) {
                     val = self.quote + val.toLocaleString(self.culture) + self.quote;
                 } else if (typeof val === "number") {
-                    val = self.quote + val.toString().replaceAll(self.fieldSeparator, self.decimalSeparator) + self.quote;
+                    val = val.toString().replaceAll(self.fieldSeparator, self.decimalSeparator);
                 } else if (typeof val === "string") {
                     var href = getHrefFromHTML(val);
                     var text = getTextFromHTML(val);
@@ -16615,7 +16615,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
 
     var exportButton = new Button("div", "pivot_sorttools pivot_export_csv pivot_hoverable", topBar, i18n.t("exportCSV"));
     exportButton.htmlElement.onclick = function () {
-        (new CSVExporter(".", ";", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return deleteAdditionalProperties(item); }));
+        (new CSVExporter(",", ";", "\n", '"', "ru-RU", "utf-8")).export(viewer.activeItemsArr.map(function (item) { return deleteAdditionalProperties(item); }));
     };
 
     var clearFilterButton = new Button("div", "pivot_sorttools pivot_clear_filter pivot_hoverable", topBar, i18n.t("clearFilters"));
