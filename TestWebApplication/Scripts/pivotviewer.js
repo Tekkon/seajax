@@ -13061,46 +13061,6 @@ MapView.prototype.getPropertyValue = function (dataRow, property) {
     return dataRow.getValue(property)[0] != undefined ? dataRow.getValue(property)[0] : "";
 }
 
-MapView.prototype.clickListener = function (event) {
-    var self = this;
-    var clickedMarker = event.layer;
-
-    if (self.filteredMarkers.includes(clickedMarker)) {
-        resetHighlightedMarkers(self);
-        setMarkerIcon(clickedMarker, self.highlightedIcon);
-        self.highlightedMarkers.push(clickedMarker);
-        self.selectedMarker = clickedMarker;
-
-        var itemsArr;
-        if (typeof _items === "object") {
-            itemsArr = Object.values(_items);
-        } else {
-            itemsArr = _items;
-        }
-
-        var clickedItem = itemsArr.filter(function (item) {
-            return item.facets === clickedMarker.options.dataRow;
-        })[0];
-
-        if (self.detailsEnabled) {
-            self.container.trigger("showDetails", clickedItem, self.container.facets);
-            self.container.trigger("showInfoButton");
-        }
-        self.container.trigger("filterItem", clickedItem, self.container.facets);
-
-        self.container.selectedItems = [];
-        self.container.selectedItems.push(clickedItem);
-    }
-}
-
-MapView.prototype.mouseoverListener = function (event) {
-    event.layer.openPopup();
-}
-
-MapView.prototype.mouseoutListener = function (event) {
-    event.layer.closePopup();
-}
-
 /**** Secondary Functions ****/
 function showSelectedItems(self) {
     resetHighlightedMarkers(self);
@@ -13196,19 +13156,54 @@ function setMarkers(self, _items) {
             filteredData = _items;
         }
 
+        var clickListener = function (event) {
+            var clickedMarker = event.layer;
+            if (self.filteredMarkers.includes(clickedMarker)) {
+                resetHighlightedMarkers(self);
+                setMarkerIcon(clickedMarker, self.highlightedIcon);
+                self.highlightedMarkers.push(clickedMarker);
+                self.selectedMarker = clickedMarker;
+                var itemsArr;
+                if (typeof _items === "object") {
+                    itemsArr = Object.values(_items);
+                } else {
+                    itemsArr = _items;
+                }
+                var clickedItem = itemsArr.filter(function (item) {
+                    return item.facets === clickedMarker.options.dataRow;
+                })[0];
+                if (self.detailsEnabled) {
+                    self.container.trigger("showDetails", clickedItem, self.container.facets);
+                    self.container.trigger("showInfoButton");
+                }
+                self.container.trigger("filterItem", clickedItem, self.container.facets);
+                self.container.selectedItems = [];
+                self.container.selectedItems.push(clickedItem);
+            }
+        }
+
+        var mouseoverListener = function (event) {
+            event.layer.openPopup();
+        }
+
+        var mouseoutListener = function (event) {
+            event.layer.closePopup();
+        }
+
         evaluateMarkers(self, filteredData);
 
-        removeLayersAndListeners(self, self.markerLayer);
-        removeLayersAndListeners(self, self.commonClusterLayer);
-        removeLayersAndListeners(self, self.filteredClusterLayer);
+        removeLayersAndListeners(self, self.markerLayer, clickListener, mouseoverListener, mouseoutListener);
+        removeLayersAndListeners(self, self.commonClusterLayer, clickListener, mouseoverListener, mouseoutListener);
+        removeLayersAndListeners(self, self.filteredClusterLayer, clickListener, mouseoverListener, mouseoutListener);
 
         createLayers(self);
+
+        addLayerListeners(self, self.markerLayer, clickListener, mouseoverListener, mouseoutListener);
+        addLayerListeners(self, self.commonClusterLayer, clickListener, mouseoverListener, mouseoutListener);
+        addLayerListeners(self, self.filteredClusterLayer, clickListener, mouseoverListener, mouseoutListener);
+
         fitBoundsOnTimeout(self);       
         showSelectedItems(self);
-
-        addLayerListeners(self, self.markerLayer);
-        addLayerListeners(self, self.commonClusterLayer);
-        addLayerListeners(self, self.filteredClusterLayer);
     }
 }
 
@@ -13333,20 +13328,20 @@ function invalidateSize(self) {
     setTimeout(self.map.invalidateSize(), 100);
 }
 
-function removeLayersAndListeners(self, layer) {
+function removeLayersAndListeners(self, layer, clickListener, mouseoverListener, mouseoutListener) {
     if (layer != null && layer != undefined) {
-        layer.removeEventListener('click', self.clickListener, false);
-        layer.removeEventListener("mouseover", self.mouseoverListener, false);
-        layer.removeEventListener("mouseout", self.mouseoutListener, false);
+        layer.removeEventListener('click', clickListener, false);
+        layer.removeEventListener("mouseover", mouseoverListener, false);
+        layer.removeEventListener("mouseout", mouseoutListener, false);
         self.map.removeLayer(layer);
     }
 }
 
-function addLayerListeners(self, layer) {
-    if (self.layer != null && self.layer != undefined) {
-        self.layer.addEventListener('click', self.clickListener, false);
-        self.layer.addEventListener("mouseover", self.mouseoverListener, false);
-        self.layer.addEventListener("mouseout", self.mouseoutListener, false);
+function addLayerListeners(self, layer, clickListener, mouseoverListener, mouseoutListener) {
+    if (layer != null && layer != undefined) {
+        layer.addEventListener('click', clickListener, false);
+        layer.addEventListener("mouseover", mouseoverListener, false);
+        layer.addEventListener("mouseout", mouseoutListener, false);
     }
 }
 
