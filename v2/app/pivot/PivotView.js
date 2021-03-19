@@ -730,8 +730,8 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     function onSearchBlur() {
         if (activeSearch) {
             searchBox.value = activeSearch;
-            searchButton.className = "pivot_searchbtn pivot_clrsearch";
-            searchButton.onmousedown = clearSearch;
+            //searchButton.className = "pivot_searchbtn pivot_clrsearch";
+            //searchButton.onmousedown = clearSearch;
         } else {
             searchForm.className = "pivot_watermark";
             searchBox.value = i18n.t("search");
@@ -854,6 +854,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             }
             var resultElement = makeElement("li", null, searchSuggestions);
             addText(resultElement, result.value);
+            resultElement.setAttribute("title", result.value);
             resultElement.onmousedown = function () {
                 searchBox.value = result.value;
                 self.searchFacetName = result.facetName;
@@ -921,6 +922,8 @@ var Pivot_init = Pivot.init = function (div, useHash) {
 
     // handle a focus event on the searchbox
     function onSearchFocus() {
+        this.select();
+
         if (activeSearch) {
             searchButton.className = "pivot_searchbtn";
             // pop up the suggestions as if we had pressed a key
