@@ -15981,11 +15981,11 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
         return result;
     };
 
-    function countResult(results, str) {
+    function countResult(results, str, facetName) {
         if (hasOwnProperty.call(results, str)) {
-            results[str]++;
+            results[str][1]++;
         } else {
-            results[str] = 1;
+            results[str] = [facetName, 1];
         }
     }
 
@@ -16019,7 +16019,8 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             frontResults = restResults = {};
         }
         searchTerm = searchTerm.toLowerCase();
-        function checkResult(value) {
+
+        function checkResult(value, facetName) {
             // deal with Link type
             value = value.content || value;
             // deal with Number and Date types
@@ -16030,9 +16031,9 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
             }
             var match = value.toLowerCase().indexOf(searchTerm);
             if (match === 0) {
-                countResult(frontResults, value);
+                countResult(frontResults, value, facetName);
             } else if (match > 0) {
-                countResult(restResults, value);
+                countResult(restResults, value, facetName);
             }
         }
         if (searchTerm) {
@@ -16041,7 +16042,7 @@ var PivotViewer = Pivot.PivotViewer = function (canvas, container, frontLayer, b
                     facetName;
                 wordwheelFacets.forEach(function (facetName) {
                     if (hasOwnProperty.call(facets, facetName)) {
-                        facets[facetName].forEach(checkResult);
+                        checkResult(facets[facetName][0], facetName);
                     }
                 });
                 checkResult(item.name);
@@ -17015,8 +17016,15 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         var facets = item.facets;
         var searchTerms = activeSearch.trim().toLowerCase().split(" ");
         return searchTerms.every(function (searchTerm) {
+            var searchFacets;
+            if (self.searchFacetName !== undefined) {
+                searchFacets = [self.searchFacetName];
+            } else {
+                searchFacets = wordwheelFacets;
+            }
+
             return item.name.toLowerCase().indexOf(searchTerm) !== -1 ||
-                wordwheelFacets.some(function (facet) {
+                searchFacets.some(function (facet) {
                     var facetData = facets[facet];
                     return facetData && facetData.some(function (value) {
                         // Link type facets will have a property named content,
@@ -17156,8 +17164,9 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         for (value in results) {
             if (hasOwnProperty.call(results, value)) {
                 resultsArray.push({
+                    facetName: results[value][0],
                     value: value,
-                    count: results[value]
+                    count: results[value][1]
                 });
             }
         }
@@ -17173,6 +17182,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             addText(resultElement, result.value);
             resultElement.onmousedown = function () {
                 searchBox.value = result.value;
+                self.searchFacetName = result.facetName;
                 onSearch();
             };
             suggestionsCount++;
