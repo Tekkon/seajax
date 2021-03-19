@@ -17145,7 +17145,6 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         activeSearch = searchBox.value;
 
         if (!activeSearch.length) {
-            //clearSearch(true);
             onClearAll(false);
         } else {
             if (!wasActive) {
