@@ -730,8 +730,8 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     function onSearchBlur() {
         if (activeSearch) {
             searchBox.value = activeSearch;
-            //searchButton.className = "pivot_searchbtn pivot_clrsearch";
-            //searchButton.onmousedown = clearSearch;
+            searchButton.className = "pivot_searchbtn pivot_clrsearch";
+            searchButton.onmousedown = clearSearch;
         } else {
             searchForm.className = "pivot_watermark";
             searchBox.value = i18n.t("search");
@@ -767,9 +767,9 @@ var Pivot_init = Pivot.init = function (div, useHash) {
                 clearButtons[facetName].style.visibility = "";
             }
         }
-        if (activeSearch) {
+        //if (activeSearch) {
             clearSearch(true);
-        }
+        //}
         clearOption.style.visibility = "";
         activeFilters = {};
         filtersCount = 0;
@@ -817,13 +817,19 @@ var Pivot_init = Pivot.init = function (div, useHash) {
     function onSearch() {
         var wasActive = !!activeSearch;
         activeSearch = searchBox.value;
-        if (!wasActive) {
-            viewer.addFilter(searchFilter);
+
+        if (!activeSearch.length) {
+            //clearSearch(true);
+            onClearAll(false);
+        } else {
+            if (!wasActive) {
+                viewer.addFilter(searchFilter);
+            }
+            clearOption.style.visibility = "visible";
+            onSearchBlur();
+            viewer.filter();
+            refreshFilterPane();
         }
-        clearOption.style.visibility = "visible";
-        onSearchBlur();
-        viewer.filter();
-        refreshFilterPane();
     }
 
     // add results to the word wheel. the results parameter is an object,
