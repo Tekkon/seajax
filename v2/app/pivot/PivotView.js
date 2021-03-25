@@ -733,7 +733,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             searchButton.className = "pivot_searchbtn pivot_clrsearch";
             searchButton.onmousedown = clearSearch;
         } else {
-            searchForm.className = "pivot_watermark";
+            searchForm.className = "searchForm pivot_watermark";
             searchBox.value = i18n.t("search");
             searchButton.onmousedown = null;
         }
@@ -934,7 +934,7 @@ var Pivot_init = Pivot.init = function (div, useHash) {
             // pop up the suggestions as if we had pressed a key
             onSearchKeyPress({});
         } else {
-            searchForm.className = "";
+            searchForm.className = "searchForm";
             searchBox.value = "";
         }
         /* note that this must be on mousedown, not onclick!
@@ -1087,13 +1087,18 @@ var Pivot_init = Pivot.init = function (div, useHash) {
         clearButton = makeElement("div", "pivot_clrbtn pivot_clr", clearOption);
         clearButton.innerHTML = "&times;";
         addText(clearOption, i18n.t("clearAll"));
-        searchForm = makeElement("form", null, filterPane);
+
+        searchForm = makeElement("form", "searchForm", filterPane);
+        searchForm.setAttribute('novalidate', '');
         searchForm.onsubmit = function (e) {
             onSearch();
             e.preventDefault();
         };
+        $('.searchForm').validate({});
+
         searchBox = makeElement("input", "pivot_searchbox", searchForm);
         searchBox.type = "text";
+        searchBox.setAttribute('formnovalidate', "formnovalidate");
         searchBox.onfocus = onSearchFocus;
         searchBox.onblur = onSearchBlur;
         searchBox.onkeyup = onSearchKeyPress;
