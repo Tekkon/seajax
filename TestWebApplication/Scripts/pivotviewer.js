@@ -13291,9 +13291,9 @@ function createLayers(self) {
                 }
             }
         }
-
-        self.map.addLayer(self.filteredClusterLayer);
+        
         self.map.addLayer(self.commonClusterLayer);
+        self.map.addLayer(self.filteredClusterLayer);
     } else {
         self.markerLayer = new L.featureGroup(self.markers);
         self.map.addLayer(self.markerLayer);
